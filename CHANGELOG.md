@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/dimonomid/nerdlog/compare/v1.2.2...v1.2.3) (2025-04-28)
+
+
+### Bug Fixes
+
+* **CI:** Install libx11-dev to the runner ([adde3f5](https://github.com/dimonomid/nerdlog/commit/adde3f5a12d79ced4ad5c5b8dcdbdff568086147))
+
 ## [1.2.2](https://github.com/dimonomid/nerdlog/compare/v1.2.1...v1.2.2) (2025-04-28)
 
 
