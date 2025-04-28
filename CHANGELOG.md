@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/dimonomid/nerdlog/compare/v1.2.0...v1.2.1) (2025-04-28)
+
+
+### Bug Fixes
+
+* **CI:** Fix the path to main package ([2ae940b](https://github.com/dimonomid/nerdlog/commit/2ae940b851bcb56c058c2286bc43b589a684c80d))
+
 ## [1.2.0](https://github.com/dimonomid/nerdlog/compare/v1.1.0...v1.2.0) (2025-04-28)
 
 
