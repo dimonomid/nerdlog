@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/dimonomid/nerdlog/compare/v1.2.3...v1.2.4) (2025-04-28)
+
+
+### Bug Fixes
+
+* Avoid panic if nerdlog was built with CGO_ENABLED=0 ([389a193](https://github.com/dimonomid/nerdlog/commit/389a193836b8e07de71cf7f9bf39fb8441e2871b))
+
 ## [1.2.3](https://github.com/dimonomid/nerdlog/compare/v1.2.2...v1.2.3) (2025-04-28)
 
 
