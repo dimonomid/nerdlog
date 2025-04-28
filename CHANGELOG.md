@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/dimonomid/nerdlog/compare/v1.2.1...v1.2.2) (2025-04-28)
+
+
+### Bug Fixes
+
+* **CI:** Don't set CGO_ENABLED=0 ([201f621](https://github.com/dimonomid/nerdlog/commit/201f621f8d7c2472a098051dc4b93a233874f395))
+
 ## [1.2.1](https://github.com/dimonomid/nerdlog/compare/v1.2.0...v1.2.1) (2025-04-28)
 
 
