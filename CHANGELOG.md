@@ -5,7 +5,14 @@
 
 ### Features
 
+* Add support for `journalctl` ([6d7d69](https://github.com/dimonomid/nerdlog/commit/6d7d695ced450e1648994e690dd26a503b4fe034), [1687ee](https://github.com/dimonomid/nerdlog/commit/1687ee728387d838c9ec56d40b3b2a3d9acf7901)). Log files are still preferred, because [they are more reliable](https://github.com/dimonomid/nerdlog/issues/7#issuecomment-2820521885) and [work much faster](https://github.com/dimonomid/nerdlog/issues/7#issuecomment-2823303380), but `journalctl` is more universally available these days, and also often has longer logs history, so it is fully supported now.
+* Add support for reading logs with `sudo` ([23a6a4](https://github.com/dimonomid/nerdlog/commit/23a6a4e6b48da8658fcfd0eefb0b2193ba389a13))
+* Add `--ssh-config` flag to specify the ssh config location ([3ceb70](https://github.com/dimonomid/nerdlog/commit/3ceb70b803bff5b47e3982b8dd202516d2bbd538))
 * **CI:** set up release-please with auto binaries building for releases ([2a9d235](https://github.com/dimonomid/nerdlog/commit/2a9d2353d3050e75d727825c6db86d09229b5d97))
+
+### Bug Fixes
+
+* Fix focus issue when non-last modal is removed ([2e4ff3]((https://github.com/dimonomid/nerdlog/commit/2e4ff3d35f7e473283b7afe7671d6e0e180d2dac))
 
 ## 1.1.0 (2025-04-26)
 
