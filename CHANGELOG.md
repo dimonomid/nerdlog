@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.0](https://github.com/dimonomid/nerdlog/compare/v1.2.4...v1.3.0) (2025-05-03)
+
+
+### Features
+
+* Implement proper support for localhost ([82425bf](https://github.com/dimonomid/nerdlog/commit/82425bfe4b53494e217030d96efe335f6affe5be))
+* Implement refresh using Ctrl+R or F5 ([6c95ca5](https://github.com/dimonomid/nerdlog/commit/6c95ca5716212f5a22f946a31a60726f9769608f))
+* Implement hard refresh using Alt+Ctrl+R or Shift+F5 ([6799aca](https://github.com/dimonomid/nerdlog/commit/6799aca0844e384e882566938d9cf5f5dc5c98eb))
+
+
+### Bug Fixes
+
+* Don't assume that bash is in /bin ([ddcde2b](https://github.com/dimonomid/nerdlog/commit/ddcde2bdacc2d9d4140f3490ef463d10a8f0ca0e))
+* Handle multiline records from journalctl ([af591a0](https://github.com/dimonomid/nerdlog/commit/af591a089ee66b0f5d8cba411faaea4dd15c56e3))
+* **UI:** Apply the timezone changes everywhere in UI ([8b523f6](https://github.com/dimonomid/nerdlog/commit/8b523f6be63c26d736bc4baa956bba5717c8e0fb))
+* **UI:** Fix timezone label in query edit form ([e3d7f26](https://github.com/dimonomid/nerdlog/commit/e3d7f26a2e8b40e206bf1cb021f1a6de1a174f4d))
+
 ## [1.2.4](https://github.com/dimonomid/nerdlog/compare/v1.2.3...v1.2.4) (2025-04-28)
 
 
