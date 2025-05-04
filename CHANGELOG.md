@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.0](https://github.com/dimonomid/nerdlog/compare/v1.3.0...v1.4.0) (2025-05-04)
+
+
+### Features
+
+* Implement ssh authentication via public keys in addition to ssh-agent ([435eeab](https://github.com/dimonomid/nerdlog/commit/435eeab28bd48dbb71c3cd86647e11a32e8dce78))
+* Don't fail if there is a `Match` directive in ssh config ([3dad67c](https://github.com/dimonomid/nerdlog/commit/3dad67ceb5e6314ca51a3daf051ba52a62da444f))
+* **UI:** Resize the connection dialog when needed ([e85811f](https://github.com/dimonomid/nerdlog/commit/e85811f4e03c756a717b874a8f6a43f8dae3cb13))
+
+
+### Bug Fixes
+
+* FreeBSD is tested and supported both as a client (where the Nerdlog app runs) and as a remote host (where logs are collected from):
+    * Make the agent script work on FreeBSD ([bcb3ac4](https://github.com/dimonomid/nerdlog/commit/bcb3ac4206722aa98f80b9e567771c5ba371a878))
+    * Fix FreeBSD build with `CGO_ENABLED=1` ([db2665f](https://github.com/dimonomid/nerdlog/commit/db2665fc4ab68a772833cd34a2d016ed0dcaa74d))
+* Don't use localhost as a default on Windows ([03e7d96](https://github.com/dimonomid/nerdlog/commit/03e7d96dccef4e685b6c362c38f7d7888b25fc46))
+
 ## [1.3.0](https://github.com/dimonomid/nerdlog/compare/v1.2.4...v1.3.0) (2025-05-03)
 
 
