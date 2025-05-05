@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [1.6.0](https://github.com/dimonomid/nerdlog/compare/v1.5.0...v1.6.0) (2025-05-05)
+
+
+### Features
+
+* Add support for `--version` flag and `:version` / `:about` commands ([1706904](https://github.com/dimonomid/nerdlog/commit/1706904aa0733a239f0cd2322e0142b8369b1306))
+* **CI:** Add version number to the archive names ([78e4e80](https://github.com/dimonomid/nerdlog/commit/78e4e80359eace22a61f88c24e4d42b9744eefde))
+
+
+### Bug Fixes
+
+* Make sure that the agent script runs with `$HOME` as working dir ([6885b88](https://github.com/dimonomid/nerdlog/commit/6885b88b34b34a0f1b4bda3ea3275fbfce271ddb))
+
 ## [1.5.0](https://github.com/dimonomid/nerdlog/compare/v1.3.0...v1.5.0) (2025-05-04)
 
 
