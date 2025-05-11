@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [1.7.1](https://github.com/dimonomid/nerdlog/compare/v1.7.0...v1.7.1) (2025-05-11)
+
+
+### Bug Fixes
+
+* Fix time format for older versions of journalctl ([528974d](https://github.com/dimonomid/nerdlog/commit/528974d988d633d9b0a000c18b9e05f42d6f8caa))
+
 ## [1.7.0](https://github.com/dimonomid/nerdlog/compare/v1.6.0...v1.7.0) (2025-05-11)
 
 
