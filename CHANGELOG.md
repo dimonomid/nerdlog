@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [1.7.2](https://github.com/dimonomid/nerdlog/compare/v1.7.1...v1.7.2) (2025-05-14)
+
+
+### Bug Fixes
+
+* Fix pagination of journalctl-powered logstreams ([f7e373e](https://github.com/dimonomid/nerdlog/commit/f7e373e0e2c119ddc662593b2af45909319d992f))
+
 ## [1.7.1](https://github.com/dimonomid/nerdlog/compare/v1.7.0...v1.7.1) (2025-05-11)
 
 
