@@ -1,6 +1,24 @@
 # Changelog
 
 
+## [1.8.0](https://github.com/dimonomid/nerdlog/compare/v1.7.2...v1.8.0) (2025-05-17)
+
+
+### Features
+
+* Debug-print command to filter logs by time range ([aa164b2](https://github.com/dimonomid/nerdlog/commit/aa164b289217b6be8919ad7ed83460102d005ee5))
+* **minor:** Add a bit more debug info ([d696530](https://github.com/dimonomid/nerdlog/commit/d69653095f2cf59399a8ee9e18b258119c27b5b3))
+* **UI:** Add a way to copy message to clipboard ([fa44568](https://github.com/dimonomid/nerdlog/commit/fa44568d7eb3abd9f4a12bd91a542770bb7f05ba))
+* **UI:** Implement debug info dialog ([bc3f8e3](https://github.com/dimonomid/nerdlog/commit/bc3f8e3a041ba341b0c463d32e92b1ba308efd93))
+
+
+### Bug Fixes
+
+* Fix journalctl pagination with the pattern ([8c85b16](https://github.com/dimonomid/nerdlog/commit/8c85b16428ea414a687c0bc812071c9567a58483))
+* **minor:** Debug-print the skipped-lines info to stderr ([920f57e](https://github.com/dimonomid/nerdlog/commit/920f57e74cd171cd56c8bc6308a384f5bb81f5d9))
+* **UI:** Fix messagebox height if text has empty lines ([ae72eec](https://github.com/dimonomid/nerdlog/commit/ae72eec086e11a4fa146620d8773d4a7979dd088))
+* Upgrade clipboard package to fix init error handling ([313a4f7](https://github.com/dimonomid/nerdlog/commit/313a4f7ff25629c88ada36a363297e4b7075c1a3))
+
 ## [1.7.2](https://github.com/dimonomid/nerdlog/compare/v1.7.1...v1.7.2) (2025-05-14)
 
 
