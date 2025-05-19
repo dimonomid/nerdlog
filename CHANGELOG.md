@@ -1,6 +1,25 @@
 # Changelog
 
 
+## [1.8.0](https://github.com/dimonomid/nerdlog/compare/v1.7.2...v1.8.0) (2025-05-19)
+
+
+### Features
+
+* Respect TZ env var on the remote hosts if available ([66fb307](https://github.com/dimonomid/nerdlog/commit/66fb30729ef94b588727f291f2d4664394cdcfe2))
+* Add support for shell init commands in logstream config ([c5d756f](https://github.com/dimonomid/nerdlog/commit/c5d756f4b6b170f99ee0306011d6767809fb4e13))
+* **UI:** Add a way to copy message to clipboard ([fa44568](https://github.com/dimonomid/nerdlog/commit/fa44568d7eb3abd9f4a12bd91a542770bb7f05ba))
+* **UI:** Implement debug info dialog ([bc3f8e3](https://github.com/dimonomid/nerdlog/commit/bc3f8e3a041ba341b0c463d32e92b1ba308efd93), [aa164b2](https://github.com/dimonomid/nerdlog/commit/aa164b289217b6be8919ad7ed83460102d005ee5), [d696530](https://github.com/dimonomid/nerdlog/commit/d69653095f2cf59399a8ee9e18b258119c27b5b3))
+
+Also, doesn't affect the actual app functionality, but the whole `core` package is now covered with tests (as opposed to just the agent script), and these tests run on CI on Linux, FreeBSD and MacOS.
+
+### Bug Fixes
+
+* Fix journalctl pagination with the pattern ([8c85b16](https://github.com/dimonomid/nerdlog/commit/8c85b16428ea414a687c0bc812071c9567a58483))
+* Support ancient bash shipped with MacOS ([4c5edd5](https://github.com/dimonomid/nerdlog/commit/4c5edd5eb5bea8769644d3885f64b8c59a5837d0))
+* Upgrade clipboard package to fix init error handling ([313a4f7](https://github.com/dimonomid/nerdlog/commit/313a4f7ff25629c88ada36a363297e4b7075c1a3))
+* **UI:** Fix messagebox height if text has empty lines ([ae72eec](https://github.com/dimonomid/nerdlog/commit/ae72eec086e11a4fa146620d8773d4a7979dd088))
+
 ## [1.7.2](https://github.com/dimonomid/nerdlog/compare/v1.7.1...v1.7.2) (2025-05-14)
 
 
