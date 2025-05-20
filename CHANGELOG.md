@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [1.8.1](https://github.com/dimonomid/nerdlog/compare/v1.8.0...v1.8.1) (2025-05-20)
+
+
+### Bug Fixes
+
+* Use `/bin/sh` as the main ssh session shell ([10e3551](https://github.com/dimonomid/nerdlog/commit/10e355177a065f9228f14ed0151edcbe1b547bb7))
+* Forget queued commands when reconnecting, to avoid potential panic ([04cbe37](https://github.com/dimonomid/nerdlog/commit/04cbe3725f818ec6617e7888e97bf8bfc7bf644d))
+
 ## [1.8.0](https://github.com/dimonomid/nerdlog/compare/v1.7.2...v1.8.0) (2025-05-19)
 
 
