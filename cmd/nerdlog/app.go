@@ -302,25 +302,21 @@ func (app *nerdlogApp) initLStreamsManager(
 
 	var sshConfig *ssh_config.Config
 	if params.sshConfigPath != "" {
-		sshConfigFile, err := os.Open(params.sshConfigPath)
-		if err != nil {
-			if !os.IsNotExist(err) {
+			// Preprocess SSH config to handle Include directives
+			combinedConfigStr, err := preprocessSSHConfig(params.sshConfigPath, nil)
+			if err != nil {
 				return errors.Annotatef(
 					err,
-					"reading ssh config from %s (path is configurable via --ssh-config)",
+					"preprocessing ssh config from %s (path is configurable via --ssh-config)",
 					params.sshConfigPath,
 				)
 			}
-		} else {
-			defer sshConfigFile.Close()
-			var err error
-			sshConfig, err = ssh_config.Decode(sshConfigFile, false)
+
+			// Decode the combined config string
+			sshConfig, err = ssh_config.Decode(strings.NewReader(combinedConfigStr), false)
 			if err != nil {
 				// Try again but ignoring Match
-				sshConfigFile, _ := os.Open(params.sshConfigPath)
-				defer sshConfigFile.Close()
-				var err error
-				sshConfig, err = ssh_config.Decode(sshConfigFile, true)
+				sshConfig, err = ssh_config.Decode(strings.NewReader(combinedConfigStr), true)
 				if err != nil {
 					return errors.Annotatef(
 						err,
@@ -328,6 +324,9 @@ func (app *nerdlogApp) initLStreamsManager(
 						params.sshConfigPath,
 					)
 				}
+
+				// Filter hosts by Match directives (placeholder implementation)
+				sshConfig = filterSSHConfigByMatch(sshConfig, "", "")
 
 				if os.Getenv("NERDLOG_NO_WARN_SSH_MATCH") == "" {
 					// Apparently there is a Match directive. Let's warn the user about it,
@@ -339,7 +338,6 @@ func (app *nerdlogApp) initLStreamsManager(
 					bufio.NewReader(os.Stdin).ReadBytes('\n')
 				}
 			}
-		}
 	}
 
 	app.lsman = core.NewLStreamsManager(core.LStreamsManagerParams{

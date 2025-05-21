@@ -76,6 +76,14 @@ sudo apt install libx11-dev
 
 On MacOS and Windows, no extra dependencies are required.
 
+### Improved SSH Config Support
+
+Nerdlog now preprocesses SSH config files to support the `Include` directive, allowing you to organize your SSH configuration across multiple files. This preprocessing recursively merges included files before parsing.
+
+Additionally, preliminary support for the `Match` directive has been added, filtering SSH config hosts based on conditions. Full evaluation of `Match` conditions is planned for future releases.
+
+To use a custom SSH config file, use the `--ssh-config` flag as before. Nerdlog will handle includes automatically.
+
 ### Using `go install`
 
 Latest release (might miss newest features which are not yet officially released):
