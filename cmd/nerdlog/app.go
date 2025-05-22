@@ -57,6 +57,9 @@ type nerdlogAppParams struct {
 	sshKeys          []string
 
 	noJournalctlAccessWarn bool
+
+	// EphemeralKeyProviderEnabled enables ephemeral SSH key support.
+	EphemeralKeyProviderEnabled bool
 }
 
 type cmdWithOpts struct {

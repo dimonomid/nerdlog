@@ -15,6 +15,9 @@ type Options struct {
 	// MaxNumLines is how many log lines the nerdlog_agent.sh will return at
 	// most. Initially it's set to 250.
 	MaxNumLines int
+
+	// EphemeralKeyProviderEnabled enables ephemeral SSH key support.
+	EphemeralKeyProviderEnabled bool
 }
 
 type OptionsShared struct {
@@ -95,11 +98,31 @@ var AllOptions = map[string]*OptionMeta{
 			o.MaxNumLines = maxNumLines
 			return nil
 		},
-		Help: "How many log lines to fetch from each logstream in one query",
+		Help: "How many log messages to fetch from each logstream in one query",
 	},
 	"numlines": {
 		AliasOf: "maxnumlines",
 	}, // }}}
+	"ephemeralkeyproviderenabled": {
+		Get: func(o *Options) string {
+			if o.EphemeralKeyProviderEnabled {
+				return "true"
+			}
+			return "false"
+		},
+		Set: func(o *Options, value string) error {
+			switch value {
+			case "true", "1", "yes", "on":
+				o.EphemeralKeyProviderEnabled = true
+			case "false", "0", "no", "off":
+				o.EphemeralKeyProviderEnabled = false
+			default:
+				return errors.Errorf("invalid value for ephemeralkeyproviderenabled: %s", value)
+			}
+			return nil
+		},
+		Help: "Enable or disable ephemeral SSH key support",
+	},
 }
 
 func OptionMetaByName(name string) *OptionMeta {

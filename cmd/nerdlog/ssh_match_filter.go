@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strings"
-
 	"github.com/dimonomid/ssh_config"
 )
 
@@ -31,6 +29,26 @@ func filterSSHConfigByMatch(cfg *ssh_config.Config, currentHost string, currentU
 		// This is a placeholder for actual Match evaluation logic.
 		// For now, we include all hosts unconditionally.
 		// TODO: Implement actual Match condition evaluation.
+
+		// Example: Evaluate Match conditions if present
+		matchConditions := make(map[string]string)
+		for _, option := range host.Options {
+			if strings.ToLower(option.Name) == "match" {
+				// Parse match conditions from option.Value (simplified)
+				// For now, assume option.Value is in "key value" format
+				parts := strings.Fields(option.Value)
+				if len(parts) >= 2 {
+					matchConditions[parts[0]] = parts[1]
+				}
+			}
+		}
+
+		if len(matchConditions) > 0 {
+			// Evaluate match conditions against current environment
+			if !EvaluateMatchDirective(matchConditions, currentHost, currentUser) {
+				continue // Skip hosts that do not match
+			}
+		}
 
 		filteredHosts = append(filteredHosts, host)
 	}
