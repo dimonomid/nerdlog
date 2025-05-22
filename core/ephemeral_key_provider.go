@@ -20,9 +20,13 @@ var ErrEphemeralKeyNotAvailable = errors.New("ephemeral key not available")
 type DummyEphemeralKeyProvider struct{}
 
 func (d *DummyEphemeralKeyProvider) GetEphemeralKey() ([]byte, error) {
-	return nil, ErrEphemeralKeyNotAvailable
+	// Enhanced error handling: Provide more context if possible
+	err := ErrEphemeralKeyNotAvailable
+	return nil, errors.New("failed to retrieve ephemeral key: " + err.Error())  // Wrap error with additional context
 }
 
 func (d *DummyEphemeralKeyProvider) GetAuthMethod() (interface{}, error) {
-	return nil, ErrEphemeralKeyNotAvailable
+	// Enhanced error handling: Check for additional conditions if needed
+	err := ErrEphemeralKeyNotAvailable
+	return nil, errors.New("failed to get auth method: " + err.Error())  // Wrap error with additional context
 }
