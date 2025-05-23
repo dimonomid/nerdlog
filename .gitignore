@@ -9,3 +9,7 @@ docs/pr_separation_guide.md
 # PR submission files
 PR1_SSH_CONFIG_IMPROVEMENTS.md
 PR2_EPHEMERAL_SSH_KEYS.md
+
+# Internal project documentation
+docs/project_completion_summary.md
+docs/reviewer_response.md
