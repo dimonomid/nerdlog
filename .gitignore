@@ -1,3 +1,11 @@
 bin
 cmd/nerdlog/nerdlog
 dist
+
+# Internal PR documentation
+docs/pr_review_response.md
+docs/pr_separation_guide.md
+
+# PR submission files
+PR1_SSH_CONFIG_IMPROVEMENTS.md
+PR2_EPHEMERAL_SSH_KEYS.md

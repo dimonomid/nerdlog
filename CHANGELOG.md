@@ -6,6 +6,12 @@
 - eureka: Created comprehensive PR review response addressing reviewer's concerns about separating SSH config improvements from ephemeral key support [2025-05-23]
 - eureka: Restored original README and CHANGELOG with proper updates instead of replacing them entirely [2025-05-23]
 - eureka: Created detailed ephemeral key testing guide with mock provider, local setup, and Docker-based test environment instructions [2025-05-23]
+- eureka: Created separate PR descriptions for SSH config improvements (PR #1) and ephemeral SSH key support (PR #2) to address reviewer feedback [2025-05-23]
+- eureka: Created PR separation guide documenting how to split the combined changes into two distinct pull requests [2025-05-23]
+- eureka: Added internal PR documentation files to .gitignore [2025-05-23]
+- eureka: Created ready-to-submit PR files for both SSH config improvements and ephemeral SSH key support [2025-05-23]
+- eureka: Successfully created two separate pull requests on GitHub - PR #37 for SSH config improvements and PR #38 for ephemeral SSH key support [2025-05-23]
+- eureka: Created documentation for contributing SSH config improvements to upstream library instead of implementing in Nerdlog [2025-05-23]
 - Eureka: Successfully ran tests after fixing errors in cmd/nerdlog/ssh_match_filter.go and core/shell_transport_ssh_test.go.
 - eureka: Successfully ran tests after fixing errors in cmd/nerdlog/ssh_match_filter.go and core/shell_transport_ssh_test.go. [2025-05-22]
 
