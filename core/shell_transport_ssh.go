@@ -38,6 +38,9 @@ type ShellTransportSSHParams struct {
 	ConnDetails ConfigLogStreamShellTransportSSH
 
 	Logger *log.Logger
+
+	// EphemeralKeyProvider optionally provides ephemeral SSH keys for authentication.
+	EphemeralKeyProvider EphemeralKeyProvider
 }
 
 func (st *ShellTransportSSH) Connect(resCh chan<- ShellConnUpdate) {
@@ -226,7 +229,26 @@ func (st *ShellTransportSSH) getSSHAuthMethod(resCh chan<- ShellConnUpdate, logg
 		return sshAuthMethodShared, nil
 	}
 
-	// Try ssh-agent first
+	// Try ephemeral key provider first
+	if st.params.EphemeralKeyProvider != nil {
+		authMethodIface, err := st.params.EphemeralKeyProvider.GetAuthMethod()
+		if err == nil {
+			authMethod, ok := authMethodIface.(ssh.AuthMethod)
+			if !ok {
+				logger.Infof("Ephemeral SSH key provider returned invalid AuthMethod type")
+			} else {
+				logger.Infof("Using ephemeral SSH key for authentication")
+				sshAuthMethodShared = &AuthMethodWMeta{
+					AuthMethod: authMethod,
+					Descr:      "using ephemeral SSH key",
+				}
+				return sshAuthMethodShared, nil
+			}
+		}
+		logger.Infof("Ephemeral SSH key not available: %v", err)
+	}
+
+	// Try ssh-agent next
 	var sshAgentErr error
 	sshAuthSock := os.Getenv("SSH_AUTH_SOCK")
 	if sshAuthSock != "" {
@@ -253,6 +275,7 @@ func (st *ShellTransportSSH) getSSHAuthMethod(resCh chan<- ShellConnUpdate, logg
 	var keyPath string
 	var keyData []byte
 	var errBuilder strings.Builder
+	foundKey := false
 	for _, keyPath = range st.params.SSHKeys {
 		var err error
 		keyData, err = os.ReadFile(keyPath)
@@ -265,15 +288,30 @@ func (st *ShellTransportSSH) getSSHAuthMethod(resCh chan<- ShellConnUpdate, logg
 		}
 
 		// Found the key file.
+		foundKey = true
 		break
 	}
 
-	if len(keyData) == 0 {
-		return nil, errors.Errorf(
+	if !foundKey {
+		errMsg := fmt.Sprintf(
 			"failed to read key data from any of the following: %s (%s)",
 			st.params.SSHKeys,
 			errBuilder.String(),
 		)
+		// Return error if ephemeral key provider is not set or also failed
+		if st.params.EphemeralKeyProvider == nil {
+			return nil, errors.New(errMsg)
+		}
+		// If ephemeral key provider is set, return error only if it also failed
+		if st.params.EphemeralKeyProvider != nil {
+			_, err := st.params.EphemeralKeyProvider.GetAuthMethod()
+			if err != nil {
+				return nil, errors.New(errMsg)
+			}
+		}
+	} else if len(keyData) == 0 {
+		// No keys and no ephemeral key provider, return error
+		return nil, errors.New("no SSH keys found and no ephemeral key available")
 	}
 
 	signer, err := ssh.ParsePrivateKey(keyData)

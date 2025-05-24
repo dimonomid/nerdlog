@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- eureka: Created comprehensive PR review response addressing reviewer's concerns about separating SSH config improvements from ephemeral key support [2025-05-23]
+- eureka: Restored original README and CHANGELOG with proper updates instead of replacing them entirely [2025-05-23]
+- eureka: Created detailed ephemeral key testing guide with mock provider, local setup, and Docker-based test environment instructions [2025-05-23]
+- eureka: Created separate PR descriptions for SSH config improvements (PR #1) and ephemeral SSH key support (PR #2) to address reviewer feedback [2025-05-23]
+- eureka: Created PR separation guide documenting how to split the combined changes into two distinct pull requests [2025-05-23]
+- eureka: Added internal PR documentation files to .gitignore [2025-05-23]
+- eureka: Created ready-to-submit PR files for both SSH config improvements and ephemeral SSH key support [2025-05-23]
+- eureka: Successfully created two separate pull requests on GitHub - PR #37 for SSH config improvements and PR #38 for ephemeral SSH key support [2025-05-23]
+- eureka: Created documentation for contributing SSH config improvements to upstream library instead of implementing in Nerdlog [2025-05-23]
+- Eureka: Successfully ran tests after fixing errors in cmd/nerdlog/ssh_match_filter.go and core/shell_transport_ssh_test.go.
+- eureka: Successfully ran tests after fixing errors in cmd/nerdlog/ssh_match_filter.go and core/shell_transport_ssh_test.go. [2025-05-22]
+
+### Features
+- Added preprocessing of SSH config files to support the `Include` directive, allowing recursive merging of included files before parsing.
+- Added preliminary support for the `Match` directive in SSH config, filtering hosts based on conditions (full evaluation planned for future releases).
+- eureka: Verified and confirmed full implementation of ephemeral SSH key support as per docs/ephemeral_ssh_key_integration_plan.md.
+- Added experimental support for ephemeral SSH keys via external providers like opkssh
+
+### Improvements
+- Improved compatibility with complex SSH configurations by enhancing SSH config parsing in the Nerdlog client.
+- Fixed errors in cmd/nerdlog/ssh_match_filter.go to resolve undefined types and functions, ensuring tests can run successfully.
+- Addressed additional build errors in cmd/nerdlog/ssh_match_filter.go, including unused imports and type mismatches.
+- Further refined cmd/nerdlog/ssh_match_filter.go to fix type mismatches and remove unused code.
 
 ## [1.8.1](https://github.com/dimonomid/nerdlog/compare/v1.8.0...v1.8.1) (2025-05-20)
 
@@ -164,6 +190,6 @@ Also, doesn't affect the actual app functionality, but the whole `core` package 
 
 * First release which can be considered a minimal viable product.
 
-  There’s still plenty of room for new features, and some minor bug fixes, but
+  There's still plenty of room for new features, and some minor bug fixes, but
   overall the core functionality is in place and stable enough to be released
   into the wild.

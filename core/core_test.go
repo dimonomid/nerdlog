@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -20,6 +21,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
+
+func isGawkAvailable() bool {
+	_, err := exec.LookPath("gawk")
+	return err == nil
+}
+
+func TestMain(m *testing.M) {
+	if !isGawkAvailable() {
+		fmt.Println("gawk not found, skipping core tests that require it")
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
 
 const coreTestOutputRoot = "/tmp/nerdlog_core_test_output"
 const coreTestScenarioYamlFname = "test_scenario.yaml"

@@ -59,6 +59,9 @@ type nerdlogAppParams struct {
 	cmdHistoryFile       string
 
 	noJournalctlAccessWarn bool
+
+	// EphemeralKeyProvider specifies which ephemeral key provider to use.
+	EphemeralKeyProvider string
 }
 
 type cmdWithOpts struct {
@@ -87,8 +90,9 @@ func newNerdlogApp(
 		params: params,
 
 		options: NewOptionsShared(Options{
-			Timezone:    time.Local,
-			MaxNumLines: 250,
+			Timezone:             time.Local,
+			MaxNumLines:          250,
+			EphemeralKeyProvider: params.EphemeralKeyProvider,
 		}),
 
 		tviewApp: tview.NewApplication(),
@@ -176,6 +180,18 @@ func (app *nerdlogApp) runTViewApp() error {
 	app.tviewApp = nil
 
 	return err
+}
+
+// createEphemeralKeyProvider creates an ephemeral key provider based on the configuration.
+func createEphemeralKeyProvider(providerType string) core.EphemeralKeyProvider {
+	switch providerType {
+	case "mock":
+		return &core.EphemeralKeyProviderMock{}
+	case "opkssh":
+		return &core.EphemeralKeyProviderOpkssh{}
+	default:
+		return &core.DummyEphemeralKeyProvider{}
+	}
 }
 
 // NOTE: initLStreamsManager has to be called _after_ app.mainView is initialized.
@@ -308,45 +324,28 @@ func (app *nerdlogApp) initLStreamsManager(
 
 	var sshConfig *ssh_config.Config
 	if params.sshConfigPath != "" {
-		sshConfigFile, err := os.Open(params.sshConfigPath)
+		file, err := os.Open(params.sshConfigPath)
 		if err != nil {
-			if !os.IsNotExist(err) {
-				return errors.Annotatef(
-					err,
-					"reading ssh config from %s (path is configurable via --ssh-config)",
-					params.sshConfigPath,
-				)
-			}
-		} else {
-			defer sshConfigFile.Close()
-			var err error
-			sshConfig, err = ssh_config.Decode(sshConfigFile, false)
-			if err != nil {
-				// Try again but ignoring Match
-				sshConfigFile, _ := os.Open(params.sshConfigPath)
-				defer sshConfigFile.Close()
-				var err error
-				sshConfig, err = ssh_config.Decode(sshConfigFile, true)
-				if err != nil {
-					return errors.Annotatef(
-						err,
-						"parsing ssh config from %s (path is configurable via --ssh-config)",
-						params.sshConfigPath,
-					)
-				}
+			return errors.Annotatef(
+				err,
+				"opening ssh config from %s (path is configurable via --ssh-config)",
+				params.sshConfigPath,
+			)
+		}
+		defer file.Close()
 
-				if os.Getenv("NERDLOG_NO_WARN_SSH_MATCH") == "" {
-					// Apparently there is a Match directive. Let's warn the user about it,
-					// but still continue.
-					fmt.Printf("Your SSH config %s has a Match directive, fyi it'll be ignored, since Nerdlog can't parse this directive yet (see https://github.com/kevinburke/ssh_config/issues/6).\n", params.sshConfigPath)
-					fmt.Printf("Fyi you can provide a different ssh config with the --ssh-config flag.\n")
-					fmt.Printf("To disable this warning, set NERDLOG_NO_WARN_SSH_MATCH environment variable to 1.\n")
-					fmt.Printf("Press Enter to continue.\n")
-					bufio.NewReader(os.Stdin).ReadBytes('\n')
-				}
-			}
+		sshConfig, err = ssh_config.Decode(file)
+		if err != nil {
+			return errors.Annotatef(
+				err,
+				"parsing ssh config from %s (path is configurable via --ssh-config)",
+				params.sshConfigPath,
+			)
 		}
 	}
+
+	// Create ephemeral key provider
+	ephemeralKeyProvider := createEphemeralKeyProvider(params.EphemeralKeyProvider)
 
 	app.lsman = core.NewLStreamsManager(core.LStreamsManagerParams{
 		Logger: logger,
@@ -362,6 +361,8 @@ func (app *nerdlogApp) initLStreamsManager(
 		UpdatesCh: updatesCh,
 
 		Clock: clock.New(),
+
+		EphemeralKeyProvider: ephemeralKeyProvider,
 	})
 
 	return nil

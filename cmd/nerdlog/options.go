@@ -15,6 +15,10 @@ type Options struct {
 	// MaxNumLines is how many log lines the nerdlog_agent.sh will return at
 	// most. Initially it's set to 250.
 	MaxNumLines int
+
+	// EphemeralKeyProvider specifies which ephemeral key provider to use.
+	// Valid values: "mock", "opkssh", or empty string to disable.
+	EphemeralKeyProvider string
 }
 
 type OptionsShared struct {
@@ -39,6 +43,12 @@ func (o *OptionsShared) GetMaxNumLines() int {
 	o.mtx.Lock()
 	defer o.mtx.Unlock()
 	return o.options.MaxNumLines
+}
+
+func (o *OptionsShared) GetEphemeralKeyProvider() string {
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+	return o.options.EphemeralKeyProvider
 }
 
 func (o *OptionsShared) GetAll() Options {
@@ -95,11 +105,26 @@ var AllOptions = map[string]*OptionMeta{
 			o.MaxNumLines = maxNumLines
 			return nil
 		},
-		Help: "How many log lines to fetch from each logstream in one query",
+		Help: "How many log messages to fetch from each logstream in one query",
 	},
 	"numlines": {
 		AliasOf: "maxnumlines",
 	}, // }}}
+	"ephemeralkeyprovider": {
+		Get: func(o *Options) string {
+			return o.EphemeralKeyProvider
+		},
+		Set: func(o *Options, value string) error {
+			switch value {
+			case "", "mock", "opkssh":
+				o.EphemeralKeyProvider = value
+			default:
+				return errors.Errorf("invalid ephemeral key provider: %s (valid values: mock, opkssh, or empty to disable)", value)
+			}
+			return nil
+		},
+		Help: "Ephemeral SSH key provider to use (mock, opkssh, or empty to disable)",
+	},
 }
 
 func OptionMetaByName(name string) *OptionMeta {
