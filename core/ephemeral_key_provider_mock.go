@@ -1,31 +1,46 @@
 package core
 
 import (
-	"errors"
-
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"golang.org/x/crypto/ssh"
+	"github.com/juju/errors"
 )
 
-// MockEphemeralKeyProvider is a mock implementation of EphemeralKeyProvider for testing.
-type MockEphemeralKeyProvider struct {
-	KeyData []byte
-	Signer  ssh.Signer
-	Err     error
+// EphemeralKeyProviderMock is a mock implementation for testing purposes.
+// It generates a new RSA key pair each time GetEphemeralKey is called.
+type EphemeralKeyProviderMock struct{}
+
+// GetEphemeralKey generates a new RSA private key and returns it in PEM format.
+func (m *EphemeralKeyProviderMock) GetEphemeralKey() ([]byte, error) {
+	// Generate a new RSA private key
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, errors.Annotatef(err, "generating RSA key for mock ephemeral provider")
+	}
+
+	// Convert to PEM format
+	privateKeyPEM := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	}
+
+	return pem.EncodeToMemory(privateKeyPEM), nil
 }
 
-func (m *MockEphemeralKeyProvider) GetEphemeralKey() ([]byte, error) {
-	if m.Err != nil {
-		return nil, m.Err
+// GetAuthMethod returns an ssh.AuthMethod using the generated ephemeral key.
+func (m *EphemeralKeyProviderMock) GetAuthMethod() (ssh.AuthMethod, error) {
+	keyBytes, err := m.GetEphemeralKey()
+	if err != nil {
+		return nil, errors.Annotatef(err, "getting ephemeral key for auth method")
 	}
-	return m.KeyData, nil
-}
 
-func (m *MockEphemeralKeyProvider) GetAuthMethod() (interface{}, error) {
-	if m.Err != nil {
-		return nil, m.Err
+	signer, err := ssh.ParsePrivateKey(keyBytes)
+	if err != nil {
+		return nil, errors.Annotatef(err, "parsing ephemeral private key")
 	}
-	if m.Signer == nil {
-		return nil, errors.New("no signer available")
-	}
-	return ssh.PublicKeys(m.Signer), nil
+
+	return ssh.PublicKeys(signer), nil
 }

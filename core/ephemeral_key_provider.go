@@ -1,16 +1,17 @@
 package core
 
 import (
-	"errors"
+	"golang.org/x/crypto/ssh"
+	"github.com/juju/errors"
 )
 
-// EphemeralKeyProvider defines an interface for obtaining ephemeral SSH keys and related authentication data.
+// EphemeralKeyProvider defines an interface for obtaining ephemeral SSH keys and authentication methods.
 type EphemeralKeyProvider interface {
-	// GetEphemeralKey returns the private key bytes and any associated metadata or error.
+	// GetEphemeralKey returns the private key bytes.
 	GetEphemeralKey() ([]byte, error)
 
 	// GetAuthMethod returns an ssh.AuthMethod that uses the ephemeral key for authentication.
-	GetAuthMethod() (interface{}, error)
+	GetAuthMethod() (ssh.AuthMethod, error)
 }
 
 // ErrEphemeralKeyNotAvailable is returned when ephemeral keys are not available or the provider is not configured.
@@ -20,13 +21,9 @@ var ErrEphemeralKeyNotAvailable = errors.New("ephemeral key not available")
 type DummyEphemeralKeyProvider struct{}
 
 func (d *DummyEphemeralKeyProvider) GetEphemeralKey() ([]byte, error) {
-	// Enhanced error handling: Provide more context if possible
-	err := ErrEphemeralKeyNotAvailable
-	return nil, errors.New("failed to retrieve ephemeral key: " + err.Error())  // Wrap error with additional context
+	return nil, ErrEphemeralKeyNotAvailable
 }
 
-func (d *DummyEphemeralKeyProvider) GetAuthMethod() (interface{}, error) {
-	// Enhanced error handling: Check for additional conditions if needed
-	err := ErrEphemeralKeyNotAvailable
-	return nil, errors.New("failed to get auth method: " + err.Error())  // Wrap error with additional context
+func (d *DummyEphemeralKeyProvider) GetAuthMethod() (ssh.AuthMethod, error) {
+	return nil, ErrEphemeralKeyNotAvailable
 }

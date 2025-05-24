@@ -1,94 +1,123 @@
-# Ephemeral SSH Key Integration Plan for Nerdlog
+# Ephemeral SSH Key Support
 
-## Overview
+Nerdlog supports ephemeral SSH keys for enhanced security when connecting to remote hosts. Instead of using persistent SSH keys stored on disk, ephemeral keys are generated on-demand and automatically expire.
 
-This document outlines a high-level design for integrating ephemeral SSH key support into Nerdlog, leveraging technologies like opkssh that provide ephemeral keys and modern authentication methods (e.g., passkeys, OpenID Connect).
+## What are Ephemeral SSH Keys?
 
-## Goals
+Ephemeral SSH keys are temporary cryptographic keys that:
+- Are generated on-demand for each session
+- Never touch the disk (stored only in memory)
+- Automatically expire after a short time
+- Are backed by identity providers via OIDC authentication
 
-- Enable Nerdlog to authenticate to remote hosts using ephemeral SSH keys generated at runtime.
-- Support alternative authentication flows that do not require persistent SSH keys on client devices.
-- Maintain backward compatibility with existing SSH authentication methods (ssh-agent, private keys).
-- Provide a seamless user experience for configuring and using ephemeral keys.
+This approach eliminates many security risks associated with traditional SSH key management.
 
-## Proposed Architecture
+## Configuration
 
-1. **External Ephemeral Key Provider Integration**
+### Command Line
 
-   - Integrate with an external ephemeral key provider (e.g., opkssh client or daemon).
-   - Provide an interface in Nerdlog to request ephemeral keys and authentication tokens.
-   - Support configuration options to enable/disable ephemeral key usage.
+Use the `--ephemeral-key-provider` flag to specify which provider to use:
 
-2. **SSH Authentication Flow Modification**
+```bash
+# Use mock provider (for testing)
+nerdlog --ephemeral-key-provider=mock --lstreams localhost
 
-   - Extend the SSH authentication method selection to include ephemeral keys.
-   - When ephemeral keys are enabled, request keys from the provider before establishing SSH connections.
-   - Use the ephemeral keys dynamically in the SSH client configuration.
+# Use opkssh provider (requires setup)
+nerdlog --ephemeral-key-provider=opkssh --lstreams myhost
+```
 
-3. **Fallback Mechanisms**
+### Configuration File
 
-   - If ephemeral key authentication fails or is disabled, fallback to existing methods (ssh-agent, private keys).
-   - Provide clear error messages and guidance to users.
+Add to your `~/.config/nerdlog/config.yaml`:
 
-4. **User Experience**
+```yaml
+ephemeral_key_provider: opkssh
+```
 
-   - Add CLI flags and config options to enable ephemeral key support.
-   - Document setup and usage instructions.
-   - Optionally integrate with Nerdlog UI to manage ephemeral key sessions.
+### Runtime Configuration
 
-## Next Steps
+You can also change the provider at runtime using the `:set` command:
 
-- Prototype the ephemeral key provider interface.
-- Modify SSH client config generation to support ephemeral keys.
-- Test integration with opkssh or similar tools.
-- Update documentation and provide examples.
+```
+:set ephemeralkeyprovider=mock
+:set ephemeralkeyprovider=opkssh
+:set ephemeralkeyprovider=  # disable
+```
 
-## References
+## Available Providers
 
-- [opkssh GitHub Repository](https://github.com/openpubkey/opkssh)
-- Nerdlog current SSH authentication implementation in `core/shell_transport_ssh.go`
+### Mock Provider (`mock`)
 
----
+A testing provider that generates RSA key pairs in memory. Useful for:
+- Testing the ephemeral key feature
+- Development and debugging
+- Verifying the authentication flow
 
-This plan is open for review and feedback before implementation.
+**Usage**: No setup required, just specify `--ephemeral-key-provider=mock`
 
-## Implementation Details
+### opkssh Provider (`opkssh`)
 
-### Ephemeral Key Provider Interface
+Integrates with [opkssh](https://github.com/openpubkey/opkssh) for OIDC-based ephemeral keys.
 
-- Define an interface in Nerdlog to abstract ephemeral key retrieval.
-- Implement a mock provider for testing.
-- Future implementations can integrate with opkssh or other providers.
+**Prerequisites**:
+1. Install opkssh: `go install github.com/openpubkey/opkssh@latest`
+2. Configure your OIDC provider
+3. Ensure SSH servers trust the ephemeral key CA
 
-### SSH Client Configuration
+**Usage**: `--ephemeral-key-provider=opkssh`
 
-- Modify SSH client config generation to optionally use ephemeral keys.
-- Prioritize ephemeral keys over ssh-agent and private keys.
-- Ensure fallback to existing methods if ephemeral keys are unavailable.
+## Authentication Flow
 
-### User Configuration
+When ephemeral key support is enabled, Nerdlog will:
 
-- Add CLI flags and config file options to enable or disable ephemeral key usage.
-- Provide options to specify ephemeral key provider parameters.
+1. **Try ephemeral key first**: Generate and use an ephemeral key for authentication
+2. **Fallback gracefully**: If ephemeral key fails, fall back to traditional methods:
+   - SSH agent
+   - Private key files
+   - Password authentication
 
-### Error Handling and Logging
+This ensures compatibility with existing setups while providing enhanced security when available.
 
-- Provide clear error messages when ephemeral key retrieval or usage fails.
-- Log authentication method used for transparency.
+## Example Usage
 
-### Testing
+```bash
+# Quick test with mock provider
+nerdlog --ephemeral-key-provider=mock --lstreams localhost
 
-- Unit tests for ephemeral key provider interface and SSH auth flow.
-- Integration tests with mock and real ephemeral key providers.
-- Test fallback scenarios and error conditions.
+# Production usage with opkssh
+nerdlog --ephemeral-key-provider=opkssh --lstreams 'web-*,db-*'
 
-### Documentation
+# Disable ephemeral keys (use traditional auth only)
+nerdlog --lstreams myhost  # or --ephemeral-key-provider=""
+```
 
-- Update README and docs with setup and usage instructions.
-- Provide examples and troubleshooting tips.
+## Troubleshooting
 
-## Future Work
+### Mock Provider Issues
+- **Error**: "ephemeral key not available"
+  - **Solution**: Ensure you're using `--ephemeral-key-provider=mock`
 
-- Full evaluation and support for SSH `Match` directive in config parsing.
-- UI integration for managing ephemeral key sessions.
-- Support for additional authentication methods (e.g., OIDC, FIDO2).
+### opkssh Provider Issues
+- **Error**: "obtaining ephemeral key from opkssh"
+  - **Solution**: Verify opkssh is installed and in PATH
+  - **Solution**: Check OIDC provider configuration
+  - **Solution**: Ensure SSH server trusts the ephemeral key CA
+
+### General Issues
+- **Fallback behavior**: If ephemeral keys fail, Nerdlog automatically falls back to traditional SSH authentication
+- **Debugging**: Use `--log-level=debug` for detailed authentication logs
+
+## Security Benefits
+
+- **No persistent keys**: Keys never touch the disk
+- **Automatic expiration**: Keys are short-lived
+- **Identity-based**: Tied to your identity provider
+- **Audit trail**: Better tracking of key usage
+- **Reduced attack surface**: No long-lived credentials to compromise
+
+## Limitations
+
+- **Experimental feature**: Currently in experimental status
+- **Setup required**: opkssh provider requires additional configuration
+- **Server support**: SSH servers must be configured to trust ephemeral key CAs
+- **Network dependency**: Requires connectivity to identity provider

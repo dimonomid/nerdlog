@@ -1,47 +1,45 @@
 package core
 
 import (
-	"bytes"
-	"errors"
 	"os/exec"
-
+	"strings"
 	"golang.org/x/crypto/ssh"
+	"github.com/juju/errors"
 )
 
-// OpksshEphemeralKeyProvider is a prototype implementation of EphemeralKeyProvider
-// that interacts with the opkssh CLI tool to obtain ephemeral SSH keys.
-type OpksshEphemeralKeyProvider struct {
-	// Path to the opkssh CLI executable
-	OpksshPath string
+// EphemeralKeyProviderOpkssh implements EphemeralKeyProvider using opkssh.
+type EphemeralKeyProviderOpkssh struct {
+	OpksshPath string // Path to the opkssh binary
 }
 
-// GetEphemeralKey runs the opkssh CLI to obtain the ephemeral private key.
-func (p *OpksshEphemeralKeyProvider) GetEphemeralKey() ([]byte, error) {
+// GetEphemeralKey obtains an ephemeral private key from opkssh.
+func (p *EphemeralKeyProviderOpkssh) GetEphemeralKey() ([]byte, error) {
 	if p.OpksshPath == "" {
 		p.OpksshPath = "opkssh"
 	}
 
 	cmd := exec.Command(p.OpksshPath, "key", "export", "--private")
-	var out bytes.Buffer
+	var out strings.Builder
 	cmd.Stdout = &out
+	
 	err := cmd.Run()
 	if err != nil {
-		return nil, errors.New("failed to obtain ephemeral key from opkssh: " + err.Error())
+		return nil, errors.Annotatef(err, "obtaining ephemeral key from opkssh")
 	}
 
-	return out.Bytes(), nil
+	return []byte(out.String()), nil
 }
 
-// GetAuthMethod returns an ssh.AuthMethod using the ephemeral key obtained from opkssh.
-func (p *OpksshEphemeralKeyProvider) GetAuthMethod() (interface{}, error) {
-	keyData, err := p.GetEphemeralKey()
+// GetAuthMethod returns an ssh.AuthMethod using the ephemeral key from opkssh.
+func (p *EphemeralKeyProviderOpkssh) GetAuthMethod() (ssh.AuthMethod, error) {
+	keyBytes, err := p.GetEphemeralKey()
 	if err != nil {
-		return nil, err
+		return nil, errors.Annotatef(err, "getting ephemeral key for auth method")
 	}
 
-	signer, err := ssh.ParsePrivateKey(keyData)
+	signer, err := ssh.ParsePrivateKey(keyBytes)
 	if err != nil {
-		return nil, errors.New("failed to parse ephemeral private key: " + err.Error())
+		return nil, errors.Annotatef(err, "parsing ephemeral private key from opkssh")
 	}
 
 	return ssh.PublicKeys(signer), nil

@@ -16,8 +16,9 @@ type Options struct {
 	// most. Initially it's set to 250.
 	MaxNumLines int
 
-	// EphemeralKeyProviderEnabled enables ephemeral SSH key support.
-	EphemeralKeyProviderEnabled bool
+	// EphemeralKeyProvider specifies which ephemeral key provider to use.
+	// Valid values: "mock", "opkssh", or empty string to disable.
+	EphemeralKeyProvider string
 }
 
 type OptionsShared struct {
@@ -42,6 +43,12 @@ func (o *OptionsShared) GetMaxNumLines() int {
 	o.mtx.Lock()
 	defer o.mtx.Unlock()
 	return o.options.MaxNumLines
+}
+
+func (o *OptionsShared) GetEphemeralKeyProvider() string {
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+	return o.options.EphemeralKeyProvider
 }
 
 func (o *OptionsShared) GetAll() Options {
@@ -103,25 +110,20 @@ var AllOptions = map[string]*OptionMeta{
 	"numlines": {
 		AliasOf: "maxnumlines",
 	}, // }}}
-	"ephemeralkeyproviderenabled": {
+	"ephemeralkeyprovider": {
 		Get: func(o *Options) string {
-			if o.EphemeralKeyProviderEnabled {
-				return "true"
-			}
-			return "false"
+			return o.EphemeralKeyProvider
 		},
 		Set: func(o *Options, value string) error {
 			switch value {
-			case "true", "1", "yes", "on":
-				o.EphemeralKeyProviderEnabled = true
-			case "false", "0", "no", "off":
-				o.EphemeralKeyProviderEnabled = false
+			case "", "mock", "opkssh":
+				o.EphemeralKeyProvider = value
 			default:
-				return errors.Errorf("invalid value for ephemeralkeyproviderenabled: %s", value)
+				return errors.Errorf("invalid ephemeral key provider: %s (valid values: mock, opkssh, or empty to disable)", value)
 			}
 			return nil
 		},
-		Help: "Enable or disable ephemeral SSH key support",
+		Help: "Ephemeral SSH key provider to use (mock, opkssh, or empty to disable)",
 	},
 }
 
