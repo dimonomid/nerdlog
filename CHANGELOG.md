@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [1.8.2](https://github.com/dimonomid/nerdlog/compare/v1.8.1...v1.8.2) (2025-05-25)
+
+
+### Bug Fixes
+
+* Don't use `[[  ]]` in the main ssh session, which runs in `/bin/sh`. It wasn't a critical issue and things kept working, but an error during bootstrap wouldn't be detected properly ([d8b5af0](https://github.com/dimonomid/nerdlog/commit/d8b5af0eff05d7cf3cfaff7c4d86cb9bc91b0a80))
+
+### Internal or minor changes
+
+* We now run end-to-end tests on the released binaries ([8d9335a](https://github.com/dimonomid/nerdlog/commit/8d9335ae69019c43b7842d7f514a5c80b0bd8434))
+* To support the end-to-end tests, some flags were added to override default file locations: `--lstreams-config`, `--cmdhistory-file`, `--queryhistory-file`. These flags might be useful outside of testing as well ([ea160d8](https://github.com/dimonomid/nerdlog/commit/ea160d84a64c32e908221e9acc6a8a4d3b72276a))
+
 ## [1.8.1](https://github.com/dimonomid/nerdlog/compare/v1.8.0...v1.8.1) (2025-05-20)
 
 
