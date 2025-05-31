@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [1.9.0](https://github.com/dimonomid/nerdlog/compare/v1.8.2...v1.9.0) (2025-05-31)
+
+
+### Features
+
+* Add support for --set command line flag ([ecae528](https://github.com/dimonomid/nerdlog/commit/ecae528355ae11bc83796f323f561409263c8585))
+
+
+### Bug Fixes
+
+* Improve error message when initial query is invalid ([dc9e5fc](https://github.com/dimonomid/nerdlog/commit/dc9e5fc8e0f5d7e8010743c8e98307cc6642d146))
+* Update tview to the same version as in current Debian ([7dce1ff](https://github.com/dimonomid/nerdlog/commit/7dce1ffdc3d1a724eac15f93d598f30092cd756d))
+
 ## [1.8.2](https://github.com/dimonomid/nerdlog/compare/v1.8.1...v1.8.2) (2025-05-25)
 
 
