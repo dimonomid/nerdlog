@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [1.10.0](https://github.com/dimonomid/nerdlog/compare/v1.9.0...v1.10.0) (2025-06-07)
+
+
+### Features
+
+* Add some basic support for Apache logs ([19a442e](https://github.com/dimonomid/nerdlog/commit/19a442e5b3ee651c8bf6913dcbd2298d0e7ce5c7))
+
 ## [1.9.0](https://github.com/dimonomid/nerdlog/compare/v1.8.2...v1.9.0) (2025-06-02)
 
 
