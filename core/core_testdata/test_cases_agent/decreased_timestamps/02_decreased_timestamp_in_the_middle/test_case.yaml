@@ -1,8 +1,3 @@
-# TODO: enable it when we address it for the case when the timestamp
-# changes from e.g. May to Jun, i.e. in the traditional syslog format,
-# it decreases lexicographically.
-disabled: true
-
 descr: "Decreased timestamps are in the middle of the requested time period"
 logfiles:
   kind: all_from_dir

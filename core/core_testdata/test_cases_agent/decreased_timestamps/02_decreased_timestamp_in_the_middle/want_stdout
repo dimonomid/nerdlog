@@ -3,9 +3,10 @@ logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/02_decreased_timesta
 s:Mar 10 11:33,1
 s:Mar 10 11:39,1
 s:Mar 10 11:41,1
-s:Mar 10 11:46,1
+s:Mar 10 11:45,2
+s:Mar 10 11:46,2
 s:Mar 10 11:47,1
-s:Mar 10 11:49,17
+s:Mar 10 11:49,14
 s:Mar 10 11:58,1
 m:326:Mar 10 11:49:44 myhost syslog[581]: <emerg> User login successful
 m:327:Mar 10 11:49:44 myhost syslog[581]: <emerg> User login successful

@@ -1,8 +1,3 @@
-# TODO: enable it when we address it for the case when the timestamp
-# changes from e.g. May to Jun, i.e. in the traditional syslog format,
-# it decreases lexicographically.
-disabled: true
-
 # NOTE: it can be seen as a bug, but see the notes in ../04_filter_only_decreased/test_case.yaml
 descr: "Filter only messages with decreased timestamps, the decreasing is not detected, and the timestamps are even outside of the requested range"
 logfiles:

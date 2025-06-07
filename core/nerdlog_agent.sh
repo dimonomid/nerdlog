@@ -549,10 +549,20 @@ function run_awk_script_logfiles {
   {
     curMinKey = '"$awktime_minute_key"';
 
-    ## NOTE: this is disabled for now, until we fix it for the case when the
-    ## timestamp changes from e.g. May to Jun, i.e. in the traditional syslog
-    ## format, it decreases lexicographically.
-    ##
+    # NOTE: this was a naive attempt to better handle the case when timestamps
+    # have decreased: instead of incrementing the bucket of the decreased
+    # timestamp, we ideally want to increment the bucket of the last
+    # non-decreased timestamp.
+    #
+    # However, to make it work properly, the minute key needs to be formatted
+    # so that a later timestamp is always lexocographically larger than an
+    # earlier timestamp, and while it is possible to implement it this way,
+    # it slows things down significantly, which seems unjustified just to
+    # handle this corner case more gracefully.
+    #
+    # We might still implement it at some point and make it optional, but for
+    # now, keeping things simple and just not caring about this corner case.
+    #
     ## Account for decreased timestamps.
     ##
     ## NOTE: to make it produce the correct result in all cases, this check

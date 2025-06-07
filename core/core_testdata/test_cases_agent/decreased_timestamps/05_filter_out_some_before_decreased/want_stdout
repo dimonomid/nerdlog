@@ -2,8 +2,9 @@ logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/05_filter_out_some_b
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/05_filter_out_some_before_decreased/logfile:287
 s:Mar 10 11:39,1
 s:Mar 10 11:41,1
-s:Mar 10 11:46,1
-s:Mar 10 11:47,4
+s:Mar 10 11:45,2
+s:Mar 10 11:46,2
+s:Mar 10 11:47,1
 s:Mar 10 11:58,1
 m:312:Mar 10 11:39:29 myhost ftp[8120]: <debug> Process started
 m:313:Mar 10 11:41:03 myhost lpr[5285]: <notice> User session started
