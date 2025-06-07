@@ -1,9 +1,9 @@
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file_pattern2/03_basic_more_less_than_max/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file_pattern2/03_basic_more_less_than_max/logfile:287
-s:Mar 10 16:35,1
-s:Mar 10 17:37,1
-s:Mar 10 18:01,1
-s:Mar 11 13:56,1
-s:Mar 12 03:10,1
+s:2025-03-10-16:35,1
+s:2025-03-10-17:37,1
+s:2025-03-10-18:01,1
+s:2025-03-11-13:56,1
+s:2025-03-12-03:10,1
 m:432:Mar 10 16:35:56 myhost daemon[7460]: <info> Backup completed
 exit_code:0

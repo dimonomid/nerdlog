@@ -1,19 +1,19 @@
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/01_basic/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/01_basic/logfile:287
-s:Mar 10 14:03,2
-s:Mar 10 14:11,1
-s:Mar 10 14:17,1
-s:Mar 10 14:24,1
-s:Mar 10 14:30,1
-s:Mar 10 14:31,1
-s:Mar 10 14:40,5
-s:Mar 10 14:49,1
-s:Mar 10 14:55,1
-s:Mar 10 15:03,1
-s:Mar 10 15:10,1
-s:Mar 10 15:18,1
-s:Mar 10 15:20,1
-s:Mar 10 15:29,1
+s:2025-03-10-14:03,2
+s:2025-03-10-14:11,1
+s:2025-03-10-14:17,1
+s:2025-03-10-14:24,1
+s:2025-03-10-14:30,1
+s:2025-03-10-14:31,1
+s:2025-03-10-14:40,5
+s:2025-03-10-14:49,1
+s:2025-03-10-14:55,1
+s:2025-03-10-15:03,1
+s:2025-03-10-15:10,1
+s:2025-03-10-15:18,1
+s:2025-03-10-15:20,1
+s:2025-03-10-15:29,1
 m:371:Mar 10 14:40:31 myhost cron[5954]: <emerg> API request failed
 m:372:Mar 10 14:49:39 myhost cron[3244]: <err> Maintenance mode enabled
 m:373:Mar 10 14:55:47 myhost authpriv[6417]: <emerg> File not found

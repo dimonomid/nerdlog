@@ -1,10 +1,10 @@
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file_pattern2/01_basic/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file_pattern2/01_basic/logfile:287
-s:Mar 10 16:35,1
-s:Mar 10 17:37,1
-s:Mar 10 18:01,1
-s:Mar 11 13:56,1
-s:Mar 12 03:10,1
+s:2025-03-10-16:35,1
+s:2025-03-10-17:37,1
+s:2025-03-10-18:01,1
+s:2025-03-11-13:56,1
+s:2025-03-12-03:10,1
 m:447:Mar 10 17:37:49 myhost news[3166]: <debug> Backup completed
 m:450:Mar 10 18:01:32 myhost uucp[136]: <notice> Backup completed
 m:751:Mar 11 13:56:18 myhost uucp[8088]: <info> Backup completed

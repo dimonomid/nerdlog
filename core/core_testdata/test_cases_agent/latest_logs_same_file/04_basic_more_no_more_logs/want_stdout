@@ -1,15 +1,15 @@
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file/04_basic_more_no_more_logs/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file/04_basic_more_no_more_logs/logfile:287
-s:Mar 12 10:01,1
-s:Mar 12 10:03,1
-s:Mar 12 10:10,9
-s:Mar 12 10:14,1
-s:Mar 12 10:16,2
-s:Mar 12 10:19,1
-s:Mar 12 10:27,1
-s:Mar 12 10:32,1
-s:Mar 12 10:38,1
-s:Mar 12 10:45,1
-s:Mar 12 10:53,1
-s:Mar 12 10:56,1
+s:2025-03-12-10:01,1
+s:2025-03-12-10:03,1
+s:2025-03-12-10:10,9
+s:2025-03-12-10:14,1
+s:2025-03-12-10:16,2
+s:2025-03-12-10:19,1
+s:2025-03-12-10:27,1
+s:2025-03-12-10:32,1
+s:2025-03-12-10:38,1
+s:2025-03-12-10:45,1
+s:2025-03-12-10:53,1
+s:2025-03-12-10:56,1
 exit_code:0

@@ -48,6 +48,10 @@ const (
 // (which has it space-padded, not zero-padded).
 const queryLogsArgsTimeLayout = "2006-01-02-15:04"
 
+// queryLogsMstatsTimeLayout is the format used by nerdlog_agent.sh script for
+// the mstats buckets.
+const queryLogsMstatsTimeLayout = "2006-01-02-15:04"
+
 // queryLogsTimestampUntilSecondsTimeLayout is used to format the
 // --timestamp-until-seconds arguments for nerdlog_agent.sh.
 // It needs to match what journalctl *takes as an argument*.
@@ -555,7 +559,7 @@ func (lsc *LStreamClient) run() {
 							continue
 						}
 
-						t, err := time.ParseInLocation(lsc.timeFormat.MinuteKeyLayout, parts[0], lsc.location)
+						t, err := time.ParseInLocation(queryLogsMstatsTimeLayout, parts[0], lsc.location)
 						if err != nil {
 							cmdCtx.errs = append(cmdCtx.errs, errors.Annotatef(err, "parsing mstats"))
 							continue
@@ -1658,6 +1662,5 @@ func agentQueryTimeFormatArgs(awkExpr *TimeFormatAWKExpr) []string {
 		"--awktime-year", shellQuote(awkExpr.Year),
 		"--awktime-day", shellQuote(awkExpr.Day),
 		"--awktime-hhmm", shellQuote(awkExpr.HHMM),
-		"--awktime-minute-key", shellQuote(awkExpr.MinuteKey),
 	}
 }

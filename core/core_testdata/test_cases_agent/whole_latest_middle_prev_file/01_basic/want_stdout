@@ -1,24 +1,24 @@
 logfile:/tmp/nerdlog_agent_test_output/whole_latest_middle_prev_file/01_basic/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/whole_latest_middle_prev_file/01_basic/logfile:19
-s:Mar 10 09:31,2
-s:Mar 10 09:35,2
-s:Mar 10 09:39,1
-s:Mar 10 09:44,1
-s:Mar 10 09:53,1
-s:Mar 10 09:59,1
-s:Mar 10 10:00,1
-s:Mar 10 10:14,1
-s:Mar 10 10:20,2
-s:Mar 10 10:24,1
-s:Mar 10 10:27,2
-s:Mar 10 10:32,2
-s:Mar 10 10:33,1
-s:Mar 10 10:34,1
-s:Mar 10 10:36,1
-s:Mar 10 10:38,1
-s:Mar 10 10:45,1
-s:Mar 10 10:51,1
-s:Mar 10 10:57,1
+s:2025-03-10-09:31,2
+s:2025-03-10-09:35,2
+s:2025-03-10-09:39,1
+s:2025-03-10-09:44,1
+s:2025-03-10-09:53,1
+s:2025-03-10-09:59,1
+s:2025-03-10-10:00,1
+s:2025-03-10-10:14,1
+s:2025-03-10-10:20,2
+s:2025-03-10-10:24,1
+s:2025-03-10-10:27,2
+s:2025-03-10-10:32,2
+s:2025-03-10-10:33,1
+s:2025-03-10-10:34,1
+s:2025-03-10-10:36,1
+s:2025-03-10-10:38,1
+s:2025-03-10-10:45,1
+s:2025-03-10-10:51,1
+s:2025-03-10-10:57,1
 m:16:Mar 10 09:39:31 myhost auth[8464]: <info> User session started
 m:17:Mar 10 09:44:56 myhost news[3840]: <err> System health check completed
 m:18:Mar 10 09:53:11 myhost news[816]: <alert> System configuration restored

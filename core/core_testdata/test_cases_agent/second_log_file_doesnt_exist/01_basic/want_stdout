@@ -1,17 +1,17 @@
 logfile:/tmp/nerdlog-empty-file:0
 logfile:/tmp/nerdlog_agent_test_output/second_log_file_doesnt_exist/01_basic/logfile:0
-s:Mar 12 10:01,1
-s:Mar 12 10:03,1
-s:Mar 12 10:10,9
-s:Mar 12 10:14,1
-s:Mar 12 10:16,2
-s:Mar 12 10:19,1
-s:Mar 12 10:27,1
-s:Mar 12 10:32,1
-s:Mar 12 10:38,1
-s:Mar 12 10:45,1
-s:Mar 12 10:53,1
-s:Mar 12 10:56,1
+s:2025-03-12-10:01,1
+s:2025-03-12-10:03,1
+s:2025-03-12-10:10,9
+s:2025-03-12-10:14,1
+s:2025-03-12-10:16,2
+s:2025-03-12-10:19,1
+s:2025-03-12-10:27,1
+s:2025-03-12-10:32,1
+s:2025-03-12-10:38,1
+s:2025-03-12-10:45,1
+s:2025-03-12-10:53,1
+s:2025-03-12-10:56,1
 m:759:Mar 12 10:16:59 myhost cron[3281]: <notice> Timeout occurred
 m:760:Mar 12 10:19:44 myhost user[3462]: <alert> User session timed out
 m:761:Mar 12 10:27:16 myhost mail[8396]: <alert> New update available

@@ -1,7 +1,7 @@
 logfile:journalctl:0
-s:03-12T10:10,8
-s:03-12T10:14,1
-s:03-12T10:16,1
+s:2025-03-12-10:10,8
+s:2025-03-12-10:14,1
+s:2025-03-12-10:16,1
 m:0:2025-03-12T10:10:05.608677+00:00 myhost authpriv[3500]: <notice> System clock synchronized
 m:0:2025-03-12T10:10:05.608677+00:00 myhost authpriv[3500]: <notice> System clock synchronized
 m:0:2025-03-12T10:10:05.608677+00:00 myhost authpriv[3500]: <notice> System clock synchronized

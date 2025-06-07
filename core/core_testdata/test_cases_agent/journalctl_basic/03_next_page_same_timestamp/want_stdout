@@ -1,8 +1,8 @@
 logfile:journalctl:0
-s:03-12T09:52,1
-s:03-12T10:01,1
-s:03-12T10:03,1
-s:03-12T10:10,1
+s:2025-03-12-09:52,1
+s:2025-03-12-10:01,1
+s:2025-03-12-10:03,1
+s:2025-03-12-10:10,1
 m:0:2025-03-12T09:52:46.684371+00:00 myhost user[7102]: <alert> Insufficient privileges
 m:0:2025-03-12T10:01:02.588602+00:00 myhost lpr[6903]: <debug> User account enabled
 m:0:2025-03-12T10:03:46.316638+00:00 myhost syslog[2812]: <info> Database query failed

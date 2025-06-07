@@ -1,6 +1,6 @@
 logfile:journalctl:0
-s:03-10T11:17,1
-s:03-10T11:49,7
+s:2025-03-10-11:17,1
+s:2025-03-10-11:49,7
 m:0:2025-03-10T11:17:27.113102+00:00 myhost syslog[5562]: <info> Database migration completed
 m:0:2025-03-10T11:49:44.640416+00:00 myhost syslog[581]: <emerg> User login successful
 m:0:2025-03-10T11:49:44.640416+00:00 myhost syslog[581]: <emerg> User login successful

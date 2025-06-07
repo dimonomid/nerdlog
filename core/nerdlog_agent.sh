@@ -41,7 +41,6 @@ awktime_month='monthByName[substr($0, 1, 3)]'
 awktime_year='yearByMonth[month]'
 awktime_day='(substr($0, 5, 1) == " ") ? "0" substr($0, 6, 1) : substr($0, 5, 2)'
 awktime_hhmm='substr($0, 8, 5)'
-awktime_minute_key='substr($0, 1, 12)'
 # TODO: double check that if any of these is provided manually in a flag,
 # then all of them are provided manually.
 
@@ -289,11 +288,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --awktime-minute-key)
-      awktime_minute_key="$2"
-      shift # past argument
-      shift # past value
-      ;;
 
     -*|--*)
       echo "Unknown option $1" 1>&2
@@ -504,6 +498,50 @@ esac
 
 # What follows is the handler for the "query" command.
 
+awk_date_vars='
+  monthByName["Jan"] = "01";
+  monthByName["Feb"] = "02";
+  monthByName["Mar"] = "03";
+  monthByName["Apr"] = "04";
+  monthByName["May"] = "05";
+  monthByName["Jun"] = "06";
+  monthByName["Jul"] = "07";
+  monthByName["Aug"] = "08";
+  monthByName["Sep"] = "09";
+  monthByName["Oct"] = "10";
+  monthByName["Nov"] = "11";
+  monthByName["Dec"] = "12";
+
+  curYear = '${CUR_YEAR}';
+  curMonth = '${CUR_MONTH}';
+
+  yearByMonth["01"] = inferYear(1, curYear, curMonth) "";
+  yearByMonth["02"] = inferYear(2, curYear, curMonth) "";
+  yearByMonth["03"] = inferYear(3, curYear, curMonth) "";
+  yearByMonth["04"] = inferYear(4, curYear, curMonth) "";
+  yearByMonth["05"] = inferYear(5, curYear, curMonth) "";
+  yearByMonth["06"] = inferYear(6, curYear, curMonth) "";
+  yearByMonth["07"] = inferYear(7, curYear, curMonth) "";
+  yearByMonth["08"] = inferYear(8, curYear, curMonth) "";
+  yearByMonth["09"] = inferYear(9, curYear, curMonth) "";
+  yearByMonth["10"] = inferYear(10, curYear, curMonth) "";
+  yearByMonth["11"] = inferYear(11, curYear, curMonth) "";
+  yearByMonth["12"] = inferYear(12, curYear, curMonth) "";
+'
+
+awk_date_functions='
+function inferYear(logMonth, curYear, curMonth) {
+  delta = logMonth - curMonth
+
+  if (delta <= -11)       # log month is Jan, current is Dec -> next year
+    return curYear + 1
+  else if (delta >= 8)    # log month is Sep-Dec, current is Jan -> previous year
+    return curYear - 1
+  else
+    return curYear
+}
+'
+
 # NOTE: we only show percentages with 5% increments, to save on traffic and
 # other overhead. With all 24 my-nodes, having percentage being printed with
 # 1% increments, it generates extra traffic of about 290KB per single query,
@@ -534,9 +572,11 @@ function run_awk_script_logfiles {
   # point when it'd change, and going forward we just compare it with a simple
   # "<".
   awk_script='
+  '$awk_date_functions'
   '$awk_func_print_percentage'
 
   BEGIN {
+    '$awk_date_vars'
     bytenr=1; curline=0; maxlines='$max_num_lines'; lastPercent=0;
     numFilteredOut=0;
     prevMinKey="";
@@ -547,24 +587,24 @@ function run_awk_script_logfiles {
   }
   '$awk_pattern'
   {
-    curMinKey = '"$awktime_minute_key"';
+    month = '"$awktime_month"';
+    year = '"$awktime_year"';
+    day = '"$awktime_day"';
+    hhmm = '"$awktime_hhmm"';
+    curMinKey = year "-" month "-" day "-" hhmm;
 
-    ## NOTE: this is disabled for now, until we fix it for the case when the
-    ## timestamp changes from e.g. May to Jun, i.e. in the traditional syslog
-    ## format, it decreases lexicographically.
-    ##
-    ## Account for decreased timestamps.
-    ##
-    ## NOTE: to make it produce the correct result in all cases, this check
-    ## needs to be before the pattern check, but we intentionally avoid doing
-    ## that because it slows things down by 5-10% when the pattern filters out
-    ## most of the lines, which I think is not worth it to account for this
-    ## corner case.
-    #if (curMinKey < prevMinKey) {
-      #curMinKey = prevMinKey;
-    #} else {
-      #prevMinKey = curMinKey;
-    #}
+    # Account for decreased timestamps.
+    #
+    # NOTE: to make it produce the correct result in all cases, this check
+    # needs to be before the pattern check, but we intentionally avoid doing
+    # that because it slows things down by 5-10% when the pattern filters out
+    # most of the lines, which I think is not worth it to account for this
+    # corner case.
+    if (curMinKey < prevMinKey) {
+      curMinKey = prevMinKey;
+    } else {
+      prevMinKey = curMinKey;
+    }
 
     stats[curMinKey]++;
 
@@ -662,6 +702,7 @@ function run_awk_script_journalctl {
   fi
 
   awk_script='
+  '$awk_date_functions'
   '$awk_func_print_percentage'
 
   # Takes timestamp in the same format as we use for --from and --to and
@@ -678,6 +719,7 @@ function run_awk_script_journalctl {
   }
 
   BEGIN {
+    '$awk_date_vars'
     curline=0;
     lastline="";
     maxlines='$max_num_lines';
@@ -763,7 +805,12 @@ function run_awk_script_journalctl {
   '$awk_pattern_check'
   '$awk_skip_n_latest_check'
   {
-    stats['"$awktime_minute_key"']++;
+    month = '"$awktime_month"';
+    year = '"$awktime_year"';
+    day = '"$awktime_day"';
+    hhmm = '"$awktime_hhmm"';
+    curMinKey = year "-" month "-" day "-" hhmm;
+    stats[curMinKey]++;
 
     if (curline < maxlines) {
       lines[curline] = $0;
@@ -910,36 +957,6 @@ function refresh_index { # {{{
   local last_bytenr=0
   local prevlog_bytes=$(get_prevlog_bytenr)
 
-  awk_vars='
-    monthByName["Jan"] = "01";
-    monthByName["Feb"] = "02";
-    monthByName["Mar"] = "03";
-    monthByName["Apr"] = "04";
-    monthByName["May"] = "05";
-    monthByName["Jun"] = "06";
-    monthByName["Jul"] = "07";
-    monthByName["Aug"] = "08";
-    monthByName["Sep"] = "09";
-    monthByName["Oct"] = "10";
-    monthByName["Nov"] = "11";
-    monthByName["Dec"] = "12";
-
-    curYear = '${CUR_YEAR}';
-    curMonth = '${CUR_MONTH}';
-
-    yearByMonth["01"] = inferYear(1, curYear, curMonth) "";
-    yearByMonth["02"] = inferYear(2, curYear, curMonth) "";
-    yearByMonth["03"] = inferYear(3, curYear, curMonth) "";
-    yearByMonth["04"] = inferYear(4, curYear, curMonth) "";
-    yearByMonth["05"] = inferYear(5, curYear, curMonth) "";
-    yearByMonth["06"] = inferYear(6, curYear, curMonth) "";
-    yearByMonth["07"] = inferYear(7, curYear, curMonth) "";
-    yearByMonth["08"] = inferYear(8, curYear, curMonth) "";
-    yearByMonth["09"] = inferYear(9, curYear, curMonth) "";
-    yearByMonth["10"] = inferYear(10, curYear, curMonth) "";
-    yearByMonth["11"] = inferYear(11, curYear, curMonth) "";
-    yearByMonth["12"] = inferYear(12, curYear, curMonth) "";
-  '
 
   # Add new entries to index, if needed
 
@@ -960,17 +977,7 @@ function refresh_index { # {{{
   # But this function (and its usages) need to be updated to support it, and a
   # bunch of other time-filtering logic here. Although it's cool since it
   # includes the year, microseconds, and timezone.
-  awk_functions='
-function inferYear(logMonth, curYear, curMonth) {
-  delta = logMonth - curMonth
-
-  if (delta <= -11)       # log month is Jan, current is Dec -> next year
-    return curYear + 1
-  else if (delta >= 8)    # log month is Sep-Dec, current is Jan -> previous year
-    return curYear - 1
-  else
-    return curYear
-}
+  awk_functions="$awk_date_functions"'
 
 function printIndexLine(outfile, timestr, linenr, bytenr) {
   print "idx\t" timestr "\t" linenr "\t" bytenr >> outfile;
@@ -1025,7 +1032,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
 
     tail -c +$((last_bytenr-prevlog_bytes)) $logfile_last | "$awk_binary" -b "$awk_functions
   BEGIN {
-    $awk_vars
+    $awk_date_vars
     lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr
   }"'
   '"$script1"'
@@ -1046,7 +1053,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
 
     echo "prevlog_modtime	$(get_file_modtime $logfile_prev)" > $indexfile
 
-    "$awk_binary" -b "$awk_functions BEGIN { $awk_vars lastHHMM=\"\"; }"'
+    "$awk_binary" -b "$awk_functions BEGIN { $awk_date_vars lastHHMM=\"\"; }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';
@@ -1071,7 +1078,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     if [[ "$lastTimestrLine" =~ ^idx$'\t' ]]; then
       lastTimestr="$(echo "$lastTimestrLine" | cut -f2)"
     fi
-    "$awk_binary" -b "$awk_functions BEGIN { $awk_vars lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr }"'
+    "$awk_binary" -b "$awk_functions BEGIN { $awk_date_vars lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';

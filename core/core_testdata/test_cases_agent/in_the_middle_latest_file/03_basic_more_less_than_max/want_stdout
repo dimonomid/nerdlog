@@ -1,13 +1,13 @@
 logfile:/tmp/nerdlog_agent_test_output/in_the_middle_latest_file/03_basic_more_less_than_max/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/in_the_middle_latest_file/03_basic_more_less_than_max/logfile:287
-s:Mar 12 09:05,1
-s:Mar 12 09:09,1
-s:Mar 12 09:15,2
-s:Mar 12 09:22,1
-s:Mar 12 09:31,1
-s:Mar 12 09:33,1
-s:Mar 12 09:42,3
-s:Mar 12 09:52,1
+s:2025-03-12-09:05,1
+s:2025-03-12-09:09,1
+s:2025-03-12-09:15,2
+s:2025-03-12-09:22,1
+s:2025-03-12-09:31,1
+s:2025-03-12-09:33,1
+s:2025-03-12-09:42,3
+s:2025-03-12-09:52,1
 m:1022:Mar 12 09:05:46 myhost daemon[7290]: <debug> SMTP server connection error
 m:1023:Mar 12 09:09:30 myhost cron[3864]: <notice> Software version updated
 m:1024:Mar 12 09:15:54 myhost ftp[6693]: <info> Database migration completed

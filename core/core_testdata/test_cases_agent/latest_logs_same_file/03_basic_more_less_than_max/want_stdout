@@ -1,17 +1,17 @@
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file/03_basic_more_less_than_max/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/latest_logs_same_file/03_basic_more_less_than_max/logfile:287
-s:Mar 12 10:01,1
-s:Mar 12 10:03,1
-s:Mar 12 10:10,9
-s:Mar 12 10:14,1
-s:Mar 12 10:16,2
-s:Mar 12 10:19,1
-s:Mar 12 10:27,1
-s:Mar 12 10:32,1
-s:Mar 12 10:38,1
-s:Mar 12 10:45,1
-s:Mar 12 10:53,1
-s:Mar 12 10:56,1
+s:2025-03-12-10:01,1
+s:2025-03-12-10:03,1
+s:2025-03-12-10:10,9
+s:2025-03-12-10:14,1
+s:2025-03-12-10:16,2
+s:2025-03-12-10:19,1
+s:2025-03-12-10:27,1
+s:2025-03-12-10:32,1
+s:2025-03-12-10:38,1
+s:2025-03-12-10:45,1
+s:2025-03-12-10:53,1
+s:2025-03-12-10:56,1
 m:1033:Mar 12 10:01:02 myhost lpr[6903]: <debug> User account enabled
 m:1034:Mar 12 10:03:46 myhost syslog[2812]: <info> Database query failed
 m:1035:Mar 12 10:10:05 myhost authpriv[3500]: <notice> System clock synchronized

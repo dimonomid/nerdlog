@@ -1,13 +1,13 @@
 logfile:/tmp/nerdlog_agent_test_output/in_the_middle_latest_file/01_basic/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/in_the_middle_latest_file/01_basic/logfile:287
-s:Mar 12 09:05,1
-s:Mar 12 09:09,1
-s:Mar 12 09:15,2
-s:Mar 12 09:22,1
-s:Mar 12 09:31,1
-s:Mar 12 09:33,1
-s:Mar 12 09:42,3
-s:Mar 12 09:52,1
+s:2025-03-12-09:05,1
+s:2025-03-12-09:09,1
+s:2025-03-12-09:15,2
+s:2025-03-12-09:22,1
+s:2025-03-12-09:31,1
+s:2025-03-12-09:33,1
+s:2025-03-12-09:42,3
+s:2025-03-12-09:52,1
 m:1025:Mar 12 09:15:54 myhost lpr[8694]: <notice> File copied successfully
 m:1026:Mar 12 09:22:38 myhost auth[7805]: <notice> Service dependency failure
 m:1027:Mar 12 09:31:50 myhost news[1141]: <alert> User session ended

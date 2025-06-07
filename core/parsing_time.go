@@ -19,18 +19,6 @@ type TimeFormatDescr struct {
 	// "2006-01-02T15:04:05.000000Z07:00".
 	TimestampLayout string
 
-	// MinuteKeyLayout is a Go-style time layout which should parse the time
-	// captured by the awk expression `TimeFormatAWKExpr.MinuteKey` (read there
-	// what "minute key" means in the first place).
-	//
-	// So e.g. for the traditional syslog format "Jan _2 15:04:05", it should be
-	// "Jan _2 15:04".
-	//
-	// For the format "2006-01-02T15:04:05.000000Z07:00", it should rather be
-	// "2006-01-02T15:04" (if we decided to include the year) or "01-02T15:04"
-	// (if we decided to not include the year).
-	MinuteKeyLayout string
-
 	// AWKExpr contains all the awk expressions which will be used by the
 	// nerdlog_agent.sh script to get the time components from logs.
 	AWKExpr TimeFormatAWKExpr
@@ -81,21 +69,6 @@ type TimeFormatAWKExpr struct {
 	// For the format "2006-01-02T15:04:05.000000Z07:00", it should rather be
 	// "substr($0, 12, 5)".
 	HHMM string
-
-	// MinuteKey is an AWK expression to get a string covering all timestamp
-	// components from minute and larger. It'll be used as a key to identify a
-	// particular minute (in the mapping from the minute to the amount of logs in
-	// that minute), hence the name; so it should not include seconds, and it
-	// should include minute+hour+day+month, maybe even year but that's optional,
-	// since Nerdlog is not designed to look at logs spanning more than one year.
-	//
-	// So e.g. for the traditional syslog format "Jan _2 15:04:05", it should be
-	// "substr($0, 1, 12)".
-	//
-	// For the format "2006-01-02T15:04:05.000000Z07:00", it should rather be
-	// "substr($0, 1, 16)" (to include the year) or "substr($0, 6, 11)" (to not
-	// include the year).
-	MinuteKey string
 }
 
 func GetTimeFormatDescrFromLogLines(logLines []string) (*TimeFormatDescr, error) {
@@ -207,23 +180,12 @@ func GenerateTimeDescr(layout string) (*TimeFormatDescr, error) {
 		return substr(start, length)
 	}
 
-	minuteKeyStart := minIndex(partInfo["month"], partInfo["day"], partInfo["hhmm"]).index
-	minuteKeyEnd1 := maxIndex(partInfo["month"], partInfo["day"], partInfo["hhmm"])
-	minuteKeyEnd := minuteKeyEnd1.index + minuteKeyEnd1.length
-
-	if partInfo["second"] != nil {
-		if partInfo["second"].index >= minuteKeyStart && partInfo["second"].index < minuteKeyEnd {
-			return nil, errors.Errorf("seconds are in between of month, day, hour and min; can't extract MinuteKey")
-		}
-	}
-
 	// Extract AWK expressions
 	awk := TimeFormatAWKExpr{
 		// Year will be set later
-		Month:     substrCheckingForSpace(partInfo["month"].index, partInfo["month"].length),
-		Day:       substrCheckingForSpace(partInfo["day"].index, partInfo["day"].length),
-		HHMM:      substr(partInfo["hhmm"].index, partInfo["hhmm"].length),
-		MinuteKey: substr(minuteKeyStart, minuteKeyEnd-minuteKeyStart),
+		Month: substrCheckingForSpace(partInfo["month"].index, partInfo["month"].length),
+		Day:   substrCheckingForSpace(partInfo["day"].index, partInfo["day"].length),
+		HHMM:  substr(partInfo["hhmm"].index, partInfo["hhmm"].length),
 	}
 
 	if partInfo["year"] != nil {
@@ -237,12 +199,8 @@ func GenerateTimeDescr(layout string) (*TimeFormatDescr, error) {
 		awk.Month = fmt.Sprintf("monthByName[%s]", awk.Month)
 	}
 
-	// Build minute layout (truncated to minute precision)
-	minuteLayout := layout[minuteKeyStart:minuteKeyEnd]
-
 	return &TimeFormatDescr{
 		TimestampLayout: layout,
-		MinuteKeyLayout: minuteLayout,
 		AWKExpr:         awk,
 	}, nil
 }

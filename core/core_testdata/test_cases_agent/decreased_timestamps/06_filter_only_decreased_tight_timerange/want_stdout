@@ -1,7 +1,7 @@
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/06_filter_only_decreased_tight_timerange/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/06_filter_only_decreased_tight_timerange/logfile:287
-s:Mar 10 11:45,2
-s:Mar 10 11:46,1
+s:2025-03-10-11:45,2
+s:2025-03-10-11:46,1
 m:328:Mar 10 11:45:01 myhost syslog[581]: <alert> Some decreased timestamp 1
 m:329:Mar 10 11:45:01 myhost syslog[581]: <alert> Some decreased timestamp 2
 m:330:Mar 10 11:46:28 myhost syslog[581]: <alert> Some decreased timestamp 3

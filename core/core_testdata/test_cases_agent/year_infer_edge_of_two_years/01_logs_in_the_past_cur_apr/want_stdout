@@ -1,19 +1,19 @@
 logfile:/tmp/nerdlog_agent_test_output/year_infer_edge_of_two_years/01_logs_in_the_past_cur_apr/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/year_infer_edge_of_two_years/01_logs_in_the_past_cur_apr/logfile:287
-s:Dec 31 23:31,1
-s:Dec 31 23:33,1
-s:Dec 31 23:41,1
-s:Dec 31 23:42,1
-s:Dec 31 23:43,1
-s:Dec 31 23:45,1
-s:Dec 31 23:49,1
-s:Dec 31 23:50,1
-s:Dec 31 23:54,1
-s:Jan  1 00:01,2
-s:Jan  1 00:08,1
-s:Jan  1 00:17,2
-s:Jan  1 00:22,1
-s:Jan  1 00:29,1
+s:2020-12-31-23:31,1
+s:2020-12-31-23:33,1
+s:2020-12-31-23:41,1
+s:2020-12-31-23:42,1
+s:2020-12-31-23:43,1
+s:2020-12-31-23:45,1
+s:2020-12-31-23:49,1
+s:2020-12-31-23:50,1
+s:2020-12-31-23:54,1
+s:2021-01-01-00:01,2
+s:2021-01-01-00:08,1
+s:2021-01-01-00:17,2
+s:2021-01-01-00:22,1
+s:2021-01-01-00:29,1
 m:132:Dec 31 23:31:13 myhost news[1390]: <warning> Scheduled task executed
 m:133:Dec 31 23:33:06 myhost uucp[3943]: <debug> Process crashed
 m:134:Dec 31 23:41:35 myhost cron[313]: <crit> Process started

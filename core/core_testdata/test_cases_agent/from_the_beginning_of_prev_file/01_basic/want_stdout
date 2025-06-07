@@ -1,14 +1,14 @@
 logfile:/tmp/nerdlog_agent_test_output/from_the_beginning_of_prev_file/01_basic/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/from_the_beginning_of_prev_file/01_basic/logfile:287
-s:Mar  9 15:04,1
-s:Mar  9 15:07,1
-s:Mar  9 15:16,1
-s:Mar  9 15:23,3
-s:Mar  9 15:32,1
-s:Mar  9 15:35,1
-s:Mar  9 15:36,1
-s:Mar  9 15:44,1
-s:Mar  9 15:52,1
+s:2025-03-09-15:04,1
+s:2025-03-09-15:07,1
+s:2025-03-09-15:16,1
+s:2025-03-09-15:23,3
+s:2025-03-09-15:32,1
+s:2025-03-09-15:35,1
+s:2025-03-09-15:36,1
+s:2025-03-09-15:44,1
+s:2025-03-09-15:52,1
 m:4:Mar  9 15:23:17 myhost syslog[4229]: <notice> Security patch applied
 m:5:Mar  9 15:23:17 myhost lpr[8539]: <emerg> Cache update completed
 m:6:Mar  9 15:23:17 myhost kern[3862]: <debug> Permission denied

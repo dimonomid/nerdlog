@@ -17,8 +17,8 @@ awk pattern: /error/ssdf/dfw//                                   Mar9 15:00 to M
 ║ debug:Command to filter logs by time range:                                                                ║
 ║ debug: bash -c 'cat /tmp/nerdlog_e2e_test_output/01_basic/lstreams/testhost-01/logfile.1 && cat /tmp/nerdl ║
 ║ og_e2e_test_output/01_basic/lstreams/testhost-01/logfile'                                                  ║
-║ gawk: cmd. line:21:   !(/error/ssdf/dfw//) {numFilteredOut++; next}                                        ║
-║ gawk: cmd. line:21:                      ^ unterminated regexp                                             ║
+║ gawk: cmd. line:63:   !(/error/ssdf/dfw//) {numFilteredOut++; next}                                        ║
+║ gawk: cmd. line:63:                      ^ unterminated regexp                                             ║
 ║                                                                                                            ║
 ║                                                     OK                                                     ║
 ║                                                                                                            ║

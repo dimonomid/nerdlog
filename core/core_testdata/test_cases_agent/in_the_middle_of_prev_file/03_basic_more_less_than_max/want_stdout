@@ -1,19 +1,19 @@
 logfile:/tmp/nerdlog_agent_test_output/in_the_middle_of_prev_file/03_basic_more_less_than_max/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/in_the_middle_of_prev_file/03_basic_more_less_than_max/logfile:287
-s:Mar  9 23:31,1
-s:Mar  9 23:33,1
-s:Mar  9 23:41,1
-s:Mar  9 23:42,1
-s:Mar  9 23:43,1
-s:Mar  9 23:45,1
-s:Mar  9 23:49,1
-s:Mar  9 23:50,1
-s:Mar  9 23:54,1
-s:Mar 10 00:01,2
-s:Mar 10 00:08,1
-s:Mar 10 00:17,2
-s:Mar 10 00:22,1
-s:Mar 10 00:29,1
+s:2025-03-09-23:31,1
+s:2025-03-09-23:33,1
+s:2025-03-09-23:41,1
+s:2025-03-09-23:42,1
+s:2025-03-09-23:43,1
+s:2025-03-09-23:45,1
+s:2025-03-09-23:49,1
+s:2025-03-09-23:50,1
+s:2025-03-09-23:54,1
+s:2025-03-10-00:01,2
+s:2025-03-10-00:08,1
+s:2025-03-10-00:17,2
+s:2025-03-10-00:22,1
+s:2025-03-10-00:29,1
 m:132:Mar  9 23:31:13 myhost news[1390]: <warning> Scheduled task executed
 m:133:Mar  9 23:33:06 myhost uucp[3943]: <debug> Process crashed
 m:134:Mar  9 23:41:35 myhost cron[313]: <crit> Process started

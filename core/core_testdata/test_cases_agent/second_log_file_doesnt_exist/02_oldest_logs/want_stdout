@@ -1,10 +1,10 @@
 logfile:/tmp/nerdlog-empty-file:0
 logfile:/tmp/nerdlog_agent_test_output/second_log_file_doesnt_exist/02_oldest_logs/logfile:0
-s:Mar 10 10:00,1
-s:Mar 10 10:14,1
-s:Mar 10 10:20,2
-s:Mar 10 10:24,1
-s:Mar 10 10:27,2
+s:2025-03-10-10:00,1
+s:2025-03-10-10:14,1
+s:2025-03-10-10:20,2
+s:2025-03-10-10:24,1
+s:2025-03-10-10:27,2
 m:1:Mar 10 10:00:01 myhost kern[5159]: <emerg> Disk space reclaimed
 m:2:Mar 10 10:14:05 myhost auth[8368]: <err> Database schema updated
 m:3:Mar 10 10:20:17 myhost syslog[4163]: <emerg> System health check failed

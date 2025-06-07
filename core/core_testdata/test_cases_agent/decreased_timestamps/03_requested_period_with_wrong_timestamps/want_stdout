@@ -1,5 +1,5 @@
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/03_requested_period_with_wrong_timestamps/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/decreased_timestamps/03_requested_period_with_wrong_timestamps/logfile:287
-s:Mar 10 11:46,1
+s:2025-03-10-11:46,1
 m:314:Mar 10 11:46:34 myhost user[7798]: <err> Application crash reported
 exit_code:0

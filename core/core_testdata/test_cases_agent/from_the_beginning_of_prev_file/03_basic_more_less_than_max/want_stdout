@@ -1,14 +1,14 @@
 logfile:/tmp/nerdlog_agent_test_output/from_the_beginning_of_prev_file/03_basic_more_less_than_max/logfile.1:0
 logfile:/tmp/nerdlog_agent_test_output/from_the_beginning_of_prev_file/03_basic_more_less_than_max/logfile:287
-s:Mar  9 15:04,1
-s:Mar  9 15:07,1
-s:Mar  9 15:16,1
-s:Mar  9 15:23,3
-s:Mar  9 15:32,1
-s:Mar  9 15:35,1
-s:Mar  9 15:36,1
-s:Mar  9 15:44,1
-s:Mar  9 15:52,1
+s:2025-03-09-15:04,1
+s:2025-03-09-15:07,1
+s:2025-03-09-15:16,1
+s:2025-03-09-15:23,3
+s:2025-03-09-15:32,1
+s:2025-03-09-15:35,1
+s:2025-03-09-15:36,1
+s:2025-03-09-15:44,1
+s:2025-03-09-15:52,1
 m:1:Mar  9 15:04:05 myhost mail[8554]: <alert> High CPU usage detected
 m:2:Mar  9 15:07:54 myhost auth[3421]: <notice> Security breach detected
 m:3:Mar  9 15:16:07 myhost ftp[1118]: <notice> File copied successfully

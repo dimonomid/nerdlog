@@ -1,9 +1,9 @@
 logfile:journalctl:0
-s:03-11T00:50,1
-s:03-11T00:52,1
-s:03-11T00:54,11
-s:03-11T01:02,1
-s:03-11T01:05,1
+s:2025-03-11-00:50,1
+s:2025-03-11-00:52,1
+s:2025-03-11-00:54,11
+s:2025-03-11-01:02,1
+s:2025-03-11-01:05,1
 m:0:2025-03-11T00:50:29.920574+00:00 myhost uucp[8353]: <debug> Security alert raised
 m:0:2025-03-11T00:52:00.717396+00:00 myhost mail[8658]: <notice> Cache update completed
 m:0:2025-03-11T00:54:23.658592+00:00 myhost syslog[5082]: ELF object binary architecture: AMD x86-64
