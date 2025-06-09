@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [1.10.0](https://github.com/dimonomid/nerdlog/compare/v1.9.0...v1.10.0) (2025-06-09)
+
+
+### Features
+
+* Add support for external `ssh` binary ([2d93f05](https://github.com/dimonomid/nerdlog/commit/2d93f051b020c0907d6881d1498e85e13b365f5a)), activate it by using `--set 'transport=ssh-bin'`
+* Add `:conndebug` command which shows connection debug info ([9bae829](https://github.com/dimonomid/nerdlog/commit/9bae82966703ce0eea56d6959db8f0547ba3e29b))
+* Add some basic support for Apache logs ([19a442e](https://github.com/dimonomid/nerdlog/commit/19a442e5b3ee651c8bf6913dcbd2298d0e7ce5c7))
+
 ## [1.9.0](https://github.com/dimonomid/nerdlog/compare/v1.8.2...v1.9.0) (2025-06-02)
 
 
