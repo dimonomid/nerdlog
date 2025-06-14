@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [1.10.1](https://github.com/dimonomid/nerdlog/compare/v1.10.0...v1.10.1) (2025-06-14)
+
+
+### Bug Fixes
+
+* Improve disconnect logic for ssh-bin ([13f2c00](https://github.com/dimonomid/nerdlog/commit/13f2c0010d97258cf2558e1045f14d733e5f2a18))
+
 ## [1.10.0](https://github.com/dimonomid/nerdlog/compare/v1.9.0...v1.10.0) (2025-06-09)
 
 
