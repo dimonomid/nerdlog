@@ -59,7 +59,7 @@ type LStreamsManager struct {
 
 	curLogs manLogsCtx
 
-	useExternalSSH bool
+	defaultTransportMode *TransportMode
 }
 
 type LStreamsManagerParams struct {
@@ -79,7 +79,7 @@ type LStreamsManagerParams struct {
 
 	InitialLStreams string
 
-	InitialUseExternalSSH bool
+	InitialDefaultTransportMode *TransportMode
 
 	// ClientID is just an arbitrary string (should be filename-friendly though)
 	// which will be appended to the nerdlog_agent.sh and its index filenames.
@@ -118,7 +118,7 @@ func NewLStreamsManager(params LStreamsManagerParams) *LStreamsManager {
 		teardownReqCh: make(chan struct{}, 1),
 		torndownCh:    make(chan struct{}, 1),
 
-		useExternalSSH: params.InitialUseExternalSSH,
+		defaultTransportMode: params.InitialDefaultTransportMode,
 	}
 
 	if err := lsman.setLStreams(params.InitialLStreams); err != nil {
@@ -134,28 +134,28 @@ func NewLStreamsManager(params LStreamsManagerParams) *LStreamsManager {
 	return lsman
 }
 
-func (lsman *LStreamsManager) SetUseExternalSSH(useExternalSSH bool) {
+func (lsman *LStreamsManager) SetDefaultTransportMode(defaultTransportMode *TransportMode) {
 	resCh := make(chan struct{}, 1)
 
 	lsman.reqCh <- lstreamsManagerReq{
-		setUseExternalSSH: &lstreamsManagerReqSetUseExternalSSH{
-			useExternalSSH: useExternalSSH,
-			resCh:          resCh,
+		setDefaultTransportMode: &lstreamsManagerReqSetDefaultTransportMode{
+			defaultTransportMode: defaultTransportMode,
+			resCh:                resCh,
 		},
 	}
 
 	<-resCh
 }
 
-func (lsman *LStreamsManager) setUseExternalSSH(useExternalSSH bool) {
+func (lsman *LStreamsManager) setDefaultTransportMode(defaultTransportMode *TransportMode) {
 	// If unchanged, then do nothing.
-	if lsman.useExternalSSH == useExternalSSH {
+	if lsman.defaultTransportMode == defaultTransportMode {
 		return
 	}
 
 	// Transport mode has changed: remember it, and reconnect using it.
 
-	lsman.useExternalSSH = useExternalSSH
+	lsman.defaultTransportMode = defaultTransportMode
 
 	lstreamsStr := lsman.lstreamsStr
 	lsman.setLStreams("")
@@ -169,15 +169,6 @@ func (lsman *LStreamsManager) setUseExternalSSH(useExternalSSH bool) {
 	lsman.sendStateUpdate()
 }
 
-// DefaultSSHShellCommand is a custom shell command which is used with ssh-bin
-// transport.
-//
-// It's interpreted not by an external shell, but by https://github.com/mvdan/sh.
-//
-// Vars NLHOST, NLPORT and NLUSER are set by the nerdlog internally, but it can
-// also use arbitrary environment vars.
-const DefaultSSHShellCommand = "ssh -o 'BatchMode=yes' ${NLPORT:+-p ${NLPORT}} ${NLUSER:+${NLUSER}@}${NLHOST} /bin/sh"
-
 // LocalShellCommand is used when the host is "localhost".
 const LocalShellCommand = "/bin/sh"
 
@@ -187,15 +178,10 @@ func (lsman *LStreamsManager) setLStreams(lstreamsStr string) error {
 		return errors.Annotatef(err, "getting current OS user")
 	}
 
-	customShellCommand := ""
-	if lsman.useExternalSSH {
-		customShellCommand = DefaultSSHShellCommand
-	}
-
 	resolver := NewLStreamsResolver(LStreamsResolverParams{
 		CurOSUser: u.Username,
 
-		CustomShellCommand: customShellCommand,
+		DefaultTransportMode: lsman.defaultTransportMode,
 
 		ConfigLogStreams: lsman.params.ConfigLogStreams,
 		SSHConfig:        lsman.params.SSHConfig,
@@ -477,11 +463,11 @@ func (lsman *LStreamsManager) run() {
 
 				r.resCh <- nil
 
-			case req.setUseExternalSSH != nil:
-				r := req.setUseExternalSSH
-				lsman.params.Logger.Infof("LStreams manager: setting useExternalSSH: %v", r.useExternalSSH)
+			case req.setDefaultTransportMode != nil:
+				r := req.setDefaultTransportMode
+				lsman.params.Logger.Infof("LStreams manager: setting defaultTransportMode: %s", r.defaultTransportMode.String())
 
-				lsman.setUseExternalSSH(r.useExternalSSH)
+				lsman.setDefaultTransportMode(r.defaultTransportMode)
 
 				r.resCh <- struct{}{}
 
@@ -641,12 +627,12 @@ func (lsman *LStreamsManager) Wait() {
 type lstreamsManagerReq struct {
 	// Exactly one field must be non-nil
 
-	queryLogs         *QueryLogsParams
-	updLStreams       *lstreamsManagerReqUpdLStreams
-	setUseExternalSSH *lstreamsManagerReqSetUseExternalSSH
-	ping              bool
-	reconnect         bool
-	disconnect        bool
+	queryLogs               *QueryLogsParams
+	updLStreams             *lstreamsManagerReqUpdLStreams
+	setDefaultTransportMode *lstreamsManagerReqSetDefaultTransportMode
+	ping                    bool
+	reconnect               bool
+	disconnect              bool
 }
 
 type lstreamsManagerReqUpdLStreams struct {
@@ -654,9 +640,9 @@ type lstreamsManagerReqUpdLStreams struct {
 	resCh          chan<- error
 }
 
-type lstreamsManagerReqSetUseExternalSSH struct {
-	useExternalSSH bool
-	resCh          chan<- struct{}
+type lstreamsManagerReqSetDefaultTransportMode struct {
+	defaultTransportMode *TransportMode
+	resCh                chan<- struct{}
 }
 
 func (lsman *LStreamsManager) QueryLogs(params QueryLogsParams) {

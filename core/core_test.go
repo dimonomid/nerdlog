@@ -319,6 +319,16 @@ func newLStreamsManagerTestHelper(
 		}
 	}
 
+	transportSpec := os.Getenv("NERDLOG_CORE_TEST_TRANSPORT")
+	if transportSpec == "" {
+		transportSpec = "ssh-lib"
+	}
+
+	transportMode, err := ParseTransportMode(transportSpec)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
 	manParams := LStreamsManagerParams{
 		ConfigLogStreams: cfgLogStreams,
 		Logger:           log.NewLogger(log.Verbose1).WithStdout(true),
@@ -327,7 +337,7 @@ func newLStreamsManagerTestHelper(
 		UpdatesCh:        updatesCh,
 		Clock:            clockMock,
 
-		InitialUseExternalSSH: os.Getenv("NERDLOG_CORE_TEST_TRANSPORT_SSH_BIN") != "",
+		InitialDefaultTransportMode: transportMode,
 	}
 
 	fmt.Println("Creating LStreamsManager...")
@@ -366,11 +376,7 @@ func (th *LStreamsManagerTestHelper) getHostnameAndTransportKey() string {
 		return testHostname
 	}
 
-	useExternalSSH := th.manager.useExternalSSH
-	transportStr := "ssh-lib"
-	if useExternalSSH {
-		transportStr = "ssh-bin"
-	}
+	transportStr := th.manager.defaultTransportMode.String()
 
 	return fmt.Sprintf("%s_%s", testHostname, transportStr)
 }

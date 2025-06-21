@@ -29,6 +29,19 @@ func NewTransportModeSSHLib() *TransportMode {
 	}
 }
 
+func NewTransportModeSSHBin() *TransportMode {
+	return &TransportMode{
+		kind: TransportModeKindSSHBin,
+	}
+}
+
+func NewTransportModeCustom(customCommand string) *TransportMode {
+	return &TransportMode{
+		kind:          TransportModeKindCustom,
+		customCommand: customCommand,
+	}
+}
+
 func ParseTransportMode(spec string) (*TransportMode, error) {
 	customPrefix := fmt.Sprintf("%s:", TransportModeKindCustom)
 
@@ -60,6 +73,19 @@ func (m *TransportMode) Kind() TransportModeKind {
 	return m.kind
 }
 
+func (m *TransportMode) CustomShellCommand() string {
+	switch m.kind {
+	case TransportModeKindSSHLib:
+		return ""
+	case TransportModeKindSSHBin:
+		return DefaultSSHShellCommand
+	case TransportModeKindCustom:
+		return m.customCommand
+	}
+
+	panic("should never be here")
+}
+
 func (m *TransportMode) String() string {
 	switch m.kind {
 	case TransportModeKindSSHLib, TransportModeKindSSHBin:
@@ -71,3 +97,12 @@ func (m *TransportMode) String() string {
 	// Should never be here
 	return "invalid"
 }
+
+// DefaultSSHShellCommand is a custom shell command which is used with ssh-bin
+// transport.
+//
+// It's interpreted not by an external shell, but by https://github.com/mvdan/sh.
+//
+// Vars NLHOST, NLPORT and NLUSER are set by the nerdlog internally, but it can
+// also use arbitrary environment vars.
+const DefaultSSHShellCommand = "ssh -o 'BatchMode=yes' ${NLPORT:+-p ${NLPORT}} ${NLUSER:+${NLUSER}@}${NLHOST} /bin/sh"

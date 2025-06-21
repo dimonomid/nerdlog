@@ -91,9 +91,9 @@ func newNerdlogApp(
 		params: params,
 
 		options: NewOptionsShared(Options{
-			Timezone:      time.Local,
-			MaxNumLines:   250,
-			TransportMode: core.NewTransportModeSSHLib(),
+			Timezone:             time.Local,
+			MaxNumLines:          250,
+			DefaultTransportMode: core.NewTransportModeSSHLib(),
 		}),
 
 		tviewApp: tview.NewApplication(),
@@ -155,10 +155,8 @@ func newNerdlogApp(
 		Logger: logger,
 	})
 
-	useExternalSSH := app.options.GetTransportMode().Kind() == core.TransportModeKindSSHBin
-
 	// NOTE: initLStreamsManager has to be called _after_ app.mainView is initialized.
-	if err := app.initLStreamsManager(params, "", useExternalSSH, homeDir, logger); err != nil {
+	if err := app.initLStreamsManager(params, "", app.options.GetTransportMode(), homeDir, logger); err != nil {
 		return nil, errors.Trace(err)
 	}
 
@@ -213,7 +211,7 @@ func (app *nerdlogApp) runTViewApp() error {
 func (app *nerdlogApp) initLStreamsManager(
 	params nerdlogAppParams,
 	initialLStreams string,
-	useExternalSSH bool,
+	defaultTransportMode *core.TransportMode,
 	homeDir string,
 	logger *log.Logger,
 ) error {
@@ -387,8 +385,8 @@ func (app *nerdlogApp) initLStreamsManager(
 		SSHConfig:        sshConfig,
 		SSHKeys:          params.sshKeys,
 
-		InitialLStreams:       initialLStreams,
-		InitialUseExternalSSH: useExternalSSH,
+		InitialLStreams:             initialLStreams,
+		InitialDefaultTransportMode: defaultTransportMode,
 
 		ClientID: envUser,
 
@@ -420,7 +418,7 @@ func (app *nerdlogApp) handleCmdLine(cmdCh <-chan cmdWithOpts) {
 func (app *nerdlogApp) afterUserCmdOrOptionChange() {
 	app.mainView.formatTimeRange()
 	app.mainView.formatLogs()
-	app.lsman.SetUseExternalSSH(app.options.GetTransportMode().Kind() == core.TransportModeKindSSHBin)
+	app.lsman.SetDefaultTransportMode(app.options.GetTransportMode())
 }
 
 // printError lets user know that there is an error by printing a simple error

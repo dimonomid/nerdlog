@@ -37,7 +37,9 @@ type ConfigLogStream struct {
 
 // ConfigLogStreamOptions contains additional options for a particular logstream.
 type ConfigLogStreamOptions struct {
-	TransportCustomCommand string `yaml:"transport_custom_shell_command,omitempty"`
+	// Transport overrides the default transport option; the format is exactly the
+	// same as in the transport option: "ssh-lib", "ssh-bin", or "custom:foo bar baz".
+	Transport string `yaml:"transport,omitempty"`
 
 	// Sudo is a shortcut for SudoMode: if Sudo is true, it's an equivalent of
 	// setting SudoMode to SudoModeFull.

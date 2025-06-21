@@ -120,4 +120,4 @@ jobs:
           NERDLOG_CORE_TEST_HOSTNAME='127.0.0.1' make test ARGS='-run TestCoreScenarios'
 
           echo "Running tests with ssh-bin"
-          NERDLOG_CORE_TEST_HOSTNAME='127.0.0.1' NERDLOG_CORE_TEST_TRANSPORT_SSH_BIN=1 make test ARGS='-run TestCoreScenarios'
+          NERDLOG_CORE_TEST_HOSTNAME='127.0.0.1' NERDLOG_CORE_TEST_TRANSPORT=ssh-bin make test ARGS='-run TestCoreScenarios'

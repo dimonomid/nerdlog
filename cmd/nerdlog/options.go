@@ -17,7 +17,7 @@ type Options struct {
 	// most. Initially it's set to 250.
 	MaxNumLines int
 
-	TransportMode *core.TransportMode
+	DefaultTransportMode *core.TransportMode
 }
 
 type OptionsShared struct {
@@ -47,7 +47,7 @@ func (o *OptionsShared) GetMaxNumLines() int {
 func (o *OptionsShared) GetTransportMode() *core.TransportMode {
 	o.mtx.Lock()
 	defer o.mtx.Unlock()
-	return o.options.TransportMode
+	return o.options.DefaultTransportMode
 }
 
 func (o *OptionsShared) GetAll() Options {
@@ -111,7 +111,7 @@ var AllOptions = map[string]*OptionMeta{
 	}, // }}}
 	"transport": { // {{{
 		Get: func(o *Options) string {
-			return o.TransportMode.String()
+			return o.DefaultTransportMode.String()
 		},
 		Set: func(o *Options, value string) error {
 			tm, err := core.ParseTransportMode(value)
@@ -119,7 +119,7 @@ var AllOptions = map[string]*OptionMeta{
 				return errors.Trace(err)
 			}
 
-			o.TransportMode = tm
+			o.DefaultTransportMode = tm
 			return nil
 		},
 		Help: "How to connect to remote hosts",
