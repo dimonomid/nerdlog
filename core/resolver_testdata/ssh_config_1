@@ -63,3 +63,23 @@ Host baz-02
   User user-baz-from-ssh-config-02
   HostName host-baz-from-ssh-config-02.com
   Port 7002
+
+Host xyz-01
+  User user-from-ssh-config
+  HostName xyz-01-from-ssh-config
+  Port 8000
+
+Host xyz-02
+  User user-from-ssh-config
+  HostName xyz-02-from-ssh-config
+  Port 8000
+
+Host xyz-03
+  User WRONG-user-from-ssh-config
+  HostName WRONG-xyz-03-from-ssh-config
+  Port 9000
+
+Host xyz-03-from-lstreams-config
+  User user-from-ssh-config
+  HostName xyz-03-from-ssh-config
+  Port 8000

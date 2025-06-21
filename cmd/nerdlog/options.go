@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dimonomid/nerdlog/core"
 	"github.com/juju/errors"
 )
 
@@ -16,19 +17,7 @@ type Options struct {
 	// most. Initially it's set to 250.
 	MaxNumLines int
 
-	TransportMode TransportMode
-}
-
-type TransportMode string
-
-const (
-	TransportModeSSHLib = "ssh-lib"
-	TransportModeSSHBin = "ssh-bin"
-)
-
-var allTransportModes = map[TransportMode]struct{}{
-	TransportModeSSHLib: struct{}{},
-	TransportModeSSHBin: struct{}{},
+	TransportMode *core.TransportMode
 }
 
 type OptionsShared struct {
@@ -55,7 +44,7 @@ func (o *OptionsShared) GetMaxNumLines() int {
 	return o.options.MaxNumLines
 }
 
-func (o *OptionsShared) GetTransportMode() TransportMode {
+func (o *OptionsShared) GetTransportMode() *core.TransportMode {
 	o.mtx.Lock()
 	defer o.mtx.Unlock()
 	return o.options.TransportMode
@@ -122,19 +111,15 @@ var AllOptions = map[string]*OptionMeta{
 	}, // }}}
 	"transport": { // {{{
 		Get: func(o *Options) string {
-			return string(o.TransportMode)
+			return o.TransportMode.String()
 		},
 		Set: func(o *Options, value string) error {
-			if _, ok := allTransportModes[TransportMode(value)]; !ok {
-				slice := make([]string, 0, len(allTransportModes))
-				for v := range allTransportModes {
-					slice = append(slice, string(v))
-				}
-
-				return errors.Errorf("invalid transport mode %q, valid options are: %+v", value, slice)
+			tm, err := core.ParseTransportMode(value)
+			if err != nil {
+				return errors.Trace(err)
 			}
 
-			o.TransportMode = TransportMode(value)
+			o.TransportMode = tm
 			return nil
 		},
 		Help: "How to connect to remote hosts",
