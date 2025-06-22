@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [1.11.0](https://github.com/dimonomid/nerdlog/compare/v1.10.0...v1.11.0) (2025-06-22)
+
+
+### Features
+
+* Support custom transport command ([3161c2a](https://github.com/dimonomid/nerdlog/commit/3161c2aad3cde3ef51aafaadb00f244822a278ff))
+
+
+### Bug Fixes
+
+* Improve disconnect logic for ssh-bin ([13f2c00](https://github.com/dimonomid/nerdlog/commit/13f2c0010d97258cf2558e1045f14d733e5f2a18))
+* **UI:** When going to the table top, adjust the histogram pointer properly ([7e98a5c](https://github.com/dimonomid/nerdlog/commit/7e98a5c583c34a34bcaad5513d386104deb2916c))
+
 ## [1.10.0](https://github.com/dimonomid/nerdlog/compare/v1.9.0...v1.10.0) (2025-06-09)
 
 
