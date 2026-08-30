@@ -113,6 +113,7 @@ func (s *ShellTransportCustomCmd) doConnect(
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cmd := exec.CommandContext(ctx, cmdFields[0], cmdFields[1:]...)
+	cmd.Env = envWithOverrides(os.Environ(), s.params.EnvOverride)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		res.Err = errors.Annotatef(err, "getting stdin pipe")
@@ -226,6 +227,42 @@ func (s *ShellTransportCustomCmd) doConnect(
 		res.Err = errors.New("timeout waiting for SSH connection marker")
 		return res
 	}
+}
+
+// envWithOverrides returns env with overrides applied. An empty override value
+// removes the variable from the result.
+func envWithOverrides(env []string, overrides map[string]string) []string {
+	ret := make([]string, 0, len(env)+len(overrides))
+	seenOverrides := make(map[string]struct{}, len(overrides))
+
+	for _, entry := range env {
+		name, _, found := strings.Cut(entry, "=")
+		if !found {
+			// os.Environ always returns NAME=value entries, but keep this helper
+			// well-defined for any caller.
+			ret = append(ret, entry)
+			continue
+		}
+
+		override, ok := overrides[name]
+		if !ok {
+			ret = append(ret, entry)
+			continue
+		}
+
+		seenOverrides[name] = struct{}{}
+		if override != "" {
+			ret = append(ret, name+"="+override)
+		}
+	}
+
+	for name, value := range overrides {
+		if _, seen := seenOverrides[name]; !seen && value != "" {
+			ret = append(ret, name+"="+value)
+		}
+	}
+
+	return ret
 }
 
 func (s *ShellTransportCustomCmd) makeDebugInfo(message string) *ShellConnDebugInfo {
