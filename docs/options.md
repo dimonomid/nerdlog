@@ -53,7 +53,7 @@ For now, `ssh-lib` is still the default, but the plan is to change that at some 
 
 #### `custom:<arbitrary command>`
 
-The most flexible and advanced option: run the specified arbitrary command to connect to a remote host. That command must start a POSIX shell session, like `/bin/sh` or any other compatible shell.
+The most flexible and advanced option: run the specified arbitrary command to connect to a remote host. This is still experimental. That command must start a POSIX shell session, like `/bin/sh` or any other compatible shell.
 
 The main use case for it is to support Teleport or other similar tools which require more advanced authentication than the plain `ssh`.
 
@@ -63,7 +63,7 @@ The following Nerdlog-specific variables are available for the command:
 
 - `NLHOST`: hostname. Always present (comes from either the logstreams input, or the matched item in the logstreams config).
 - `NLPORT`: port. Only present if it was specified in the logstreams input, or in the logstreams config.
-- `NLUSER`: port. Only present if it was specified in the logstreams input, or in the logstreams config.
+- `NLUSER`: username. Only present if it was specified in the logstreams input, or in the logstreams config.
 
 In addition to these Nerdlog-specific ones, all environment variables are also available.
 
