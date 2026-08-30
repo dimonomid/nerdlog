@@ -130,9 +130,25 @@ func (s *ShellTransportCustomCmd) doConnect(
 	}
 
 	if err := cmd.Start(); err != nil {
+		cancel()
 		res.Err = errors.Annotatef(err, "starting shell")
 		return res
 	}
+
+	// Until the connection is successfully returned to the caller, this
+	// function owns the command and must clean it up on every error path. In
+	// particular, a custom tunnel can hang while connecting; leaving it alive
+	// after the marker timeout would make every retry leak another process.
+	connectionSucceeded := false
+	defer func() {
+		if connectionSucceeded {
+			return
+		}
+
+		_ = stdin.Close()
+		cancel()
+		_ = cmd.Wait()
+	}()
 
 	// To make sure we were able to connect, we just write "echo __CONNECTED__"
 	// to stdin, and wait for it to show up in the stdout.
@@ -151,7 +167,9 @@ func (s *ShellTransportCustomCmd) doConnect(
 
 	clientStdoutR, clientStdoutW := io.Pipe()
 	scanner := bufio.NewScanner(rawStdout)
-	connErrCh := make(chan error)
+	// Keep this buffered: after a timeout, doConnect stops receiving from this
+	// channel while the scanner goroutine is unwinding after command cleanup.
+	connErrCh := make(chan error, 1)
 	go func() {
 		defer clientStdoutW.Close()
 		for scanner.Scan() {
@@ -201,6 +219,7 @@ func (s *ShellTransportCustomCmd) doConnect(
 
 			ctxCancel: cancel,
 		}
+		connectionSucceeded = true
 		return res
 
 	case <-time.After(connectionTimeout):
