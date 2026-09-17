@@ -191,6 +191,9 @@ jobs:
           run: |
             set -e
 
+            # Job-level environment variables are not forwarded into the VM.
+            TAG="${{ inputs.tag || needs.release-please.outputs.tag_name }}"
+
             # Workaround for git safety checks
             git config --global --add safe.directory "${PWD}"
 
