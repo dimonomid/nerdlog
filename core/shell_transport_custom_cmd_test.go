@@ -25,13 +25,22 @@ func TestShellTransportCustomCmdPassesEnvOverridesToChildShell(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("the custom shell transport requires /bin/sh")
 	}
+	// Model a Nerdlog process which happens to have these variables in its own
+	// environment. Empty overrides must prevent them leaking into the transport.
+	t.Setenv("NLPORT", "ambient-port")
+	t.Setenv("NLUSER", "ambient-user")
 
 	transport := NewShellTransportCustomCmd(ShellTransportCustomCmdParams{
-		// The first read handles the connection-marker command. The shell which
-		// is exec'd afterward must inherit the environment overrides.
-		ShellCommand: `/bin/sh -c 'read command; eval "$command"; exec /bin/sh'`,
+		// The first read handles the connection-marker command. Before that, the
+		// script reports $1 and its runtime NLPORT/NLUSER values on stderr. $1 is
+		// populated by parser-time ${NLPORT:+...} expansion below, while the
+		// environment variables are read at runtime. The shell which is exec'd
+		// afterward must also inherit the environment overrides.
+		ShellCommand: `/bin/sh -c 'printf "%s,%s,%s\n" "$1" "$NLPORT" "$NLUSER" >&2; read command; eval "$command"; exec /bin/sh' parser-default ${NLPORT:+parser-port-$NLPORT}`,
 		EnvOverride: map[string]string{
 			"NLHOST": "host-from-test",
+			"NLPORT": "",
+			"NLUSER": "",
 		},
 	})
 
@@ -58,9 +67,17 @@ func TestShellTransportCustomCmdPassesEnvOverridesToChildShell(t *testing.T) {
 	}
 	defer result.Conn.Close()
 
+	// The empty overrides must defeat the ambient values in both parser-time
+	// expansion ($1) and the launched process environment (the other fields).
+	stderr := bufio.NewScanner(result.Conn.Stderr())
+	if !assert.True(t, stderr.Scan(), "expected diagnostic output from the child shell") {
+		return
+	}
+	assert.Equal(t, ",,", stderr.Text())
+
 	// Ask the child shell to reveal the inherited variable. Before the fix this
 	// expanded to an ambient (or empty) value instead of the EnvOverride value.
-	_, err := fmt.Fprintln(result.Conn.Stdin(), `echo "$NLHOST"`)
+	_, err := fmt.Fprintln(result.Conn.Stdin(), `echo "$NLHOST,$NLPORT,$NLUSER"`)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -71,7 +88,7 @@ func TestShellTransportCustomCmdPassesEnvOverridesToChildShell(t *testing.T) {
 	}
 	// Assert that the runtime environment, not only the parser-time expansion,
 	// contains the Nerdlog-provided host value.
-	assert.Equal(t, "host-from-test", stdout.Text())
+	assert.Equal(t, "host-from-test,,", stdout.Text())
 }
 
 func TestShellTransportCustomCmdTerminatesTimedOutCommand(t *testing.T) {

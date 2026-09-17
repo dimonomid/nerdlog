@@ -208,6 +208,8 @@ func TestLStreamsResolverSingleEntryNoGlob(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "myserver.com",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -242,6 +244,7 @@ func TestLStreamsResolverSingleEntryNoGlob(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "myserver.com",
 								"NLUSER": "myuser",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -311,6 +314,7 @@ func TestLStreamsResolverSingleEntryNoGlob(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "myserver.com",
 								"NLPORT": "777",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -486,6 +490,8 @@ func TestLStreamsResolverMultipleEntriesNoGlob(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "host1.com",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -498,6 +504,8 @@ func TestLStreamsResolverMultipleEntriesNoGlob(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "host2.com",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -558,6 +566,7 @@ func TestLStreamsResolverMultipleEntriesNoGlob(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "bar.com",
 								"NLUSER": "bob",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -871,6 +880,7 @@ func TestLStreamsResolverGlobOnlyNerdlogConfig(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "host-bar-from-nerdlog-config-01.com",
 								"NLUSER": "user-bar-from-nerdlog-config-01",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -884,6 +894,7 @@ func TestLStreamsResolverGlobOnlyNerdlogConfig(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "host-bar-from-nerdlog-config-02.com",
 								"NLUSER": "user-bar-from-nerdlog-config-02",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -1444,6 +1455,7 @@ func TestLStreamsResolverGlobOnlyNerdlogConfig(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "realhost.com",
 								"NLUSER": "user-from-nerdlog-config",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -1494,6 +1506,8 @@ func TestLStreamsResolverGlobOnlyNerdlogConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "baz-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1506,6 +1520,8 @@ func TestLStreamsResolverGlobOnlyNerdlogConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "baz-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1576,6 +1592,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1588,6 +1606,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1661,6 +1681,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1673,6 +1695,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1686,6 +1710,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshbar-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1698,6 +1724,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshbar-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1747,6 +1775,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1759,6 +1789,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1796,6 +1828,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshfoo-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1833,6 +1867,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshrealhost.com",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1870,6 +1906,8 @@ func TestLStreamsResolverGlobOnlySSHConfig(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "sshnoport-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -1999,6 +2037,7 @@ func TestLStreamsResolverGlobBothNerdlogAndSSHConfigs(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "host-bar-from-nerdlog-config-01.com",
 								"NLUSER": "user-bar-from-nerdlog-config-01",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -2012,6 +2051,7 @@ func TestLStreamsResolverGlobBothNerdlogAndSSHConfigs(t *testing.T) {
 							EnvOverride: map[string]string{
 								"NLHOST": "host-bar-from-nerdlog-config-02.com",
 								"NLUSER": "user-bar-from-nerdlog-config-02",
+								"NLPORT": "",
 							},
 						},
 					},
@@ -2063,6 +2103,8 @@ func TestLStreamsResolverGlobBothNerdlogAndSSHConfigs(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "baz-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2075,6 +2117,8 @@ func TestLStreamsResolverGlobBothNerdlogAndSSHConfigs(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "baz-02",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2217,6 +2261,8 @@ func TestLStreamsResolverLocalhost(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "127.0.0.1",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2271,6 +2317,8 @@ func TestLStreamsResolverShellInit(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "host-with-shell-init.com",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2313,6 +2361,8 @@ func TestLStreamsResolverTransportCustomCmd(t *testing.T) {
 								"NLHOST": "xyz-01",
 								// No details are filled from ssh config since it uses a custom
 								// transport command.
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2357,6 +2407,8 @@ func TestLStreamsResolverTransportCustomCmd(t *testing.T) {
 							ShellCommand: "myscript ${NLHOST}",
 							EnvOverride: map[string]string{
 								"NLHOST": "xyz-01",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2383,6 +2435,8 @@ func TestLStreamsResolverTransportCustomCmd(t *testing.T) {
 							ShellCommand: DefaultSSHShellCommand,
 							EnvOverride: map[string]string{
 								"NLHOST": "xyz-03-from-lstreams-config",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},
@@ -2433,6 +2487,8 @@ func TestLStreamsResolverCustomTransport(t *testing.T) {
 
 							EnvOverride: map[string]string{
 								"NLHOST": "myserver.com",
+								"NLPORT": "",
+								"NLUSER": "",
 							},
 						},
 					},

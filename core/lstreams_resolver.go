@@ -403,7 +403,12 @@ func (r *LStreamsResolver) parseLogStreamSpecEntry(s string) ([]LogStream, error
 				}
 
 				envOverride := map[string]string{
+					// Explicitly unset optional variables when they were not supplied.
+					// Otherwise, a same-named variable inherited by Nerdlog itself
+					// could accidentally affect the transport command.
 					"NLHOST": parsedAddr.host,
+					"NLPORT": "",
+					"NLUSER": "",
 				}
 
 				if parsedAddr.port != "" {
