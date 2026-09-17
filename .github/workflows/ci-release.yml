@@ -5,9 +5,16 @@ on:
     branches:
       - master
       - 'release-*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag whose archives should be tested (for example, v1.11.0)
+        required: true
+        type: string
 
 jobs:
   release-please:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       releases_created: ${{ steps.release-please.outputs.releases_created }}
@@ -26,7 +33,7 @@ jobs:
 
   goreleaser:
     needs: release-please
-    if: needs.release-please.outputs.releases_created == 'true'
+    if: github.event_name == 'push' && needs.release-please.outputs.releases_created == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -56,10 +63,13 @@ jobs:
         run: goreleaser release --release-notes CHANGELOG.md --clean
 
   postrelease-test-ubuntu:
-    needs: goreleaser
+    needs: [release-please, goreleaser]
+    if: >-
+      always() && (github.event_name == 'workflow_dispatch' ||
+      (needs.release-please.result == 'success' && needs.goreleaser.result == 'success'))
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ needs.release-please.outputs.tag_name }}
+      TAG: ${{ inputs.tag || needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -105,10 +115,13 @@ jobs:
           NERDLOG_E2E_TEST_NERDLOG_BINARY="${PWD}/extracted/${{ github.event.repository.name }}" make test ARGS='-run TestE2EScenarios'
 
   postrelease-test-macos:
-    needs: goreleaser
+    needs: [release-please, goreleaser]
+    if: >-
+      always() && (github.event_name == 'workflow_dispatch' ||
+      (needs.release-please.result == 'success' && needs.goreleaser.result == 'success'))
     runs-on: macos-latest
     env:
-      TAG: ${{ needs.release-please.outputs.tag_name }}
+      TAG: ${{ inputs.tag || needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -156,10 +169,13 @@ jobs:
           NERDLOG_E2E_TEST_NERDLOG_BINARY="${PWD}/extracted/${{ github.event.repository.name }}" make test ARGS='-run TestE2EScenarios'
 
   postrelease-test-freebsd:
-    needs: goreleaser
+    needs: [release-please, goreleaser]
+    if: >-
+      always() && (github.event_name == 'workflow_dispatch' ||
+      (needs.release-please.result == 'success' && needs.goreleaser.result == 'success'))
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ needs.release-please.outputs.tag_name }}
+      TAG: ${{ inputs.tag || needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
