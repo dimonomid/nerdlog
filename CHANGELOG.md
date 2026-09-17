@@ -1,6 +1,23 @@
 # Changelog
 
 
+## [1.11.0](https://github.com/dimonomid/nerdlog/compare/v1.10.0...v1.11.0) (2026-09-17)
+
+
+### Features
+
+* Support custom transport command ([3161c2a](https://github.com/dimonomid/nerdlog/commit/3161c2aad3cde3ef51aafaadb00f244822a278ff))
+* Upgrade Go to 1.24, and clipboard lib to 0.9 ([cd353c7](https://github.com/dimonomid/nerdlog/commit/cd353c7046a908a52efd49f9ad232aa0136b2722))
+
+
+### Bug Fixes
+
+* Clean up timed-out external transport commands ([500cea0](https://github.com/dimonomid/nerdlog/commit/500cea085613d06bef04d3ea02583a3492eaa298))
+* Improve disconnect logic for ssh-bin ([13f2c00](https://github.com/dimonomid/nerdlog/commit/13f2c0010d97258cf2558e1045f14d733e5f2a18))
+* Isolate absent custom transport connection variables ([41e6e08](https://github.com/dimonomid/nerdlog/commit/41e6e0888daf85752f501bcb076e01b70e681c4a))
+* Pass transport variables to custom command ([5c791f3](https://github.com/dimonomid/nerdlog/commit/5c791f3778451dbe570c981385769d5e68aef01a))
+* **UI:** When going to the table top, adjust the histogram pointer properly ([7e98a5c](https://github.com/dimonomid/nerdlog/commit/7e98a5c583c34a34bcaad5513d386104deb2916c))
+
 ## [1.10.0](https://github.com/dimonomid/nerdlog/compare/v1.9.0...v1.10.0) (2025-06-09)
 
 
