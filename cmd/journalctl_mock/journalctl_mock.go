@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
+const customDataPrefix = "customdata:"
+
 type LogEntry struct {
 	Timestamp time.Time
 	Text      string
@@ -20,6 +23,10 @@ type LogEntry struct {
 
 // Parses the timestamp from the start of the line and returns it along with the rest of the message.
 func parseLogLine(line string) (*LogEntry, error) {
+	if strings.HasPrefix(line, customDataPrefix) {
+		return parseCustomLogLine(strings.TrimPrefix(line, customDataPrefix))
+	}
+
 	splitIndex := strings.Index(line, " ")
 	if splitIndex == -1 {
 		return nil, errors.New("invalid log line: no space found")
@@ -36,6 +43,26 @@ func parseLogLine(line string) (*LogEntry, error) {
 	return &LogEntry{Timestamp: timestamp, Text: line}, nil
 }
 
+// parseCustomLogLine parses fixture-only JSON that separates the timestamp
+// used by the mock from the text emitted as journalctl output.
+func parseCustomLogLine(data string) (*LogEntry, error) {
+	var customData struct {
+		Time   *time.Time `json:"time"`
+		Output *string    `json:"output"`
+	}
+	if err := json.Unmarshal([]byte(data), &customData); err != nil {
+		return nil, fmt.Errorf("invalid custom journal entry: %w", err)
+	}
+	if customData.Time == nil {
+		return nil, errors.New("invalid custom journal entry: missing time")
+	}
+	if customData.Output == nil {
+		return nil, errors.New("invalid custom journal entry: missing output")
+	}
+
+	return &LogEntry{Timestamp: *customData.Time, Text: *customData.Output}, nil
+}
+
 func loadLogEntries(path string) ([]LogEntry, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -49,7 +76,8 @@ func loadLogEntries(path string) ([]LogEntry, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if len(line) >= 20 && line[4] == '-' && line[7] == '-' && line[10] == 'T' {
+		if strings.HasPrefix(line, customDataPrefix) ||
+			(len(line) >= 20 && line[4] == '-' && line[7] == '-' && line[10] == 'T') {
 			// New entry
 			entry, err := parseLogLine(line)
 			if err != nil {

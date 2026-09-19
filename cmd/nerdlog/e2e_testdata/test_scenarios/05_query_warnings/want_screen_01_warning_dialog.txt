@@ -9,14 +9,14 @@ awk pattern:                                                     Sep18 10:00 to 
 ║ 3 warnings:                                                                                                ║
 ║ 1: testhost-corrupted: log index ignored 1 malformed timestamp candidate; first malformed line: /tmp/nerdl ║
 ║ og_e2e_test_output/05_query_warnings/lstreams/testhost-corrupted/logfile:2                                 ║
-║ 2: testhost-corrupted: skipping malformed log record at /tmp/nerdlog_e2e_test_output/05_query_warnings/lst ║
-║ reams/testhost-corrupted/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\ ║
-║ x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\ ║
-║ x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"                                                              ║
+║ 2: testhost-corrupted: showing malformed log record at /tmp/nerdlog_e2e_test_output/05_query_warnings/lstr ║
+║ eams/testhost-corrupted/logfile:2 as raw text: parsing time: parsing time in log msg: parsing time "\x00\x ║
+║ 00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x ║
+║ 00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"                                                   ║
 ║ 3: testhost-corrupted: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x ║
 ║ 00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"        ║
 ║                                                                                                            ║
-║ Some log records were skipped, so the results may be incomplete.                                           ║
+║ Some log data could not be processed, so the results may be incomplete.                                    ║
 ║                                                                                                            ║
 ║ [X] Show warning dialog for testhost-corrupted                                                             ║
 ║                                                     OK                                                     ║
@@ -26,5 +26,5 @@ awk pattern:                                                     Sep18 10:00 to 
 
 
 
-idle 🖳 01 🖳 00 🖳 00 | testhost-corrupted                                                             2 / 2 / 2
+idle 🖳 01 🖳 00 🖳 00 | testhost-corrupted                                                             3 / 3 / 3
 Query took: XXXXXXXXXX; 3 warnings; results may be incomplete; use :querywarnings to see details

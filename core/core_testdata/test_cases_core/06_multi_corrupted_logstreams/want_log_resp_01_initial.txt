@@ -1,13 +1,13 @@
-NumMsgsTotal: 6
+NumMsgsTotal: 8
 LoadedEarlier: false
 Num errors: 0
 
 Num warnings: 6
 - testhost-corrupted-a: log index ignored 1 malformed timestamp candidate; first malformed line: /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile:2
-- testhost-corrupted-a: skipping malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+- testhost-corrupted-a: showing malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile:2 as raw text: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 - testhost-corrupted-a: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 - testhost-corrupted-b: log index ignored 1 malformed timestamp candidate; first malformed line: /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile:2
-- testhost-corrupted-b: skipping malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+- testhost-corrupted-b: showing malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile:2 as raw text: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 - testhost-corrupted-b: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 
 Num MinuteStats: 6
@@ -18,19 +18,25 @@ Num MinuteStats: 6
 - 2026-09-19-10-06: 1
 - 2026-09-19-10-07: 1
 
-Num Logs: 6
+Num Logs: 8
 - 2026-09-19T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-clean/logfile,000001,000001,----,clean-before
   context: {"hostname":"cleanhost","lstream":"testhost-clean","pid":"1","program":"app"}
   orig: Sep 19 10:00:00 cleanhost app[1]: clean-before
 - 2026-09-19T10:01:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile,000001,000001,----,a-before
   context: {"hostname":"badhost-a","lstream":"testhost-corrupted-a","pid":"1","program":"app"}
   orig: Sep 19 10:01:00 badhost-a app[1]: a-before
+- 2026-09-19T10:01:00.000000000Z,malformed,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile,000002,000002,----,"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00…\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Sep 19 10:02:00 badhost-a app[1]: a-corrupted" (945 bytes)
+  context: {"lstream":"testhost-corrupted-a"}
+  orig: "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00…\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Sep 19 10:02:00 badhost-a app[1]: a-corrupted" (945 bytes)
 - 2026-09-19T10:03:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile,000003,000003,----,a-after
   context: {"hostname":"badhost-a","lstream":"testhost-corrupted-a","pid":"1","program":"app"}
   orig: Sep 19 10:03:00 badhost-a app[1]: a-after
 - 2026-09-19T10:04:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile,000001,000001,----,b-before
   context: {"hostname":"badhost-b","lstream":"testhost-corrupted-b","pid":"1","program":"app"}
   orig: Sep 19 10:04:00 badhost-b app[1]: b-before
+- 2026-09-19T10:04:00.000000000Z,malformed,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile,000002,000002,----,"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00…\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Sep 19 10:05:00 badhost-b app[1]: b-corrupted" (945 bytes)
+  context: {"lstream":"testhost-corrupted-b"}
+  orig: "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00…\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Sep 19 10:05:00 badhost-b app[1]: b-corrupted" (945 bytes)
 - 2026-09-19T10:06:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile,000003,000003,----,b-after
   context: {"hostname":"badhost-b","lstream":"testhost-corrupted-b","pid":"1","program":"app"}
   orig: Sep 19 10:06:00 badhost-b app[1]: b-after

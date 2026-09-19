@@ -1,0 +1,54 @@
+descr: "Keep malformed pages visible and re-anchor them after loading earlier data"
+current_time: "2026-09-21T12:00:00Z"
+manager_params:
+  config_log_streams:
+    testhost-malformed-pagination:
+      log_files:
+        kind: all_from_dir
+        dir: logfiles
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "testhost-malformed-pagination"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "load the newest clean page"
+    query:
+      params:
+        max_num_lines: 3
+        from: "2026-09-21T09:59:00Z"
+        to: ""
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt
+
+  - descr: "load an entirely malformed page without repeating it"
+    query:
+      params:
+        max_num_lines: 3
+        from: "2026-09-21T09:59:00Z"
+        to: ""
+        pattern: ""
+        load_earlier: true
+      want: want_log_resp_02_load_more.txt
+
+  - descr: "load the preceding valid records and re-anchor the malformed block"
+    query:
+      params:
+        max_num_lines: 3
+        from: "2026-09-21T09:59:00Z"
+        to: ""
+        pattern: ""
+        load_earlier: true
+      want: want_log_resp_03_load_more.txt
+
+  - descr: "try to load more without repeating the malformed page"
+    query:
+      params:
+        max_num_lines: 3
+        from: "2026-09-21T09:59:00Z"
+        to: ""
+        pattern: ""
+        load_earlier: true
+      want: want_log_resp_04_load_more.txt

@@ -1,0 +1,45 @@
+descr: "Refuse journal pagination when the oldest loaded record has no timestamp"
+# This is an extremely unlikely defensive case: journalctl normally generates
+# a timestamp prefix for every record itself. It would require corrupt or
+# unexpected journalctl output, transport corruption, or a timestamp-parser
+# incompatibility.
+current_time: "2026-09-20T12:00:00Z"
+manager_params:
+  config_log_streams:
+    testhost-journal-malformed:
+      log_files:
+        kind: journalctl
+        journalctl_data_file: journalctl_data.txt
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+    testhost-file:
+      log_files:
+        kind: all_from_dir
+        dir: logfiles_file
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "testhost-*"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "load a page whose oldest journal record has no timestamp"
+    query:
+      params:
+        max_num_lines: 3
+        from: "2026-09-20T09:50:00Z"
+        to: "2026-09-20T10:10:00Z"
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt
+
+  - descr: "refuse to paginate without an exact journal boundary"
+    query:
+      params:
+        max_num_lines: 3
+        from: "2026-09-20T09:50:00Z"
+        to: "2026-09-20T10:10:00Z"
+        pattern: ""
+        load_earlier: true
+      want: want_log_resp_02_load_more.txt

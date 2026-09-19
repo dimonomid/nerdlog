@@ -1,0 +1,4 @@
+2026-09-20T09:58:00.000000+00:00 testhost-journal-malformed app[1]: older valid record
+customdata:{"time":"2026-09-20T10:00:00Z","output":"MALFORMED JOURNAL OUTPUT WITHOUT TIMESTAMP"}
+2026-09-20T10:01:00.000000+00:00 testhost-journal-malformed app[1]: newer valid record
+2026-09-20T10:02:00.000000+00:00 testhost-journal-malformed app[1]: newest valid record

@@ -1,0 +1,57 @@
+NumMsgsTotal: 10
+LoadedEarlier: false
+Num errors: 0
+
+Num warnings: 2
+- testhost-journal-malformed: showing malformed log record at journalctl:0 as raw text: parsing time: parsing time in log msg: parsing time "MALFORMED JOURNAL OUTPUT WITHOUT" as "2006-01-02T15:04:05.000000Z07:00": cannot parse "MALFORMED JOURNAL OUTPUT WITHOUT" as "2006"
+- testhost-journal-malformed: skipping malformed mstats: parsing time "RMED JOURNA" as "01-02T15:04": cannot parse "RMED JOURNA" as "01"
+
+Num MinuteStats: 6
+- 2026-09-20-09-57: 1
+- 2026-09-20-09-58: 2
+- 2026-09-20-09-59: 1
+- 2026-09-20-10-00: 1
+- 2026-09-20-10-01: 2
+- 2026-09-20-10-02: 2
+
+Num Logs: 5
+- 0001-01-01T00:00:00.000000000Z,malformed,journalctl,000000,000000,----,"MALFORMED JOURNAL OUTPUT WITHOUT TIMESTAMP"
+  context: {"lstream":"testhost-journal-malformed"}
+  orig: "MALFORMED JOURNAL OUTPUT WITHOUT TIMESTAMP"
+- 2026-09-20T10:01:00.000000000Z,F,journalctl,000000,000000,----,newer valid record
+  context: {"hostname":"testhost-journal-malformed","lstream":"testhost-journal-malformed","pid":"1","program":"app"}
+  orig: 2026-09-20T10:01:00.000000+00:00 testhost-journal-malformed app[1]: newer valid record
+- 2026-09-20T10:01:30.000000000Z,F,/tmp/nerdlog_core_test_output/53_journalctl_malformed_pagination/lstreams/testhost-file/logfile,000005,000005,----,second initial file record
+  context: {"hostname":"testhost-file","lstream":"testhost-file","pid":"2","program":"app"}
+  orig: 2026-09-20T10:01:30.000000+00:00 testhost-file app[2]: second initial file record
+- 2026-09-20T10:02:00.000000000Z,F,journalctl,000000,000000,----,newest valid record
+  context: {"hostname":"testhost-journal-malformed","lstream":"testhost-journal-malformed","pid":"1","program":"app"}
+  orig: 2026-09-20T10:02:00.000000+00:00 testhost-journal-malformed app[1]: newest valid record
+- 2026-09-20T10:02:30.000000000Z,F,/tmp/nerdlog_core_test_output/53_journalctl_malformed_pagination/lstreams/testhost-file/logfile,000006,000006,----,newest file record
+  context: {"hostname":"testhost-file","lstream":"testhost-file","pid":"2","program":"app"}
+  orig: 2026-09-20T10:02:30.000000+00:00 testhost-file app[2]: newest file record
+
+DebugInfo:
+{
+  "testhost-file": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/53_journalctl_malformed_pagination/lstreams/testhost-file/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-20-09:50 isn't found, will use the beginning",
+      "debug:the to 2026-09-20-10:10 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/53_journalctl_malformed_pagination/lstreams/testhost-file/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/53_journalctl_malformed_pagination/lstreams/testhost-file/logfile'",
+      "debug:Filtered out 0 from 6 lines"
+    ]
+  },
+  "testhost-journal-malformed": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:Command to filter logs by time range:",
+      "debug: /tmp/nerdlog_core_test_output/53_journalctl_malformed_pagination/lstreams/testhost-journal-malformed/journalctl_mock/journalctl_mock.sh --output=short-iso-precise --quiet --reverse --since \"2026-09-20 09:50:00\" --until \"2026-09-20 10:10:00\"",
+      "debug:Filtered out 0 from 4 lines"
+    ]
+  }
+}

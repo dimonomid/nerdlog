@@ -24,6 +24,6 @@ func TestLstreamCmdCtxQueryLogsWarningsAreBounded(t *testing.T) {
 	if assert.Len(t, ctx.Resp.Warnings, maxQueryWarnings+1) {
 		assert.Equal(t, "warning 0", ctx.Resp.Warnings[0].Error())
 		assert.Equal(t, "warning 4", ctx.Resp.Warnings[maxQueryWarnings-1].Error())
-		assert.Equal(t, "skipped 5 additional malformed log records", ctx.Resp.Warnings[maxQueryWarnings].Error())
+		assert.Equal(t, "5 additional query warnings omitted", ctx.Resp.Warnings[maxQueryWarnings].Error())
 	}
 }

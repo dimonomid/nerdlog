@@ -32,3 +32,24 @@ func TestClampDecreasedTimestampLeavesOrderedTimeAlone(t *testing.T) {
 	assert.Equal(t, wantTime, msg.Time)
 	assert.True(t, msg.OrigDecreasedTime.IsZero())
 }
+
+// TestMakeMalformedLogMsgPreservesParsedTimestamp verifies that a failure
+// after timestamp parsing keeps that timestamp while restoring the raw text.
+func TestMakeMalformedLogMsgPreservesParsedTimestamp(t *testing.T) {
+	parsedTime := time.Date(2026, 9, 19, 10, 2, 3, 0, time.UTC)
+	raw := LogMsg{
+		LogFilename:        SpecialFilenameJournalctl,
+		LogLinenumber:      7,
+		CombinedLinenumber: 7,
+		Msg:                "raw journal record",
+		OrigLine:           "raw journal record",
+	}
+
+	got := makeMalformedLogMsg(raw, parsedTime, parsedTime.Add(-time.Second), "localhost")
+
+	assert.True(t, got.Malformed)
+	assert.Equal(t, parsedTime, got.Time)
+	assert.Equal(t, "raw journal record", got.Msg)
+	assert.Equal(t, "raw journal record", got.OrigLine)
+	assert.Equal(t, map[string]string{"lstream": "localhost"}, got.Context)
+}

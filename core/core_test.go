@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -566,7 +567,9 @@ func printMinuteStats(w io.Writer, stats map[int64]MinuteStatsItem) {
 func printLogs(w io.Writer, logs []LogMsg) {
 	for _, msg := range logs {
 		fmt.Fprintf(w, "- %s", msg.Time.Format("2006-01-02T15:04:05.000000000Z07:00"))
-		if !msg.OrigDecreasedTime.IsZero() {
+		if msg.Malformed {
+			fmt.Fprintf(w, ",malformed")
+		} else if !msg.OrigDecreasedTime.IsZero() {
 			fmt.Fprintf(
 				w,
 				",orig-decreased-time=%s",
@@ -580,17 +583,35 @@ func printLogs(w io.Writer, logs []LogMsg) {
 		fmt.Fprintf(w, ",%.6d", msg.LogLinenumber)
 		fmt.Fprintf(w, ",%.6d", msg.CombinedLinenumber)
 		fmt.Fprintf(w, ",%s", logLevelToStr(msg.Level))
-		fmt.Fprintf(w, ",%s", msg.Msg)
+		if msg.Malformed {
+			fmt.Fprintf(w, ",%s", formatMalformedLogText(msg.Msg))
+		} else {
+			fmt.Fprintf(w, ",%s", msg.Msg)
+		}
 
 		ctxData, _ := json.Marshal(msg.Context)
 		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "  context: %s", string(ctxData))
 
 		fmt.Fprintf(w, "\n")
-		fmt.Fprintf(w, "  orig: %s", msg.OrigLine)
+		if msg.Malformed {
+			fmt.Fprintf(w, "  orig: %s", formatMalformedLogText(msg.OrigLine))
+		} else {
+			fmt.Fprintf(w, "  orig: %s", msg.OrigLine)
+		}
 
 		fmt.Fprintf(w, "\n")
 	}
+}
+
+// formatMalformedLogText keeps golden files readable while recording both ends
+// and the full byte length of unusually large corrupted lines.
+func formatMalformedLogText(s string) string {
+	const endLen = 80
+	if len(s) <= 2*endLen {
+		return strconv.Quote(s)
+	}
+	return fmt.Sprintf("%s (%d bytes)", strconv.Quote(s[:endLen]+"…"+s[len(s)-endLen:]), len(s))
 }
 
 func logLevelToStr(logLevel LogLevel) string {

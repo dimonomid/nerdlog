@@ -67,12 +67,42 @@ test_steps:
         - pattern:     'Query took: [^;]+'
           replacement: 'Query took: XXXXXXXXXX'
 
+  - descr: "focus the malformed record"
+    send_keys: [
+        'k',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_03_malformed_record.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'
+
+  - descr: "show malformed row details"
+    send_keys: [
+        'C-m',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_04_malformed_row_details.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'
+
+  - descr: "close malformed row details"
+    send_keys: [
+        'C-[',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_05_malformed_row_details_closed.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'
+
   - descr: "rerun query without automatically showing suppressed dialog"
     send_keys: [
         'C-r',
       ]
     want_screen_snapshot:
-      snapshot: want_screen_03_suppressed_warning_status.txt
+      snapshot: want_screen_06_suppressed_warning_status.txt
       substitutions:
         - pattern:     'Query took: [^;]+'
           replacement: 'Query took: XXXXXXXXXX'
@@ -86,7 +116,7 @@ test_steps:
         'C-m',
       ]
     want_screen_snapshot:
-      snapshot: want_screen_04_qwarn_dialog.txt
+      snapshot: want_screen_07_qwarn_dialog.txt
       substitutions:
         - pattern:     'Query took: [^;]+'
           replacement: 'Query took: XXXXXXXXXX'

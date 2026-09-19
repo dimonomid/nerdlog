@@ -611,7 +611,8 @@ func NewMainView(params *MainViewParams) *MainView {
 	//mv.logsTable.SetEvaluateAllRows(true)
 	mv.logsTable.SetFocusFunc(func() {
 		mv.logsTable.SetSelectable(true, false)
-		mv.histogram.ShowExternalCursor()
+		row, _ := mv.logsTable.GetSelection()
+		mv.bumpHistogramExternalCursor(row)
 	})
 	mv.logsTable.SetBlurFunc(func() {
 		mv.logsTable.SetSelectable(false, false)
@@ -1484,8 +1485,7 @@ func (mv *MainView) formatLogs() {
 			msgColor = tcell.ColorPink
 		}
 
-		timeToDisplay, timeColor := logMsgDisplayTime(msg)
-		timeStr := timeToDisplay.In(tz).Format(logsTableTimeLayout)
+		timeStr, timeColor := logMsgDisplayTimeCell(msg, tz)
 
 		for i, colName := range colNames {
 			var cell *tview.TableCell
@@ -1506,6 +1506,17 @@ func (mv *MainView) formatLogs() {
 	}
 
 	mv.bumpStatusLineRight()
+}
+
+const malformedLogTimeText = "--- MALFORMED ---"
+
+// logMsgDisplayTimeCell formats the table's timestamp or its malformed marker.
+func logMsgDisplayTimeCell(msg core.LogMsg, location *time.Location) (string, tcell.Color) {
+	if msg.Malformed {
+		return malformedLogTimeText, tcell.ColorRed
+	}
+	timeToDisplay, color := logMsgDisplayTime(msg)
+	return timeToDisplay.In(location).Format(logsTableTimeLayout), color
 }
 
 func logMsgDisplayTime(msg core.LogMsg) (time.Time, tcell.Color) {
@@ -1588,15 +1599,28 @@ func (mv *MainView) bumpHistogramExternalCursor(row int) {
 
 	firstCell := mv.logsTable.GetCell(row, 0)
 	if firstCell == nil {
+		mv.histogram.HideExternalCursor()
 		return
 	}
 
 	msg, ok := firstCell.GetReference().(core.LogMsg)
 	if !ok {
+		mv.histogram.HideExternalCursor()
+		return
+	}
+	if msg.Time.IsZero() {
+		// It can happen legit when the earliest record we have has malformed time,
+		// so we can't infer its time from an earlier record.
+		mv.histogram.HideExternalCursor()
 		return
 	}
 
 	mv.histogram.SetExternalCursor(int(msg.Time.Unix()))
+	if mv.logsTable.HasFocus() {
+		mv.histogram.ShowExternalCursor()
+	} else {
+		mv.histogram.HideExternalCursor()
+	}
 }
 
 func newTableCellHeader(text string) *tview.TableCell {
@@ -2135,7 +2159,7 @@ func (mv *MainView) handleQueryWarnings(
 
 	var msgv *MessageView
 	msgv = mv.showMessagebox("queryWarning", "Log query warning", fmt.Sprintf(
-		"%s\n\nSome log records were skipped, so the results may be incomplete.",
+		"%s\n\nSome log data could not be processed, so the results may be incomplete.",
 		formatQueryWarnings(warnings, numWarnings),
 	), &MessageboxParams{
 		BackgroundColor: tcell.ColorDarkOrchid,

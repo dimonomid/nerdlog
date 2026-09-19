@@ -120,11 +120,11 @@ func (ctx *lstreamCmdCtxQueryLogs) addWarning(err error) {
 	}
 }
 
-// finalizeWarnings adds a summary for malformed records omitted by addWarning.
+// finalizeWarnings adds a summary for warning details omitted by addWarning.
 func (ctx *lstreamCmdCtxQueryLogs) finalizeWarnings() {
 	if ctx.Resp.NumWarnings > maxQueryWarnings {
 		ctx.Resp.Warnings = append(ctx.Resp.Warnings, errors.Errorf(
-			"skipped %d additional malformed log records",
+			"%d additional query warnings omitted",
 			ctx.Resp.NumWarnings-maxQueryWarnings,
 		))
 	}

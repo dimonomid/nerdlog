@@ -429,7 +429,20 @@ func (lsman *LStreamsManager) run() {
 						if nodeCtx, ok := lsman.curLogs.perNode[lstreamName]; ok {
 							if len(nodeCtx.logs) > 0 {
 								if nodeCtx.logs[0].LogFilename == SpecialFilenameJournalctl {
-									cmdQueryLogs.timestampUntil = getEarliestTimeAndNumMsgs(nodeCtx.logs)
+									var err error
+									cmdQueryLogs.timestampUntil, err = getJournalPaginationBoundary(nodeCtx.logs)
+									if err != nil {
+										if lsman.curQueryLogsCtx.paginationRefused == nil {
+											lsman.curQueryLogsCtx.paginationRefused = map[string]struct{}{}
+										}
+										lsman.curQueryLogsCtx.paginationRefused[lstreamName] = struct{}{}
+										lsman.curQueryLogsCtx.resps[lstreamName] = &LogResp{
+											MinuteStats: map[int64]MinuteStatsItem{},
+											Warnings:    []error{err},
+											NumWarnings: 1,
+										}
+										continue
+									}
 								} else {
 									cmdQueryLogs.linesUntil = nodeCtx.logs[0].CombinedLinenumber
 								}
@@ -441,6 +454,15 @@ func (lsman *LStreamsManager) run() {
 						respCh:    lsman.respCh,
 						queryLogs: &cmdQueryLogs,
 					})
+				}
+
+				// Every logstream can finish locally when none has a usable journal
+				// pagination boundary, so no client response would otherwise complete
+				// the query.
+				if len(lsman.curQueryLogsCtx.resps) == len(lsman.lscs) {
+					lsman.mergeLogRespsAndSend()
+					lsman.curQueryLogsCtx = nil
+					lsman.sendStateUpdate()
 				}
 
 			case req.updLStreams != nil:
@@ -601,6 +623,21 @@ func getEarliestTimeAndNumMsgs(logs []LogMsg) *timeAndNumMsgs {
 	return ret
 }
 
+// getJournalPaginationBoundary returns the timestamp boundary needed to load
+// older journal records, or refuses pagination when the oldest record has no
+// timestamp from which an exact boundary can be constructed.
+func getJournalPaginationBoundary(logs []LogMsg) (*timeAndNumMsgs, error) {
+	boundary := getEarliestTimeAndNumMsgs(logs)
+	if boundary == nil {
+		return nil, nil
+	}
+	if boundary.time.IsZero() {
+		return nil, errors.Errorf("cannot load earlier journal records: the oldest loaded record has no valid timestamp for pagination")
+	}
+
+	return boundary, nil
+}
+
 func (lsman *LStreamsManager) getNumLStreamClientsTearingDown() int {
 	numPending := 0
 	for _, v := range lsman.lscPendingTeardown {
@@ -692,6 +729,13 @@ type manQueryLogsCtx struct {
 	// been collected, we'll start merging them together.
 	resps map[string]*LogResp
 	errs  map[string]error
+
+	// paginationRefused contains logstreams where loading older logs was
+	// skipped.  When merging responses, we leave their logs and isMaxNumLines
+	// unchanged, but still include the warning from their response. It means
+	// that these logstreams will not be considered exhausted, and so earlier
+	// messages from other logstreams won't be shown to the user.
+	paginationRefused map[string]struct{}
 }
 
 type manLogsCtx struct {
@@ -855,12 +899,11 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 		}
 
 		for nodeName, resp := range resps {
+			lsman.curLogs.numMsgsTotal += resp.NumMsgsTotal
 			for k, v := range resp.MinuteStats {
 				lsman.curLogs.minuteStats[k] = MinuteStatsItem{
 					NumMsgs: lsman.curLogs.minuteStats[k].NumMsgs + v.NumMsgs,
 				}
-
-				lsman.curLogs.numMsgsTotal += v.NumMsgs
 			}
 
 			lsman.curLogs.perNode[nodeName] = &manLogsNodeCtx{
@@ -871,7 +914,14 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 	} else {
 		// Add to existing logs
 		for nodeName, resp := range resps {
+			if _, refused := lsman.curQueryLogsCtx.paginationRefused[nodeName]; refused {
+				// No page was loaded, so preserve both the logs and their coverage state.
+				continue
+			}
 			pn := lsman.curLogs.perNode[nodeName]
+			if len(pn.logs) > 0 && pn.logs[0].Malformed && pn.logs[0].Time.IsZero() && len(resp.Logs) > 0 {
+				anchorUnresolvedMalformedPrefix(pn.logs, resp.Logs[len(resp.Logs)-1].Time)
+			}
 			pn.logs = append(resp.Logs, pn.logs...)
 			pn.isMaxNumLines = len(resp.Logs) == lsman.curQueryLogsCtx.req.MaxNumLines
 		}
@@ -936,8 +986,8 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 
 		// If the timespan covered by logs from this logstream is shorter than what
 		// we've seen before, remember it.
-		if pn.isMaxNumLines && logsCoveredSince.Before(pn.logs[0].Time) {
-			logsCoveredSince = pn.logs[0].Time
+		if firstTime, ok := firstResolvedLogTime(pn.logs); pn.isMaxNumLines && ok && logsCoveredSince.Before(firstTime) {
+			logsCoveredSince = firstTime
 		}
 	}
 
@@ -950,14 +1000,60 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 		return ret.Logs[i].Context["lstream"] < ret.Logs[j].Context["lstream"]
 	})
 
-	// Cut all potentially incomplete logs, only leave timespan that we're sure
-	// we have covered from all nodes
-	coveredSinceIdx := sort.Search(len(ret.Logs), func(i int) bool {
-		return !ret.Logs[i].Time.Before(logsCoveredSince)
-	})
-	ret.Logs = ret.Logs[coveredSinceIdx:]
+	// Cut potentially incomplete dated logs, but retain malformed records whose
+	// position cannot be resolved until an earlier valid record is loaded.
+	ret.Logs = retainCoveredLogs(ret.Logs, logsCoveredSince)
 
 	lsman.sendLogRespUpdate(ret)
+}
+
+// anchorUnresolvedMalformedPrefix applies a newly discovered preceding time
+// only to the unresolved malformed records at the start of an existing page.
+func anchorUnresolvedMalformedPrefix(logs []LogMsg, anchorTime time.Time) {
+	if anchorTime.IsZero() {
+		return
+	}
+	for i := range logs {
+		if !logs[i].Malformed || !logs[i].Time.IsZero() {
+			break
+		}
+		logs[i].Time = anchorTime
+	}
+}
+
+// firstResolvedLogTime returns the first timestamp that can constrain the
+// timespan covered by a logstream, ignoring unresolved malformed records.
+func firstResolvedLogTime(logs []LogMsg) (time.Time, bool) {
+	for _, logMsg := range logs {
+		if !logMsg.Time.IsZero() {
+			return logMsg.Time, true
+		}
+	}
+	return time.Time{}, false
+}
+
+// retainCoveredLogs leaves only the dated timespan known to be covered by all
+// queried nodes, while preserving leading malformed records that do not yet
+// have an effective timestamp.
+func retainCoveredLogs(logs []LogMsg, coveredSince time.Time) []LogMsg {
+	unresolvedEnd := 0
+	for unresolvedEnd < len(logs) && logs[unresolvedEnd].Malformed && logs[unresolvedEnd].Time.IsZero() {
+		unresolvedEnd++
+	}
+
+	coveredStart := unresolvedEnd + sort.Search(len(logs)-unresolvedEnd, func(i int) bool {
+		return !logs[unresolvedEnd+i].Time.Before(coveredSince)
+	})
+
+	if unresolvedEnd == 0 {
+		return logs[coveredStart:]
+	}
+	if coveredStart == unresolvedEnd {
+		return logs
+	}
+
+	n := copy(logs[unresolvedEnd:], logs[coveredStart:])
+	return logs[:unresolvedEnd+n]
 }
 
 func (lsman *LStreamsManager) randomString(length int) string {

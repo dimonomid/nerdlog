@@ -55,6 +55,18 @@ We use a mocked journalctl for these test cases, see `../cmd/journalctl_mock`. T
 
 These tests run even on platforms without `journalctl` (such as FreeBSD and MacOS), since the mock is cross-platform.
 
+Most journalctl fixture lines are emitted verbatim. A fixture can give the
+mock a valid internal timestamp while emitting different text by using a JSON
+line such as:
+
+```
+customdata:{"time":"2026-09-20T10:00:00Z","output":"MALFORMED JOURNAL OUTPUT"}
+```
+
+The mock uses `time` for ordering and `--since`/`--until` filtering, and emits
+`output` verbatim. This is useful for testing malformed journalctl output
+without making the mock itself unable to order the entry.
+
 ### Core tests
 
 These cover not only the agent script, but also `LStreamClient`, `LStreamsManager`, and all the helpers. Basically, almost everything in the `../core` package, thus the name.

@@ -717,7 +717,9 @@ func (rdv *RowDetailsView) updateUI() {
 		if rdv.msg != nil {
 			switch name.field.Name {
 			case FieldNameTime:
-				if !rdv.msg.OrigDecreasedTime.IsZero() {
+				if rdv.msg.Malformed {
+					val = malformedLogTimeText
+				} else if !rdv.msg.OrigDecreasedTime.IsZero() {
 					val = fmt.Sprintf(
 						"%s (DECREASED FROM: %s)",
 						rdv.msg.OrigDecreasedTime.String(),
@@ -770,8 +772,12 @@ func (rdv *RowDetailsView) updateUI() {
 		}
 
 		valueCell = newTableCellLogmsg(valStr)
-		if name.field.Name == FieldNameTime && rdv.msg != nil && !rdv.msg.OrigDecreasedTime.IsZero() {
-			valueCell.SetTextColor(logMsgTimeColor(*rdv.msg))
+		if name.field.Name == FieldNameTime && rdv.msg != nil {
+			if rdv.msg.Malformed {
+				valueCell.SetTextColor(tcell.ColorRed)
+			} else if !rdv.msg.OrigDecreasedTime.IsZero() {
+				valueCell.SetTextColor(logMsgTimeColor(*rdv.msg))
+			}
 		}
 		rdv.tbl.SetCell(nRow, rdvColIdxValue, valueCell)
 

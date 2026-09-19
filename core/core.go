@@ -40,8 +40,8 @@ type LogResp struct {
 
 	Logs []LogMsg
 
-	// NumMsgsTotal is the total number of messages in the time range (and
-	// included in MinuteStats). This number is usually larger than len(Logs).
+	// NumMsgsTotal is the total number of messages in the time range. Messages
+	// whose timestamp is malformed cannot be represented in MinuteStats.
 	NumMsgsTotal int
 
 	// DebugInfo contains info collected during this particular query.
@@ -76,8 +76,8 @@ type LogRespTotal struct {
 
 	Logs []LogMsg
 
-	// NumMsgsTotal is the total number of messages in the time range (and
-	// included in MinuteStats). This number is usually larger than len(Logs).
+	// NumMsgsTotal is the total number of messages in the time range. Messages
+	// whose timestamp is malformed cannot be represented in MinuteStats.
 	NumMsgsTotal int
 
 	Errs []error
@@ -116,6 +116,10 @@ type MinuteStatsItem struct {
 
 type LogMsg struct {
 	Time time.Time
+
+	// Malformed indicates that Msg contains the unparsed original log line.
+	// Time can be zero when no preceding valid record has been loaded yet.
+	Malformed bool
 
 	// OrigDecreasedTime preserves the parsed timestamp when Time is clamped to
 	// the preceding message's timestamp to keep query results monotonic.

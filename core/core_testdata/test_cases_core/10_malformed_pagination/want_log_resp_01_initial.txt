@@ -1,0 +1,41 @@
+NumMsgsTotal: 8
+LoadedEarlier: false
+Num errors: 0
+
+Num warnings: 2
+- testhost-malformed-pagination: log index ignored 3 malformed timestamp candidates; first malformed line: /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile:3
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malfo" as "Jan _2 15:04": cannot parse "BROKEN malfo" as "Jan"
+
+Num MinuteStats: 5
+- 2026-09-21-10-00: 1
+- 2026-09-21-10-01: 1
+- 2026-09-21-10-06: 1
+- 2026-09-21-10-07: 1
+- 2026-09-21-10-08: 1
+
+Num Logs: 3
+- 2026-09-21T10:06:00.000000000Z,F,/tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile,000006,000006,----,valid-after
+  context: {"hostname":"testhost","lstream":"testhost-malformed-pagination","pid":"1","program":"app"}
+  orig: Sep 21 10:06:00 testhost app[1]: valid-after
+- 2026-09-21T10:07:00.000000000Z,F,/tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile,000007,000007,----,valid-after-two
+  context: {"hostname":"testhost","lstream":"testhost-malformed-pagination","pid":"1","program":"app"}
+  orig: Sep 21 10:07:00 testhost app[1]: valid-after-two
+- 2026-09-21T10:08:00.000000000Z,F,/tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile,000008,000008,----,valid-after-three
+  context: {"hostname":"testhost","lstream":"testhost-malformed-pagination","pid":"1","program":"app"}
+  orig: Sep 21 10:08:00 testhost app[1]: valid-after-three
+
+DebugInfo:
+{
+  "testhost-malformed-pagination": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-21-09:59 isn't found, will use the beginning",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile'",
+      "debug:Filtered out 0 from 8 lines"
+    ]
+  }
+}

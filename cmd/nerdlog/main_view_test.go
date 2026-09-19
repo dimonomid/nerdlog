@@ -51,6 +51,49 @@ func TestLogMsgDisplayTimeUsesEffectiveTime(t *testing.T) {
 	assert.Equal(t, tcell.ColorLightBlue, color)
 }
 
+// TestLogMsgDisplayTimeCellShowsMalformedMarker verifies that a raw record's
+// unavailable or inherited timestamp is never presented as a real timestamp.
+func TestLogMsgDisplayTimeCellShowsMalformedMarker(t *testing.T) {
+	text, color := logMsgDisplayTimeCell(core.LogMsg{
+		Time:      time.Date(2026, 9, 19, 12, 5, 0, 0, time.UTC),
+		Malformed: true,
+	}, time.UTC)
+
+	assert.Equal(t, malformedLogTimeText, text)
+	assert.Equal(t, tcell.ColorRed, color)
+}
+
+// TestHistogramExternalCursorFollowsOnlyResolvedFocusedRows verifies that an
+// unresolved record hides the cursor, and a later resolved selection restores
+// it without making the cursor visible while the log table is blurred.
+func TestHistogramExternalCursorFollowsOnlyResolvedFocusedRows(t *testing.T) {
+	t1 := time.Date(2026, 9, 20, 10, 0, 0, 0, time.UTC)
+	t2 := t1.Add(time.Minute)
+	mv := &MainView{
+		logsTable: tview.NewTable(),
+		histogram: NewHistogram(),
+	}
+	mv.logsTable.SetCell(2, 0, tview.NewTableCell("").SetReference(core.LogMsg{Time: t1}))
+	mv.logsTable.SetCell(3, 0, tview.NewTableCell("").SetReference(core.LogMsg{Malformed: true}))
+	mv.logsTable.SetCell(4, 0, tview.NewTableCell("").SetReference(core.LogMsg{Time: t2}))
+	mv.logsTable.Focus(nil)
+
+	mv.bumpHistogramExternalCursor(2)
+	assert.True(t, mv.histogram.externalCursorVisible)
+	assert.Equal(t, int(t1.Unix()), mv.histogram.externalCursor)
+
+	mv.bumpHistogramExternalCursor(3)
+	assert.False(t, mv.histogram.externalCursorVisible)
+
+	mv.bumpHistogramExternalCursor(4)
+	assert.True(t, mv.histogram.externalCursorVisible)
+	assert.Equal(t, int(t2.Unix()), mv.histogram.externalCursor)
+
+	mv.logsTable.Blur()
+	mv.bumpHistogramExternalCursor(2)
+	assert.False(t, mv.histogram.externalCursorVisible)
+}
+
 // TestRowDetailsColorsDecreasedTimeByAmount verifies that the time row shows
 // both timestamps using the same decrease-severity colors as the log table.
 func TestRowDetailsColorsDecreasedTimeByAmount(t *testing.T) {
@@ -104,4 +147,35 @@ func TestRowDetailsColorsDecreasedTimeByAmount(t *testing.T) {
 			assert.Equal(t, test.color, view.tbl.GetCell(row, rdvColIdxValue).Color)
 		})
 	}
+}
+
+// TestRowDetailsShowsMalformedTimeMarker verifies that the real row-details
+// widget hides a malformed record's internal anchoring timestamp.
+func TestRowDetailsShowsMalformedTimeMarker(t *testing.T) {
+	msg := core.LogMsg{
+		Time:      time.Date(2026, 9, 19, 12, 5, 0, 0, time.UTC),
+		Malformed: true,
+		Msg:       "raw malformed line",
+	}
+	view := NewRowDetailsView(
+		&MainView{params: MainViewParams{App: tview.NewApplication()}},
+		&RowDetailsViewParams{
+			Data: QueryFull{SelectQuery: DefaultSelectQuery},
+			ExistingNamesSet: map[string]struct{}{
+				FieldNameTime:    {},
+				FieldNameMessage: {},
+			},
+			Msg: &msg,
+		},
+	)
+
+	for row := 0; row < view.tbl.GetRowCount(); row++ {
+		if view.tbl.GetCell(row, rdvColIdxName).Text != FieldNameTime {
+			continue
+		}
+		assert.Equal(t, malformedLogTimeText, view.tbl.GetCell(row, rdvColIdxValue).Text)
+		assert.Equal(t, tcell.ColorRed, view.tbl.GetCell(row, rdvColIdxValue).Color)
+		return
+	}
+	t.Fatal("time row not found")
 }
