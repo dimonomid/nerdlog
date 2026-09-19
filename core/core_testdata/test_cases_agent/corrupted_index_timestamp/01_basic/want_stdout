@@ -1,0 +1,11 @@
+logfile:/tmp/nerdlog-empty-file:0
+logfile:/tmp/nerdlog_agent_test_output/corrupted_index_timestamp/01_basic/logfile:0
+s:09-19T10:00,1
+s:09-19T10:02,1
+s:bad-timesta,3
+m:1:2026-09-19T10:00:00.000000+00:00 testhost app[1]: before
+m:2:3000-bad-timestamp-one testhost app[1]: corrupted-one
+m:3:4000-bad-timestamp-two testhost app[1]: corrupted-two
+m:4:5000-bad-timestamp-three testhost app[1]: corrupted-three
+m:5:2026-09-19T10:02:00.000000+00:00 testhost app[1]: after
+exit_code:0

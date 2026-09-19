@@ -1,0 +1,24 @@
+descr: "Ignore malformed index timestamps and include valid records after the corrupt block"
+current_time: "2026-09-19T12:00:00Z"
+manager_params:
+  config_log_streams:
+    testhost-corrupted-index:
+      log_files:
+        kind: all_from_dir
+        dir: logfiles
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "testhost-corrupted-index"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "query across malformed timestamps that compare after the requested range"
+    query:
+      params:
+        max_num_lines: 10
+        from: "2026-09-19T09:59:00Z"
+        to: "2026-09-19T10:03:00Z"
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt

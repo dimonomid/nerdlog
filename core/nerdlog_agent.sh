@@ -986,6 +986,14 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
   print "idx\t" timestr "\t" linenr "\t" bytenr >> outfile;
 }
 
+# This is only called while building or updating the sparse index. For valid
+# logs it runs only when the extracted HH:MM changes (normally once per new
+# minute). After an invalid candidate, the last valid HH:MM is retained, so
+# consecutive malformed lines are each validated and counted.
+function isValidIndexTimestr(timestr) {
+  return timestr ~ /^[0-9][0-9][0-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-([01][0-9]|2[0-3]):[0-5][0-9]$/;
+}
+
 '$awk_func_print_percentage'
   '
 # NOTE: this script MUST be executed with the "-b" awk key, which means that
@@ -1006,6 +1014,14 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
 
     curTimestr = year "-" month "-" day "-" hhmm;
 
+    if (!isValidIndexTimestr(curTimestr)) {
+      malformedIndexTimestrCount++;
+      if (firstMalformedIndexTimestrLine == 0) {
+        firstMalformedIndexTimestrLine = NR + warningLineOffset;
+      }
+      next;
+    }
+
     # Ignore decreased timestamps: treat them as if the timestamp did not change.
     if (curTimestr < lastTimestr) {
       # TODO: make sure to print that once per occurrence, and uncomment.
@@ -1018,7 +1034,16 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     lastHHMM = curHHMM;
   '
 
-  script1='BEGIN { bytenr_next=1; lastPercent=0 }
+  scriptWarnMalformedIndexTimestrs='
+  END {
+    if (malformedIndexTimestrCount > 0) {
+      candidateWord = (malformedIndexTimestrCount == 1) ? "candidate" : "candidates";
+      print "warning:log index ignored " malformedIndexTimestrCount " malformed timestamp " candidateWord "; first malformed line: " warningFilename ":" firstMalformedIndexTimestrLine > "/dev/stderr";
+    }
+  }
+  '
+
+  script1='BEGIN { bytenr_next=1; lastPercent=0; malformedIndexTimestrCount=0; firstMalformedIndexTimestrLine=0 }
 {
   bytenr_next += length($0)+1
   curHHMM = '"$awktime_hhmm"';
@@ -1032,8 +1057,11 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     local last_linenr="$(tail -n 1 $indexfile | cut -f3)"
     local last_bytenr="$(tail -n 1 $indexfile | cut -f4)"
     local size_to_index=$((total_size-last_bytenr))
+    local prevlog_lines="$(get_prevlog_lines_from_index)"
+    local warning_line_offset=$((last_linenr-prevlog_lines-1))
 
-    tail -c +$((last_bytenr-prevlog_bytes)) $logfile_last | "$awk_binary" -b "$awk_functions
+    tail -c +$((last_bytenr-prevlog_bytes)) $logfile_last | "$awk_binary" -b \
+      -v warningFilename="$logfile_last" -v warningLineOffset="$warning_line_offset" "$awk_functions
   BEGIN {
     $awk_vars
     lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr
@@ -1045,6 +1073,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     printPercentage(bytenr_cur, '$size_to_index');
     '"$scriptSetLastTimestrEtc"'
   }
+  '"$scriptWarnMalformedIndexTimestrs"'
   ' -
     if [[ "$?" != 0 ]]; then
       echo "debug:failed to index up, removing index file" 1>&2
@@ -1056,7 +1085,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
 
     echo "prevlog_modtime	$(get_file_modtime $logfile_prev)" > $indexfile
 
-    "$awk_binary" -b "$awk_functions BEGIN { $awk_vars lastHHMM=\"\"; }"'
+    "$awk_binary" -b -v warningFilename="$logfile_prev" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastHHMM=\"\"; }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';
@@ -1064,6 +1093,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     printPercentage(bytenr_cur, '$total_size');
     '"$scriptSetLastTimestrEtc"'
   }
+  '"$scriptWarnMalformedIndexTimestrs"'
   END { print "prevlog_lines\t" NR >> "'$indexfile'" }
   ' $logfile_prev
     if [[ "$?" != 0 ]]; then
@@ -1081,7 +1111,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     if [[ "$lastTimestrLine" =~ ^idx$'\t' ]]; then
       lastTimestr="$(echo "$lastTimestrLine" | cut -f2)"
     fi
-    "$awk_binary" -b "$awk_functions BEGIN { $awk_vars lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr }"'
+    "$awk_binary" -b -v warningFilename="$logfile_last" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';
@@ -1090,6 +1120,7 @@ function printIndexLine(outfile, timestr, linenr, bytenr) {
     printPercentage(bytenr, '$total_size');
     '"$scriptSetLastTimestrEtc"'
   }
+  '"$scriptWarnMalformedIndexTimestrs"'
   ' $logfile_last
     if [[ "$?" != 0 ]]; then
       echo "debug:failed to index from scratch $logfile_last, removing index file" 1>&2

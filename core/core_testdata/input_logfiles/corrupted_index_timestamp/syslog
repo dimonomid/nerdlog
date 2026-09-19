@@ -1,0 +1,5 @@
+2026-09-19T10:00:00.000000+00:00 testhost app[1]: before
+3000-bad-timestamp-one testhost app[1]: corrupted-one
+4000-bad-timestamp-two testhost app[1]: corrupted-two
+5000-bad-timestamp-three testhost app[1]: corrupted-three
+2026-09-19T10:02:00.000000+00:00 testhost app[1]: after

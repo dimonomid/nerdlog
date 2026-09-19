@@ -771,6 +771,13 @@ func (lsc *LStreamClient) run() {
 					cmdCtx.unhandledStderr = append(cmdCtx.unhandledStderr, line)
 				case cmdCtx.cmd.queryLogs != nil:
 					switch {
+					case strings.HasPrefix(line, "warning:"):
+						warningMsg := strings.TrimSpace(strings.TrimPrefix(line, "warning:"))
+						if warningMsg == "" {
+							warningMsg = "agent reported an unspecified warning"
+						}
+						cmdCtx.queryLogsCtx.addWarning(errors.New(warningMsg))
+
 					case strings.HasPrefix(line, "p:"):
 						// "p:" means process
 						processLine := strings.TrimPrefix(line, "p:")

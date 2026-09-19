@@ -1,0 +1,13 @@
+debug:prev logfile /tmp/nerdlog_agent_test_output/corrupted_index_timestamp/01_basic/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file
+debug:index file doesn't exist or is empty, gonna refresh it
+p:stage:1:indexing from scratch
+p:p:80
+warning:log index ignored 3 malformed timestamp candidates; first malformed line: /tmp/nerdlog_agent_test_output/corrupted_index_timestamp/01_basic/logfile:2
+debug:the from 2026-09-19-09:59 isn't found, will use the beginning
+debug:the to 2026-09-19-10:03 isn't found, will use the end
+p:stage:3:querying logs
+debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_agent_test_output/corrupted_index_timestamp/01_basic/logfile
+debug:Command to filter logs by time range:
+debug: bash -c 'cat /tmp/nerdlog-empty-file && cat /tmp/nerdlog_agent_test_output/corrupted_index_timestamp/01_basic/logfile'
+debug:Filtered out 0 from 5 lines
+p:stage:4:done

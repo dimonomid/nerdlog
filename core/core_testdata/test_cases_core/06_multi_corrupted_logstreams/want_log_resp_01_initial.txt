@@ -2,9 +2,11 @@ NumMsgsTotal: 6
 LoadedEarlier: false
 Num errors: 0
 
-Num warnings: 4
+Num warnings: 6
+- testhost-corrupted-a: log index ignored 1 malformed timestamp candidate; first malformed line: /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile:2
 - testhost-corrupted-a: skipping malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 - testhost-corrupted-a: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+- testhost-corrupted-b: log index ignored 1 malformed timestamp candidate; first malformed line: /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile:2
 - testhost-corrupted-b: skipping malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 - testhost-corrupted-b: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
 

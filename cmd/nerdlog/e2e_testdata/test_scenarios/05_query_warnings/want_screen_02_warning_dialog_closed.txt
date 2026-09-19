@@ -27,4 +27,4 @@ Sep18 10:02:00.000 testhost-corrupted after   testhost 1   app
 
 
 idle 🖳 01 🖳 00 🖳 00 | testhost-corrupted                                                             2 / 2 / 2
-Query took: XXXXXXXXXX; 2 warnings; results may be incomplete; use :querywarnings to see details
+Query took: XXXXXXXXXX; 3 warnings; results may be incomplete; use :querywarnings to see details

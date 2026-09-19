@@ -1,0 +1,39 @@
+NumMsgsTotal: 2
+LoadedEarlier: false
+Num errors: 0
+
+Num warnings: 5
+- testhost-corrupted-index: log index ignored 3 malformed timestamp candidates; first malformed line: /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile:2
+- testhost-corrupted-index: skipping malformed log record at /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile:2: parsing time: parsing time in log msg: parsing time "3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "2006-01-02T15:04:05.000000Z07:00": cannot parse "3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "2006"
+- testhost-corrupted-index: skipping malformed log record at /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile:3: parsing time: parsing time in log msg: parsing time "4\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "2006-01-02T15:04:05.000000Z07:00": cannot parse "4\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "2006"
+- testhost-corrupted-index: skipping malformed log record at /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile:4: parsing time: parsing time in log msg: parsing time "5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "2006-01-02T15:04:05.000000Z07:00": cannot parse "5\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "2006"
+- testhost-corrupted-index: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "01-02T15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "01"
+
+Num MinuteStats: 2
+- 2026-09-19-10-00: 1
+- 2026-09-19-10-02: 1
+
+Num Logs: 2
+- 2026-09-19T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile,000001,000001,----,before
+  context: {"hostname":"testhost","lstream":"testhost-corrupted-index","pid":"1","program":"app"}
+  orig: 2026-09-19T10:00:00.000000+00:00 testhost app[1]: before
+- 2026-09-19T10:02:00.000000000Z,F,/tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile,000005,000005,----,after
+  context: {"hostname":"testhost","lstream":"testhost-corrupted-index","pid":"1","program":"app"}
+  orig: 2026-09-19T10:02:00.000000+00:00 testhost app[1]: after
+
+DebugInfo:
+{
+  "testhost-corrupted-index": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-19-09:59 isn't found, will use the beginning",
+      "debug:the to 2026-09-19-10:03 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/08_corrupted_index_timestamp/lstreams/testhost-corrupted-index/logfile'",
+      "debug:Filtered out 0 from 5 lines"
+    ]
+  }
+}
