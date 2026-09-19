@@ -1,6 +1,20 @@
 # Changelog
 
 
+## [1.12.0](https://github.com/dimonomid/nerdlog/compare/v1.11.0...v1.12.0) (2026-09-19)
+
+
+### Features
+
+* Don't add malformed timestamps to log indexes ([7893e7b](https://github.com/dimonomid/nerdlog/commit/7893e7bebc4a97e42f0f92298482d50e6a38129e))
+* Show original timestamps for out-of-order log records ([b63a6e1](https://github.com/dimonomid/nerdlog/commit/b63a6e1bde182f9a7d4d562fa7b5d2f1b7fd635f))
+* Still show available logs when some parsing failed ([0cd875f](https://github.com/dimonomid/nerdlog/commit/0cd875fa34420cbba4179eefe639c144de1489fb))
+
+
+### Bug Fixes
+
+* **UI:** Fix colors for status line messages ([c4820d9](https://github.com/dimonomid/nerdlog/commit/c4820d928aa305ae05dc8e5c7e35dcaee0de03bd))
+
 ## [1.11.0](https://github.com/dimonomid/nerdlog/compare/v1.10.0...v1.11.0) (2026-09-17)
 
 
