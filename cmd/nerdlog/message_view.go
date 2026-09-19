@@ -15,6 +15,9 @@ type MessageViewParams struct {
 	Message   string
 
 	InputFields []MessageViewInputFieldParams
+	// Checkboxes are displayed after the message and input fields, immediately
+	// above the buttons.
+	Checkboxes []MessageViewCheckboxParams
 
 	// OnInputFieldPressed is called whenever any key is pressed on any of the
 	// input fields, except for Tab / Shift+Tab.
@@ -45,6 +48,12 @@ type MessageViewInputFieldParams struct {
 	IsPassword bool
 }
 
+// MessageViewCheckboxParams describes one checkbox embedded in a MessageView.
+type MessageViewCheckboxParams struct {
+	Label   string
+	Checked bool
+}
+
 type MessageView struct {
 	params   MessageViewParams
 	mainView *MainView
@@ -55,6 +64,7 @@ type MessageView struct {
 
 	textView    *tview.TextView
 	inputFields []*tview.InputField
+	checkboxes  []*tview.Checkbox
 	buttons     []*tview.Button
 	focusers    []tview.Primitive
 
@@ -166,7 +176,12 @@ func NewMessageView(
 		msgv.textView.SetBackgroundColor(msgv.params.BackgroundColor)
 	}
 
-	msgv.msgboxFlex.AddItem(msgv.textView, 0, 1, len(params.Buttons) == 0 && len(params.InputFields) == 0)
+	msgv.msgboxFlex.AddItem(
+		msgv.textView,
+		0,
+		1,
+		len(params.Buttons) == 0 && len(params.InputFields) == 0 && len(params.Checkboxes) == 0,
+	)
 
 	for i, fieldParams := range msgv.params.InputFields {
 		fieldIdx := i
@@ -219,8 +234,53 @@ func NewMessageView(
 		})
 	}
 
+	for i, checkboxParams := range msgv.params.Checkboxes {
+		checkboxIdx := i
+		checkbox := tview.NewCheckbox().SetChecked(checkboxParams.Checked)
+		checkboxLabel := tview.NewTextView().SetText(checkboxParams.Label)
+		checkboxOpenBracket := tview.NewTextView().SetText("[")
+		checkboxCloseBracket := tview.NewTextView().SetText("]")
+		if msgv.params.BackgroundColor != tcell.ColorDefault {
+			checkbox.SetBackgroundColor(msgv.params.BackgroundColor)
+			checkboxLabel.SetBackgroundColor(msgv.params.BackgroundColor)
+			checkboxOpenBracket.SetBackgroundColor(msgv.params.BackgroundColor)
+			checkboxCloseBracket.SetBackgroundColor(msgv.params.BackgroundColor)
+		}
+		checkboxFlex := tview.NewFlex().SetDirection(tview.FlexColumn)
+		checkboxFlex.
+			AddItem(checkboxOpenBracket, 1, 0, false).
+			AddItem(checkbox, 1, 0, true).
+			AddItem(checkboxCloseBracket, 1, 0, false).
+			AddItem(nil, 1, 0, false).
+			AddItem(checkboxLabel, 0, 1, false)
+		msgv.checkboxes = append(msgv.checkboxes, checkbox)
+		msgv.msgboxFlex.AddItem(
+			checkboxFlex,
+			1,
+			0,
+			checkboxIdx == 0 && len(params.InputFields) == 0 && len(params.Buttons) == 0,
+		)
+		msgv.focusers = append(msgv.focusers, checkbox)
+		tabHandler := msgv.getGenericTabHandler(checkbox)
+		checkbox.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+			switch event.Key() {
+			case tcell.KeyEsc:
+				if params.OnEsc != nil {
+					params.OnEsc()
+				}
+			}
+
+			return tabHandler(event)
+		})
+	}
+
 	msgv.buttonsFlex = tview.NewFlex().SetDirection(tview.FlexColumn)
-	msgv.msgboxFlex.AddItem(msgv.buttonsFlex, 1, 1, len(params.Buttons) != 0 && len(params.InputFields) == 0)
+	msgv.msgboxFlex.AddItem(
+		msgv.buttonsFlex,
+		1,
+		1,
+		len(params.Buttons) != 0 && len(params.InputFields) == 0,
+	)
 
 	// Add a spacer at the left of the buttons, to make them centered
 	// (there's also a spacer at the right, added later)
@@ -272,7 +332,12 @@ func NewMessageView(
 		if buttonSize < 10 {
 			buttonSize = 10
 		}
-		msgv.buttonsFlex.AddItem(btn, buttonSize, 0, i == 0 && len(params.InputFields) == 0)
+		msgv.buttonsFlex.AddItem(
+			btn,
+			buttonSize,
+			0,
+			i == 0 && len(params.InputFields) == 0,
+		)
 	}
 
 	// Add a spacer at the right of the buttons, to make them centered
@@ -339,6 +404,11 @@ func (msgv *MessageView) GetText(stripAllTags bool) string {
 	return msgv.textView.GetText(stripAllTags)
 }
 
+// IsCheckboxChecked returns the current state of a checkbox by parameter index.
+func (msgv *MessageView) IsCheckboxChecked(index int) bool {
+	return msgv.checkboxes[index].IsChecked()
+}
+
 // SetButtonLabelOpts contains extra options for SetButtonLabel.
 type SetButtonLabelOpts struct {
 	// If RevertOnBlur is true, then once the button loses its focus,
@@ -381,8 +451,8 @@ func (msgv *MessageView) getOptimalSize(text string) (int, int) {
 
 	// extraWidth covers padding and border
 	extraWidth := 4
-	// extraHeight covers padding, border, buttons, and fields.
-	extraHeight := 6 + inputFieldsHeight
+	// extraHeight covers padding, border, buttons, fields, and checkboxes.
+	extraHeight := 6 + inputFieldsHeight + len(msgv.params.Checkboxes)
 
 	optimalWidth, optimalHeight := GetOptimalMessageViewSize(
 		msgv.mainView.screenWidth,
@@ -390,6 +460,17 @@ func (msgv *MessageView) getOptimalSize(text string) (int, int) {
 		extraHeight,
 		text,
 	)
+
+	// The body can be shorter than the frame title (for example, the
+	// "No warnings" state), but the title should not be truncated when the
+	// screen is wide enough for it.
+	minTitleWidth := len(msgv.params.Title) + extraWidth
+	if minTitleWidth > msgv.mainView.screenWidth {
+		minTitleWidth = msgv.mainView.screenWidth
+	}
+	if optimalWidth < minTitleWidth {
+		optimalWidth = minTitleWidth
+	}
 
 	return optimalWidth, optimalHeight
 }

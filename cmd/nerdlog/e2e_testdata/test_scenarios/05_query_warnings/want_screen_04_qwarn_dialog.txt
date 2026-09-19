@@ -1,0 +1,30 @@
+awk pattern:                                                     Sep18 10:00 to Sep18 11:00 (1h)  Edit   Menu
+       10▀
+
+
+
+          ▄▖ ▄▖
+          ▘ 10:00        ▘ 10:10        ▘ 10:20        ▘ 10:30        ▘ 10:40        ▘ 10:50
+╔═════════════════════════════════════════════Log query warning══════════════════════════════════════════════╗
+║                                                                                                            ║
+║ 2 warnings:                                                                                                ║
+║ 1: testhost-corrupted: skipping malformed log record at /tmp/nerdlog_e2e_test_output/05_query_warnings/lst ║
+║ reams/testhost-corrupted/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\ ║
+║ x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\ ║
+║ x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"                                                              ║
+║ 2: testhost-corrupted: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x ║
+║ 00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"        ║
+║                                                                                                            ║
+║ Some log records were skipped, so the results may be incomplete.                                           ║
+║                                                                                                            ║
+║ [ ] Show warning dialog for testhost-corrupted                                                             ║
+║                                                     OK                                                     ║
+║                                                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+
+idle 🖳 01 🖳 00 🖳 00 | testhost-corrupted                                                             2 / 2 / 2
+

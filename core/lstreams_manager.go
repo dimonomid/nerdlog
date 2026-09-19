@@ -879,8 +879,45 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 
 	// Collect debug info
 	debugInfo := make(map[string]LogstreamDebugInfo, len(resps))
+	var warnings []LogQueryWarning
+	var numWarnings int
+	var lstreamNames []string
+	// resps is a map, so iterating over it directly would make warning order
+	// nondeterministic. Collect its keys now and sort them before building the
+	// merged warning list below.
 	for lstreamName, resp := range resps {
 		debugInfo[lstreamName] = resp.DebugInfo
+		numWarnings += resp.NumWarnings
+		lstreamNames = append(lstreamNames, lstreamName)
+	}
+	sort.Strings(lstreamNames)
+
+	// Add one logstream's bounded warning details at a time. This groups the
+	// resulting dialog by logstream and makes its order stable across queries.
+	for _, lstreamName := range lstreamNames {
+		resp := resps[lstreamName]
+		// Sort a copy so merging responses does not reorder the warning details
+		// stored in the per-logstream response.
+		details := append([]error(nil), resp.Warnings...)
+		var omittedSummary error
+		if resp.NumWarnings > maxQueryWarnings {
+			// finalizeWarnings appends this after the bounded details; keep it
+			// last while sorting the details themselves deterministically.
+			omittedSummary = details[len(details)-1]
+			details = details[:len(details)-1]
+		}
+		sort.Slice(details, func(i, j int) bool {
+			return details[i].Error() < details[j].Error()
+		})
+		if omittedSummary != nil {
+			details = append(details, omittedSummary)
+		}
+		for _, warning := range details {
+			warnings = append(warnings, LogQueryWarning{
+				LStreamName: lstreamName,
+				Err:         warning,
+			})
+		}
 	}
 
 	ret := &LogRespTotal{
@@ -888,6 +925,8 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 		NumMsgsTotal:  lsman.curLogs.numMsgsTotal,
 		LoadedEarlier: lsman.curQueryLogsCtx.req.LoadEarlier,
 		DebugInfo:     debugInfo,
+		Warnings:      warnings,
+		NumWarnings:   numWarnings,
 	}
 
 	var logsCoveredSince time.Time

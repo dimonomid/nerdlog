@@ -1,0 +1,92 @@
+descr: "Show recoverable query warnings and allow suppressing their automatic dialog"
+
+scenario_params:
+  config_log_streams:
+    testhost-corrupted:
+      hostname: "localhost"
+      log_files:
+        kind: all_from_dir
+        dir: logfiles
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  terminal_size:
+    x: 110
+    y: 30
+
+test_steps:
+
+  - descr: "start up"
+    send_keys: [
+        'NERDLOG_NO_CLIPBOARD=1 TZ=UTC USER=nerdlog-e2e-test NERDLOG_E2E_TEST_NOW=2026-09-19T12:00:00Z',
+        ' ${NERDLOG_BINARY} --lstreams-config ${NERDLOG_LOGSTREAMS_CONFIG_FILE} --cmdhistory-file ${NERDLOG_TEST_OUTPUT_DIR}/cmd_history --queryhistory-file ${NERDLOG_TEST_OUTPUT_DIR}/query_history',
+        'C-m',
+      ]
+    want_screen_contains:
+      substring: "Edit query params"
+
+  - descr: "query corrupted log and show warning dialog"
+    send_keys: [
+        'C-u',
+        'Sep18 10:00 to Sep18 11:00',
+
+        # Logstreams
+        'Tab',
+        'C-u',
+        'testhost-corrupted',
+
+        # Pattern: leave empty
+        'Tab',
+        'C-u',
+
+        # Select fields
+        'Tab',
+        'C-u',
+        'time STICKY, lstream, message, *',
+
+        # Enter
+        'C-m',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_01_warning_dialog.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'
+
+  - descr: "disable automatic warning dialog for the logstream"
+    send_keys: [
+        # Focus the checkbox, uncheck it, return to OK, and apply.
+        'Tab',
+        'Space',
+        'Tab',
+        'C-m',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_02_warning_dialog_closed.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'
+
+  - descr: "rerun query without automatically showing suppressed dialog"
+    send_keys: [
+        'C-r',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_03_suppressed_warning_status.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'
+
+  - descr: "show suppressed warning details with qwarn"
+    # The refresh above runs asynchronously and can briefly leave the UI unable
+    # to accept a command even after its unchanged result screen matches.
+    delay_before: "1s"
+    send_keys: [
+        ':qwarn',
+        'C-m',
+      ]
+    want_screen_snapshot:
+      snapshot: want_screen_04_qwarn_dialog.txt
+      substitutions:
+        - pattern:     'Query took: [^;]+'
+          replacement: 'Query took: XXXXXXXXXX'

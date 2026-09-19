@@ -1,0 +1,39 @@
+NumMsgsTotal: 2
+LoadedEarlier: false
+Num errors: 0
+
+Num warnings: 10
+- testhost-many-warnings: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x001" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x001" as "Jan"
+- testhost-many-warnings: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x002" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x002" as "Jan"
+- testhost-many-warnings: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x003" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x003" as "Jan"
+- testhost-many-warnings: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x004" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x004" as "Jan"
+- testhost-many-warnings: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x005" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x005" as "Jan"
+- testhost-many-warnings: skipped 5 additional malformed log records
+
+Num MinuteStats: 2
+- 2026-09-20-10-00: 1
+- 2026-09-20-10-06: 1
+
+Num Logs: 2
+- 2026-09-20T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/07_many_warnings/lstreams/testhost-many-warnings/logfile,000001,000001,----,before
+  context: {"hostname":"testhost","lstream":"testhost-many-warnings","pid":"1","program":"app"}
+  orig: Sep 20 10:00:00 testhost app[1]: before
+- 2026-09-20T10:06:00.000000000Z,F,/tmp/nerdlog_core_test_output/07_many_warnings/lstreams/testhost-many-warnings/logfile,000007,000007,----,after
+  context: {"hostname":"testhost","lstream":"testhost-many-warnings","pid":"1","program":"app"}
+  orig: Sep 20 10:06:00 testhost app[1]: after
+
+DebugInfo:
+{
+  "testhost-many-warnings": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/07_many_warnings/lstreams/testhost-many-warnings/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-20-10:00 is found: 1 (1)",
+      "debug:Getting logs from offset 1 until the end of latest /tmp/nerdlog_core_test_output/07_many_warnings/lstreams/testhost-many-warnings/logfile.",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +1 /tmp/nerdlog_core_test_output/07_many_warnings/lstreams/testhost-many-warnings/logfile'",
+      "debug:Filtered out 0 from 7 lines"
+    ]
+  }
+}

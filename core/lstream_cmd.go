@@ -1,6 +1,10 @@
 package core
 
-import "time"
+import (
+	"time"
+
+	"github.com/juju/errors"
+)
 
 type lstreamCmd struct {
 	// respCh must be either nil, or 1-buffered and it'll receive exactly one
@@ -101,6 +105,29 @@ type lstreamCmdCtxQueryLogs struct {
 
 	logfiles []logfileWithStartingLinenumber
 	lastTime time.Time
+}
+
+// maxQueryWarnings limits detailed warnings from one logstream so severe
+// corruption cannot produce an enormous response or dialog.
+const maxQueryWarnings = 5
+
+// addWarning records a recoverable parsing problem while keeping the detailed
+// warning list bounded.
+func (ctx *lstreamCmdCtxQueryLogs) addWarning(err error) {
+	ctx.Resp.NumWarnings++
+	if len(ctx.Resp.Warnings) < maxQueryWarnings {
+		ctx.Resp.Warnings = append(ctx.Resp.Warnings, err)
+	}
+}
+
+// finalizeWarnings adds a summary for malformed records omitted by addWarning.
+func (ctx *lstreamCmdCtxQueryLogs) finalizeWarnings() {
+	if ctx.Resp.NumWarnings > maxQueryWarnings {
+		ctx.Resp.Warnings = append(ctx.Resp.Warnings, errors.Errorf(
+			"skipped %d additional malformed log records",
+			ctx.Resp.NumWarnings-maxQueryWarnings,
+		))
+	}
 }
 
 type logfileWithStartingLinenumber struct {

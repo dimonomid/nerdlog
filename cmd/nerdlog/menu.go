@@ -49,6 +49,12 @@ var mainMenu = []menuItem{
 		},
 	},
 	{
+		Title: "Query warnings        :qwarn     ",
+		Handler: func(mv *MainView) {
+			mv.params.OnCmd("qwarn", CmdOpts{Internal: true})
+		},
+	},
+	{
 		Title: "About                 :version   ",
 		Handler: func(mv *MainView) {
 			mv.params.OnCmd("version", CmdOpts{Internal: true})

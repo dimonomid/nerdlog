@@ -250,7 +250,12 @@ func runCoreTestScenario(t *testing.T, tsCtx *coreTestScenarioContext) error {
 				return errors.Annotatef(err, "test step #%d: reading wanted log resp %s", i, wantLogRespFilenameFull)
 			}
 
-			assert.Equal(t, string(wantLogResp), logRespStr, assertArgs...)
+			assert.Equal(
+				t,
+				strings.TrimSuffix(string(wantLogResp), "\n"),
+				strings.TrimSuffix(logRespStr, "\n"),
+				assertArgs...,
+			)
 		}
 	}
 
@@ -493,6 +498,12 @@ func formatLogResp(logResp *LogRespTotal) string {
 	sb.WriteString(fmt.Sprintf("Num errors: %v\n", len(logResp.Errs)))
 	for _, err := range logResp.Errs {
 		sb.WriteString(fmt.Sprintf("- %s", err.Error()))
+	}
+	if logResp.NumWarnings > 0 {
+		sb.WriteString(fmt.Sprintf("\nNum warnings: %v\n", logResp.NumWarnings))
+		for _, warning := range logResp.Warnings {
+			sb.WriteString(fmt.Sprintf("- %s: %s\n", warning.LStreamName, warning.Err.Error()))
+		}
 	}
 
 	sb.WriteString("\n")

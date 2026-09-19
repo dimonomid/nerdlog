@@ -177,6 +177,17 @@ func (app *nerdlogApp) handleCmd(cmd string) {
 	case "querydebug", "qdebug", "debug":
 		app.mainView.showLastQueryDebugInfo()
 
+	case "querywarnings", "qwarnings", "qwarn":
+		if app.lastLogResp == nil || len(app.lastLogResp.Warnings) == 0 {
+			// An empty warning list shows the dialog's "No warnings" state.
+			app.mainView.handleQueryWarnings(nil, 0, nil, nil)
+			return
+		}
+		warnings := app.lastLogResp.Warnings
+		app.mainView.handleQueryWarnings(warnings, app.lastLogResp.NumWarnings, app.queryWarningVisibility(warnings), func(visibility map[string]bool) {
+			app.setQueryWarningVisibility(visibility)
+		})
+
 	case "version", "about":
 		app.mainView.showMessagebox("version", "Version", version.VersionFullDescr(), &MessageboxParams{
 			BackgroundColor: tcell.ColorDarkBlue,

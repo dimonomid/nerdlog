@@ -1306,7 +1306,16 @@ func (mv *MainView) applyLogs(resp *core.LogRespTotal) {
 		mv.logsTable.Select(selectedRow+numNewRows, 0)
 	}
 
-	mv.printMsg(fmt.Sprintf("Query took: %s", resp.QueryDur.Round(1*time.Millisecond)), nlMsgLevelInfo)
+	statusMsg := fmt.Sprintf("Query took: %s", resp.QueryDur.Round(1*time.Millisecond))
+	statusLevel := nlMsgLevelInfo
+	if resp.NumWarnings > 0 {
+		statusMsg += fmt.Sprintf(
+			"; %d warnings; results may be incomplete; use :querywarnings to see details",
+			resp.NumWarnings,
+		)
+		statusLevel = nlMsgLevelWarn
+	}
+	mv.printMsg(statusMsg, statusLevel)
 }
 
 func (mv *MainView) getLastQueryDebugInfo() string {
@@ -1759,6 +1768,8 @@ type MessageboxParams struct {
 	CopyButton bool
 
 	InputFields []MessageViewInputFieldParams
+	// Checkboxes are displayed between the message/input fields and buttons.
+	Checkboxes []MessageViewCheckboxParams
 
 	// OnInputFieldPressed is called whenever any key is pressed on any of the
 	// input fields, except for Tab / Shift+Tab.
@@ -1835,6 +1846,7 @@ func (mv *MainView) showMessagebox(
 		Title:               title,
 		Message:             message,
 		InputFields:         params.InputFields,
+		Checkboxes:          params.Checkboxes,
 		OnInputFieldPressed: params.OnInputFieldPressed,
 		Buttons:             params.Buttons,
 		OnButtonPressed:     params.OnButtonPressed,
@@ -2070,6 +2082,73 @@ func (mv *MainView) handleQueryError(err error) {
 			CopyButton:      true,
 		})
 	}
+}
+
+// handleQueryWarnings displays recoverable query problems and lets the user
+// change automatic-dialog suppression for the represented logstreams.
+func (mv *MainView) handleQueryWarnings(
+	warnings []core.LogQueryWarning,
+	numWarnings int,
+	visibility map[string]bool,
+	onVisibilityChanged func(map[string]bool),
+) {
+	if len(warnings) == 0 {
+		mv.showMessagebox("queryWarning", "Log query warning", "No warnings", &MessageboxParams{
+			BackgroundColor: tcell.ColorDarkOrchid,
+		})
+		return
+	}
+
+	var lstreamNames []string
+	seenLStreams := make(map[string]struct{})
+	for _, warning := range warnings {
+		if _, seen := seenLStreams[warning.LStreamName]; !seen {
+			seenLStreams[warning.LStreamName] = struct{}{}
+			lstreamNames = append(lstreamNames, warning.LStreamName)
+		}
+	}
+
+	checkboxes := make([]MessageViewCheckboxParams, 0, len(lstreamNames))
+	for _, lstreamName := range lstreamNames {
+		checkboxes = append(checkboxes, MessageViewCheckboxParams{
+			Label:   fmt.Sprintf("Show warning dialog for %s", lstreamName),
+			Checked: visibility[lstreamName],
+		})
+	}
+
+	var msgv *MessageView
+	msgv = mv.showMessagebox("queryWarning", "Log query warning", fmt.Sprintf(
+		"%s\n\nSome log records were skipped, so the results may be incomplete.",
+		formatQueryWarnings(warnings, numWarnings),
+	), &MessageboxParams{
+		BackgroundColor: tcell.ColorDarkOrchid,
+		CopyButton:      true,
+		Checkboxes:      checkboxes,
+		Buttons:         []string{"OK"},
+		OnButtonPressed: func(label string, idx int) {
+			mv.hideModal(pageNameMessage+"queryWarning", true)
+			newVisibility := make(map[string]bool, len(lstreamNames))
+			for i, lstreamName := range lstreamNames {
+				newVisibility[lstreamName] = msgv.IsCheckboxChecked(i)
+			}
+			onVisibilityChanged(newVisibility)
+		},
+	})
+}
+
+// formatQueryWarnings formats the bounded warning details while reporting the
+// unbounded total warning count.
+func formatQueryWarnings(warnings []core.LogQueryWarning, numWarnings int) string {
+	var sb strings.Builder
+	label := "warnings"
+	if numWarnings == 1 {
+		label = "warning"
+	}
+	fmt.Fprintf(&sb, "%d %s:", numWarnings, label)
+	for i, warning := range warnings {
+		fmt.Fprintf(&sb, "\n%d: %s: %s", i+1, warning.LStreamName, warning.Err)
+	}
+	return sb.String()
 }
 
 // handleBootstrapError

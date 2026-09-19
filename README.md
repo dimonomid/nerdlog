@@ -322,6 +322,11 @@ can be done from the Menu too, or using a keyboard shortcut `Alt+Ctrl+R` or
 
 `:querydebug` or `:qdebug` or just `:debug` Show debug info for the last query
 
+`:querywarnings`, `:qwarnings`, or `:qwarn` Show warnings from the last query.
+The dialog also lets you enable or disable automatic warning dialogs for each
+affected logstream for the current Nerdlog session. This can be opened from the
+Menu too (Menu -> Query warnings).
+
 `:version` or `:about` Show version info
 
 `:set option?` Get current value of an option

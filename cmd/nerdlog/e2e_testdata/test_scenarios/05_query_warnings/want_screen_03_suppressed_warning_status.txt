@@ -1,0 +1,30 @@
+awk pattern:                                                     Sep18 10:00 to Sep18 11:00 (1h)  Edit   Menu
+       10▀
+
+
+
+          ▄▖ ▄▖
+          ▘ 10:00        ▘ 10:10        ▘ 10:20        ▘ 10:30        ▘ 10:40        ▘ 10:50
+time (UTC)         lstream            message hostname pid program
+    < MOAR ! >
+Sep18 10:00:00.000 testhost-corrupted before  testhost 1   app
+Sep18 10:02:00.000 testhost-corrupted after   testhost 1   app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+idle 🖳 01 🖳 00 🖳 00 | testhost-corrupted                                                             2 / 2 / 2
+Query took: XXXXXXXXXX; 2 warnings; results may be incomplete; use :querywarnings to see details

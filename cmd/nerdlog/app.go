@@ -45,6 +45,10 @@ type nerdlogApp struct {
 
 	// lastLogResp contains the last response from LStreamsManager.
 	lastLogResp *core.LogRespTotal
+
+	// suppressedWarningLStreams contains logstreams for which automatic
+	// query-warning dialogs are disabled for this Nerdlog session.
+	suppressedWarningLStreams map[string]struct{}
 }
 
 type nerdlogAppParams struct {
@@ -107,6 +111,8 @@ func newNerdlogApp(
 		cmdLineHistory: cmdLineHistory,
 		queryBLHistory: blhistory.New(),
 		queryCLHistory: queryCLHistory,
+
+		suppressedWarningLStreams: map[string]struct{}{},
 	}
 
 	cmdCh := make(chan cmdWithOpts, 8)
@@ -294,6 +300,12 @@ func (app *nerdlogApp) initLStreamsManager(
 
 							app.mainView.applyLogs(logResp)
 							app.lastLogResp = logResp
+							if app.hasUnsuppressedQueryWarnings(logResp.Warnings) {
+								warnings := logResp.Warnings
+								app.mainView.handleQueryWarnings(warnings, logResp.NumWarnings, app.queryWarningVisibility(warnings), func(visibility map[string]bool) {
+									app.setQueryWarningVisibility(visibility)
+								})
+							}
 						}
 
 						if len(bootstrapErrors) > 0 {
@@ -403,6 +415,40 @@ func (app *nerdlogApp) initLStreamsManager(
 	})
 
 	return nil
+}
+
+// hasUnsuppressedQueryWarnings reports whether at least one warning should
+// trigger an automatic dialog. Once triggered, the dialog includes all
+// warnings, including those from suppressed logstreams.
+func (app *nerdlogApp) hasUnsuppressedQueryWarnings(warnings []core.LogQueryWarning) bool {
+	for _, warning := range warnings {
+		if _, suppressed := app.suppressedWarningLStreams[warning.LStreamName]; !suppressed {
+			return true
+		}
+	}
+	return false
+}
+
+// queryWarningVisibility returns whether automatic warning dialogs are enabled
+// for each logstream represented by warnings.
+func (app *nerdlogApp) queryWarningVisibility(warnings []core.LogQueryWarning) map[string]bool {
+	ret := make(map[string]bool)
+	for _, warning := range warnings {
+		_, suppressed := app.suppressedWarningLStreams[warning.LStreamName]
+		ret[warning.LStreamName] = !suppressed
+	}
+	return ret
+}
+
+// setQueryWarningVisibility applies automatic-dialog preferences by logstream.
+func (app *nerdlogApp) setQueryWarningVisibility(visibility map[string]bool) {
+	for lstreamName, show := range visibility {
+		if show {
+			delete(app.suppressedWarningLStreams, lstreamName)
+		} else {
+			app.suppressedWarningLStreams[lstreamName] = struct{}{}
+		}
+	}
 }
 
 func (app *nerdlogApp) handleCmdLine(cmdCh <-chan cmdWithOpts) {

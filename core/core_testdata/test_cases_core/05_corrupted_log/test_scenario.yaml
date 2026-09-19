@@ -1,0 +1,24 @@
+descr: "Return valid records and warnings when a log line is corrupted with NUL bytes"
+current_time: "2026-09-18T12:00:00Z"
+manager_params:
+  config_log_streams:
+    testhost-corrupted:
+      log_files:
+        kind: all_from_dir
+        dir: logfiles
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "testhost-corrupted"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "skip the corrupted log line and return a warning"
+    query:
+      params:
+        max_num_lines: 10
+        from: "2026-09-18T10:00:00Z"
+        to: ""
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt

@@ -592,13 +592,13 @@ func (lsc *LStreamClient) run() {
 						parts := strings.Split(strings.TrimPrefix(line, "s:"), ",")
 						if len(parts) < 2 {
 							err := errors.Errorf("malformed mstats %q: expected at least 2 parts", line)
-							cmdCtx.errs = append(cmdCtx.errs, err)
+							respCtx.addWarning(err)
 							continue
 						}
 
 						t, err := time.ParseInLocation(lsc.timeFormat.MinuteKeyLayout, parts[0], lsc.location)
 						if err != nil {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Annotatef(err, "parsing mstats"))
+							respCtx.addWarning(errors.Annotatef(err, "skipping malformed mstats"))
 							continue
 						}
 
@@ -607,7 +607,7 @@ func (lsc *LStreamClient) run() {
 
 						n, err := strconv.Atoi(parts[1])
 						if err != nil {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Annotatef(err, "parsing mstats"))
+							respCtx.addWarning(errors.Annotatef(err, "skipping malformed mstats"))
 							continue
 						}
 
@@ -619,7 +619,7 @@ func (lsc *LStreamClient) run() {
 						msg := strings.TrimPrefix(line, "logfile:")
 						idx := strings.IndexRune(msg, ':')
 						if idx <= 0 {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Errorf("parsing logfile msg: no number of lines %q", line))
+							respCtx.addWarning(errors.Errorf("skipping malformed logfile record: no number of lines"))
 							continue
 						}
 
@@ -627,7 +627,7 @@ func (lsc *LStreamClient) run() {
 						logNumberOfLinesStr := msg[idx+1:]
 						logNumberOfLines, err := strconv.Atoi(logNumberOfLinesStr)
 						if err != nil {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Annotatef(err, "parsing logfile msg: invalid number in %q", line))
+							respCtx.addWarning(errors.Annotatef(err, "skipping malformed logfile record"))
 							continue
 						}
 
@@ -641,7 +641,7 @@ func (lsc *LStreamClient) run() {
 						msg := strings.TrimPrefix(line, "m:")
 						idx := strings.IndexRune(msg, ':')
 						if idx <= 0 {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Errorf("parsing log msg: no line number in %q", line))
+							respCtx.addWarning(errors.Errorf("skipping malformed log record: no line number"))
 							continue
 						}
 
@@ -650,7 +650,7 @@ func (lsc *LStreamClient) run() {
 
 						logLinenoCombined, err := strconv.Atoi(logLinenoStr)
 						if err != nil {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Annotatef(err, "parsing log msg: invalid line number in %q", line))
+							respCtx.addWarning(errors.Annotatef(err, "skipping malformed log record"))
 							continue
 						}
 
@@ -687,7 +687,12 @@ func (lsc *LStreamClient) run() {
 
 						err = lsc.parseLine(&logMsg)
 						if err != nil {
-							cmdCtx.errs = append(cmdCtx.errs, errors.Annotatef(err, "parsing log msg %q", line))
+							respCtx.addWarning(errors.Annotatef(
+								err,
+								"skipping malformed log record at %s:%d",
+								logFilename,
+								logLineno,
+							))
 							continue
 						}
 
@@ -1378,7 +1383,9 @@ func (lsc *LStreamClient) handleCommandResultsIfDone(cmdCtx *lstreamCmdCtx) {
 		lsc.changeState(LStreamClientStateConnectedIdle)
 
 	case cmdCtx.cmd.queryLogs != nil:
-		resp := cmdCtx.queryLogsCtx.Resp
+		respCtx := cmdCtx.queryLogsCtx
+		respCtx.finalizeWarnings()
+		resp := respCtx.Resp
 		resp.DebugInfo.AgentStdout = cmdCtx.unhandledStdout
 		resp.DebugInfo.AgentStderr = cmdCtx.unhandledStderr
 		lsc.sendCmdResp(resp, summaryCmdError(cmdCtx))

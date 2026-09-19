@@ -1,0 +1,24 @@
+descr: "Keep the exact warning count when detailed warnings are capped"
+current_time: "2026-09-20T12:00:00Z"
+manager_params:
+  config_log_streams:
+    testhost-many-warnings:
+      log_files:
+        kind: all_from_dir
+        dir: logfiles
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "testhost-many-warnings"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "return ten warnings but only bounded warning details"
+    query:
+      params:
+        max_num_lines: 10
+        from: "2026-09-20T10:00:00Z"
+        to: ""
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt

@@ -1,0 +1,77 @@
+NumMsgsTotal: 6
+LoadedEarlier: false
+Num errors: 0
+
+Num warnings: 4
+- testhost-corrupted-a: skipping malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+- testhost-corrupted-a: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+- testhost-corrupted-b: skipping malformed log record at /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile:2: parsing time: parsing time in log msg: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+- testhost-corrupted-b: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"
+
+Num MinuteStats: 6
+- 2026-09-19-10-00: 1
+- 2026-09-19-10-01: 1
+- 2026-09-19-10-03: 1
+- 2026-09-19-10-04: 1
+- 2026-09-19-10-06: 1
+- 2026-09-19-10-07: 1
+
+Num Logs: 6
+- 2026-09-19T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-clean/logfile,000001,000001,----,clean-before
+  context: {"hostname":"cleanhost","lstream":"testhost-clean","pid":"1","program":"app"}
+  orig: Sep 19 10:00:00 cleanhost app[1]: clean-before
+- 2026-09-19T10:01:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile,000001,000001,----,a-before
+  context: {"hostname":"badhost-a","lstream":"testhost-corrupted-a","pid":"1","program":"app"}
+  orig: Sep 19 10:01:00 badhost-a app[1]: a-before
+- 2026-09-19T10:03:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile,000003,000003,----,a-after
+  context: {"hostname":"badhost-a","lstream":"testhost-corrupted-a","pid":"1","program":"app"}
+  orig: Sep 19 10:03:00 badhost-a app[1]: a-after
+- 2026-09-19T10:04:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile,000001,000001,----,b-before
+  context: {"hostname":"badhost-b","lstream":"testhost-corrupted-b","pid":"1","program":"app"}
+  orig: Sep 19 10:04:00 badhost-b app[1]: b-before
+- 2026-09-19T10:06:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile,000003,000003,----,b-after
+  context: {"hostname":"badhost-b","lstream":"testhost-corrupted-b","pid":"1","program":"app"}
+  orig: Sep 19 10:06:00 badhost-b app[1]: b-after
+- 2026-09-19T10:07:00.000000000Z,F,/tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-clean/logfile,000002,000002,----,clean-after
+  context: {"hostname":"cleanhost","lstream":"testhost-clean","pid":"1","program":"app"}
+  orig: Sep 19 10:07:00 cleanhost app[1]: clean-after
+
+DebugInfo:
+{
+  "testhost-clean": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-clean/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-19-10:00 is found: 1 (1)",
+      "debug:Getting logs from offset 1 until the end of latest /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-clean/logfile.",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +1 /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-clean/logfile'",
+      "debug:Filtered out 0 from 2 lines"
+    ]
+  },
+  "testhost-corrupted-a": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-19-10:00 isn't found, will use the beginning",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-a/logfile'",
+      "debug:Filtered out 0 from 3 lines"
+    ]
+  },
+  "testhost-corrupted-b": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-19-10:00 isn't found, will use the beginning",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/06_multi_corrupted_logstreams/lstreams/testhost-corrupted-b/logfile'",
+      "debug:Filtered out 0 from 3 lines"
+    ]
+  }
+}
