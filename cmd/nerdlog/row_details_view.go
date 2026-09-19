@@ -771,7 +771,7 @@ func (rdv *RowDetailsView) updateUI() {
 
 		valueCell = newTableCellLogmsg(valStr)
 		if name.field.Name == FieldNameTime && rdv.msg != nil && !rdv.msg.OrigDecreasedTime.IsZero() {
-			valueCell.SetTextColor(tcell.ColorRed)
+			valueCell.SetTextColor(logMsgTimeColor(*rdv.msg))
 		}
 		rdv.tbl.SetCell(nRow, rdvColIdxValue, valueCell)
 

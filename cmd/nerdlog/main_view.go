@@ -1510,9 +1510,21 @@ func (mv *MainView) formatLogs() {
 
 func logMsgDisplayTime(msg core.LogMsg) (time.Time, tcell.Color) {
 	if !msg.OrigDecreasedTime.IsZero() {
-		return msg.OrigDecreasedTime, tcell.ColorRed
+		return msg.OrigDecreasedTime, logMsgTimeColor(msg)
 	}
 	return msg.Time, tcell.ColorLightBlue
+}
+
+// logMsgTimeColor makes larger timestamp decreases progressively more visible.
+func logMsgTimeColor(msg core.LogMsg) tcell.Color {
+	decrease := msg.Time.Sub(msg.OrigDecreasedTime)
+	if decrease <= time.Second {
+		return tcell.ColorBlue
+	}
+	if decrease <= 15*time.Second {
+		return tcell.ColorYellow
+	}
+	return tcell.ColorRed
 }
 
 func (mv *MainView) bumpStatusLineLeft() {

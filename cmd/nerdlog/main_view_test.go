@@ -10,19 +10,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestLogMsgDisplayTimeUsesOriginalDecreasedTime verifies that the table shows
-// an out-of-order record's parsed timestamp in red instead of its clamped time.
-func TestLogMsgDisplayTimeUsesOriginalDecreasedTime(t *testing.T) {
+// TestLogMsgDisplayTimeColorsDecreasesByAmount verifies that the table shows
+// an out-of-order record's parsed timestamp with severity based on its decrease.
+func TestLogMsgDisplayTimeColorsDecreasesByAmount(t *testing.T) {
 	effectiveTime := time.Date(2026, 9, 19, 12, 5, 0, 0, time.UTC)
-	origTime := effectiveTime.Add(-20 * time.Minute)
+	tests := []struct {
+		name     string
+		decrease time.Duration
+		color    tcell.Color
+	}{
+		{name: "less than one second", decrease: time.Nanosecond, color: tcell.ColorBlue},
+		{name: "exactly one second", decrease: time.Second, color: tcell.ColorBlue},
+		{name: "more than one second", decrease: time.Second + time.Nanosecond, color: tcell.ColorYellow},
+		{name: "exactly fifteen seconds", decrease: 15 * time.Second, color: tcell.ColorYellow},
+		{name: "more than fifteen seconds", decrease: 15*time.Second + time.Nanosecond, color: tcell.ColorRed},
+	}
 
-	displayTime, color := logMsgDisplayTime(core.LogMsg{
-		Time:              effectiveTime,
-		OrigDecreasedTime: origTime,
-	})
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			origTime := effectiveTime.Add(-test.decrease)
+			displayTime, color := logMsgDisplayTime(core.LogMsg{
+				Time:              effectiveTime,
+				OrigDecreasedTime: origTime,
+			})
 
-	assert.Equal(t, origTime, displayTime)
-	assert.Equal(t, tcell.ColorRed, color)
+			assert.Equal(t, origTime, displayTime)
+			assert.Equal(t, test.color, color)
+		})
+	}
 }
 
 // TestLogMsgDisplayTimeUsesEffectiveTime verifies the ordinary timestamp color
@@ -36,11 +51,10 @@ func TestLogMsgDisplayTimeUsesEffectiveTime(t *testing.T) {
 	assert.Equal(t, tcell.ColorLightBlue, color)
 }
 
-// TestRowDetailsShowsDecreasedTimeInRed verifies that the time row shows both
-// timestamps in red for a decreased record.
-func TestRowDetailsShowsDecreasedTimeInRed(t *testing.T) {
+// TestRowDetailsColorsDecreasedTimeByAmount verifies that the time row shows
+// both timestamps using the same decrease-severity colors as the log table.
+func TestRowDetailsColorsDecreasedTimeByAmount(t *testing.T) {
 	effectiveTime := time.Date(2026, 9, 19, 12, 5, 0, 0, time.UTC)
-	origTime := effectiveTime.Add(-20 * time.Minute)
 	newView := func(msg core.LogMsg) *RowDetailsView {
 		return NewRowDetailsView(
 			&MainView{params: MainViewParams{App: tview.NewApplication()}},
@@ -63,16 +77,31 @@ func TestRowDetailsShowsDecreasedTimeInRed(t *testing.T) {
 		return 0, false
 	}
 
-	view := newView(core.LogMsg{
-		Time:              effectiveTime,
-		OrigDecreasedTime: origTime,
-	})
-	row, ok := findTimeRow(view)
-	assert.True(t, ok)
-	assert.Equal(
-		t,
-		origTime.String()+" (DECREASED FROM: "+effectiveTime.String()+")",
-		view.tbl.GetCell(row, rdvColIdxValue).Text,
-	)
-	assert.Equal(t, tcell.ColorRed, view.tbl.GetCell(row, rdvColIdxValue).Color)
+	tests := []struct {
+		name     string
+		decrease time.Duration
+		color    tcell.Color
+	}{
+		{name: "small", decrease: time.Millisecond, color: tcell.ColorBlue},
+		{name: "medium", decrease: 10 * time.Second, color: tcell.ColorYellow},
+		{name: "large", decrease: 20 * time.Second, color: tcell.ColorRed},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			origTime := effectiveTime.Add(-test.decrease)
+			view := newView(core.LogMsg{
+				Time:              effectiveTime,
+				OrigDecreasedTime: origTime,
+			})
+			row, ok := findTimeRow(view)
+			assert.True(t, ok)
+			assert.Equal(
+				t,
+				origTime.String()+" (DECREASED FROM: "+effectiveTime.String()+")",
+				view.tbl.GetCell(row, rdvColIdxValue).Text,
+			)
+			assert.Equal(t, test.color, view.tbl.GetCell(row, rdvColIdxValue).Color)
+		})
+	}
 }
