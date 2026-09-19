@@ -211,12 +211,12 @@ var (
 
 	cmdLineMsgWarn = tcell.Style{}.
 			Background(tcell.ColorBlue).
-			Foreground(tcell.ColorLime).
-			Bold(true)
+			Foreground(tcell.ColorYellow).
+			Bold(false)
 
 	cmdLineMsgErr = tcell.Style{}.
 			Background(tcell.ColorBlue).
-			Foreground(tcell.ColorYellow).
+			Foreground(tcell.ColorRed).
 			Bold(false)
 )
 
