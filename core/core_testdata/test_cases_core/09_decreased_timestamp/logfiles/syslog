@@ -1,0 +1,13 @@
+2026-09-21T10:00:00.000000+00:00 testhost app[1]: before decrease 1
+2026-09-21T10:01:00.000000+00:00 testhost app[1]: before decrease 2
+2026-09-21T10:02:00.000000+00:00 testhost app[1]: before decrease 3
+2026-09-21T10:03:00.000000+00:00 testhost app[1]: before decrease 4
+2026-09-21T10:04:00.000000+00:00 testhost app[1]: before decrease 5
+2026-09-21T09:55:00.000000+00:00 testhost app[1]: decreased 1
+2026-09-21T09:55:10.000000+00:00 testhost app[1]: decreased 2
+2026-09-21T09:55:20.000000+00:00 testhost app[1]: decreased 3
+2026-09-21T10:05:00.000000+00:00 testhost app[1]: after decrease 1
+2026-09-21T10:06:00.000000+00:00 testhost app[1]: after decrease 2
+2026-09-21T10:07:00.000000+00:00 testhost app[1]: after decrease 3
+2026-09-21T10:08:00.000000+00:00 testhost app[1]: after decrease 4
+2026-09-21T10:09:00.000000+00:00 testhost app[1]: after decrease 5

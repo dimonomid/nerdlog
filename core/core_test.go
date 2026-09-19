@@ -566,8 +566,12 @@ func printMinuteStats(w io.Writer, stats map[int64]MinuteStatsItem) {
 func printLogs(w io.Writer, logs []LogMsg) {
 	for _, msg := range logs {
 		fmt.Fprintf(w, "- %s", msg.Time.Format("2006-01-02T15:04:05.000000000Z07:00"))
-		if msg.DecreasedTimestamp {
-			fmt.Fprintf(w, ",T")
+		if !msg.OrigDecreasedTime.IsZero() {
+			fmt.Fprintf(
+				w,
+				",orig-decreased-time=%s",
+				msg.OrigDecreasedTime.Format("2006-01-02T15:04:05.000000000Z07:00"),
+			)
 		} else {
 			fmt.Fprintf(w, ",F")
 		}

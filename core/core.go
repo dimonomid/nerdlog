@@ -115,8 +115,11 @@ type MinuteStatsItem struct {
 }
 
 type LogMsg struct {
-	Time               time.Time
-	DecreasedTimestamp bool
+	Time time.Time
+
+	// OrigDecreasedTime preserves the parsed timestamp when Time is clamped to
+	// the preceding message's timestamp to keep query results monotonic.
+	OrigDecreasedTime time.Time
 
 	// LogFilename and LogLinenumber are file ane line number in that file
 	LogFilename   string

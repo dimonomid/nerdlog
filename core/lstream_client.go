@@ -696,15 +696,7 @@ func (lsc *LStreamClient) run() {
 							continue
 						}
 
-						if logMsg.Time.Before(respCtx.lastTime) {
-							// Time has decreased: this might happen if the previous log line
-							// had a precise timestamp with microseconds (coming from the app
-							// level), but the current line only has a second precision
-							// (e.g. coming from rsyslog level). Then we just hackishly set the
-							// current timestamp to be the same.
-							logMsg.Time = respCtx.lastTime
-							logMsg.DecreasedTimestamp = true
-						}
+						clampDecreasedTimestamp(&logMsg, respCtx.lastTime)
 
 						resp.Logs = append(resp.Logs, logMsg)
 
@@ -1444,6 +1436,17 @@ func timeWithYear(t time.Time, year int) time.Time {
 		t.Nanosecond(),
 		t.Location(),
 	)
+}
+
+// clampDecreasedTimestamp keeps query results monotonic while retaining the
+// timestamp parsed from an out-of-order log record for display. Small decreases
+// can happen when a precise application timestamp is followed by a
+// second-precision timestamp added by rsyslog.
+func clampDecreasedTimestamp(logMsg *LogMsg, lastTime time.Time) {
+	if logMsg.Time.Before(lastTime) {
+		logMsg.OrigDecreasedTime = logMsg.Time
+		logMsg.Time = lastTime
+	}
 }
 
 type parseLineResult struct {

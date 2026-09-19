@@ -685,7 +685,6 @@ func (rdv *RowDetailsView) updateUI() {
 			},
 		})
 	}
-
 	sort.Slice(extraNames, func(i, j int) bool {
 		return extraNames[i].field.Name < extraNames[j].field.Name
 	})
@@ -718,7 +717,15 @@ func (rdv *RowDetailsView) updateUI() {
 		if rdv.msg != nil {
 			switch name.field.Name {
 			case FieldNameTime:
-				val = rdv.msg.Time.String()
+				if !rdv.msg.OrigDecreasedTime.IsZero() {
+					val = fmt.Sprintf(
+						"%s (DECREASED FROM: %s)",
+						rdv.msg.OrigDecreasedTime.String(),
+						rdv.msg.Time.String(),
+					)
+				} else {
+					val = rdv.msg.Time.String()
+				}
 				valExists = true
 			case FieldNameMessage:
 				val = rdv.msg.Msg
@@ -763,6 +770,9 @@ func (rdv *RowDetailsView) updateUI() {
 		}
 
 		valueCell = newTableCellLogmsg(valStr)
+		if name.field.Name == FieldNameTime && rdv.msg != nil && !rdv.msg.OrigDecreasedTime.IsZero() {
+			valueCell.SetTextColor(tcell.ColorRed)
+		}
 		rdv.tbl.SetCell(nRow, rdvColIdxValue, valueCell)
 
 		rdv.tbl.GetCell(nRow, 0).SetReference(rowDetailsViewCellCtx{

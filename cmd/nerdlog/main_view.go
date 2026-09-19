@@ -1484,17 +1484,15 @@ func (mv *MainView) formatLogs() {
 			msgColor = tcell.ColorPink
 		}
 
-		timeStr := msg.Time.In(tz).Format(logsTableTimeLayout)
-		if msg.DecreasedTimestamp {
-			timeStr = ""
-		}
+		timeToDisplay, timeColor := logMsgDisplayTime(msg)
+		timeStr := timeToDisplay.In(tz).Format(logsTableTimeLayout)
 
 		for i, colName := range colNames {
 			var cell *tview.TableCell
 
 			switch colName {
 			case FieldNameTime:
-				cell = newTableCellLogmsg(timeStr).SetTextColor(tcell.ColorLightBlue)
+				cell = newTableCellLogmsg(timeStr).SetTextColor(timeColor)
 			case FieldNameMessage:
 				cell = newTableCellLogmsg(tview.Escape(msg.Msg)).SetTextColor(msgColor)
 			default:
@@ -1508,6 +1506,13 @@ func (mv *MainView) formatLogs() {
 	}
 
 	mv.bumpStatusLineRight()
+}
+
+func logMsgDisplayTime(msg core.LogMsg) (time.Time, tcell.Color) {
+	if !msg.OrigDecreasedTime.IsZero() {
+		return msg.OrigDecreasedTime, tcell.ColorRed
+	}
+	return msg.Time, tcell.ColorLightBlue
 }
 
 func (mv *MainView) bumpStatusLineLeft() {

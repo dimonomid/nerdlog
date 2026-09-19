@@ -1,0 +1,74 @@
+NumMsgsTotal: 13
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 11
+- 2026-09-21-09-55: 3
+- 2026-09-21-10-00: 1
+- 2026-09-21-10-01: 1
+- 2026-09-21-10-02: 1
+- 2026-09-21-10-03: 1
+- 2026-09-21-10-04: 1
+- 2026-09-21-10-05: 1
+- 2026-09-21-10-06: 1
+- 2026-09-21-10-07: 1
+- 2026-09-21-10-08: 1
+- 2026-09-21-10-09: 1
+
+Num Logs: 13
+- 2026-09-21T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000001,000001,----,before decrease 1
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:00:00.000000+00:00 testhost app[1]: before decrease 1
+- 2026-09-21T10:01:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000002,000002,----,before decrease 2
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:01:00.000000+00:00 testhost app[1]: before decrease 2
+- 2026-09-21T10:02:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000003,000003,----,before decrease 3
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:02:00.000000+00:00 testhost app[1]: before decrease 3
+- 2026-09-21T10:03:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000004,000004,----,before decrease 4
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:03:00.000000+00:00 testhost app[1]: before decrease 4
+- 2026-09-21T10:04:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000005,000005,----,before decrease 5
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:04:00.000000+00:00 testhost app[1]: before decrease 5
+- 2026-09-21T10:04:00.000000000Z,orig-decreased-time=2026-09-21T09:55:00.000000000Z,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000006,000006,----,decreased 1
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T09:55:00.000000+00:00 testhost app[1]: decreased 1
+- 2026-09-21T10:04:00.000000000Z,orig-decreased-time=2026-09-21T09:55:10.000000000Z,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000007,000007,----,decreased 2
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T09:55:10.000000+00:00 testhost app[1]: decreased 2
+- 2026-09-21T10:04:00.000000000Z,orig-decreased-time=2026-09-21T09:55:20.000000000Z,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000008,000008,----,decreased 3
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T09:55:20.000000+00:00 testhost app[1]: decreased 3
+- 2026-09-21T10:05:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000009,000009,----,after decrease 1
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:05:00.000000+00:00 testhost app[1]: after decrease 1
+- 2026-09-21T10:06:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000010,000010,----,after decrease 2
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:06:00.000000+00:00 testhost app[1]: after decrease 2
+- 2026-09-21T10:07:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000011,000011,----,after decrease 3
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:07:00.000000+00:00 testhost app[1]: after decrease 3
+- 2026-09-21T10:08:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000012,000012,----,after decrease 4
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:08:00.000000+00:00 testhost app[1]: after decrease 4
+- 2026-09-21T10:09:00.000000000Z,F,/tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile,000013,000013,----,after decrease 5
+  context: {"hostname":"testhost","lstream":"testhost-decreased","pid":"1","program":"app"}
+  orig: 2026-09-21T10:09:00.000000+00:00 testhost app[1]: after decrease 5
+
+DebugInfo:
+{
+  "testhost-decreased": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2026-09-21-09:59 isn't found, will use the beginning",
+      "debug:the to 2026-09-21-10:10 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/09_decreased_timestamp/lstreams/testhost-decreased/logfile'",
+      "debug:Filtered out 0 from 13 lines"
+    ]
+  }
+}

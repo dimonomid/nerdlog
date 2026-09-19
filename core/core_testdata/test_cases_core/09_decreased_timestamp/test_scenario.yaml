@@ -1,0 +1,24 @@
+descr: "Preserve and expose a decreased log timestamp while keeping result ordering monotonic"
+current_time: "2026-09-21T12:00:00Z"
+manager_params:
+  config_log_streams:
+    testhost-decreased:
+      log_files:
+        kind: all_from_dir
+        dir: logfiles
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "testhost-decreased"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "show the original decreased timestamp alongside its clamped effective timestamp"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2026-09-21T09:59:00Z"
+        to: "2026-09-21T10:10:00Z"
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt
