@@ -145,6 +145,23 @@ type TableCell struct {
 	x, y, width int
 }
 
+// CellStyleSpan applies a style to a horizontal range of a cell's displayed
+// text. Start and End are screen-column offsets from the beginning of the
+// displayed text, with End exclusive.
+type CellStyleSpan struct {
+	Row, Column int
+	Start, End  int
+	Style       tcell.Style
+}
+
+type tableCellPosition struct {
+	row, column int
+}
+
+type cellStyleSpanRange struct {
+	start, end int
+}
+
 // NewTableCell returns a new table cell with sensible defaults. That is, left
 // aligned text with the primary text color (see Styles) and a transparent
 // background (using the background of the Table).
@@ -571,6 +588,11 @@ type Table struct {
 	// drawn.
 	visibleColumnWidths []int
 
+	// Cell-local style overlays, indexed so drawing work is proportional to the
+	// visible cells and their spans rather than all spans in the table.
+	cellStyleSpans      []CellStyleSpan
+	cellStyleSpanRanges map[tableCellPosition]cellStyleSpanRange
+
 	// The style of the selected rows. If this value is the empty struct,
 	// selected rows are simply inverted.
 	selectedStyle tcell.Style
@@ -599,6 +621,114 @@ func NewTable() *Table {
 	}
 	t.SetContent(nil)
 	return t
+}
+
+// SetCellStyleSpans replaces all cell-local style overlays. Spans outside the
+// text or currently visible portion of a cell are clipped while drawing.
+func (t *Table) SetCellStyleSpans(spans []CellStyleSpan) *Table {
+	if len(spans) == 0 {
+		t.cellStyleSpans = t.cellStyleSpans[:0]
+		clear(t.cellStyleSpanRanges)
+		return t
+	}
+
+	t.cellStyleSpans = t.cellStyleSpans[:0]
+	for _, span := range spans {
+		if span.Start < 0 || span.End <= span.Start {
+			continue
+		}
+		t.cellStyleSpans = append(t.cellStyleSpans, span)
+	}
+	sort.SliceStable(t.cellStyleSpans, func(i, j int) bool {
+		left, right := t.cellStyleSpans[i], t.cellStyleSpans[j]
+		if left.Row != right.Row {
+			return left.Row < right.Row
+		}
+		if left.Column != right.Column {
+			return left.Column < right.Column
+		}
+		return left.Start < right.Start
+	})
+	if t.cellStyleSpanRanges == nil {
+		t.cellStyleSpanRanges = make(map[tableCellPosition]cellStyleSpanRange)
+	} else {
+		clear(t.cellStyleSpanRanges)
+	}
+	for index := 0; index < len(t.cellStyleSpans); {
+		span := t.cellStyleSpans[index]
+		position := tableCellPosition{row: span.Row, column: span.Column}
+		end := index + 1
+		for end < len(t.cellStyleSpans) &&
+			t.cellStyleSpans[end].Row == span.Row &&
+			t.cellStyleSpans[end].Column == span.Column {
+			end++
+		}
+		t.cellStyleSpanRanges[position] = cellStyleSpanRange{start: index, end: end}
+		index = end
+	}
+	return t
+}
+
+func (t *Table) drawCellStyleSpans(screen tcell.Screen, rows, columns []int) {
+	if len(t.cellStyleSpans) == 0 || len(t.cellStyleSpanRanges) == 0 {
+		return
+	}
+
+	for _, row := range rows {
+		for _, column := range columns {
+			spanRange, ok := t.cellStyleSpanRanges[tableCellPosition{row: row, column: column}]
+			if !ok {
+				continue
+			}
+			spans := t.cellStyleSpans[spanRange.start:spanRange.end]
+			cell := t.content.GetCell(row, column)
+			if cell == nil || cell.width <= 0 {
+				continue
+			}
+
+			textWidth := tview.TaggedStringWidth(cell.Text)
+			textX := cell.x
+			visibleStart := 0
+			visibleEnd := textWidth
+			if textWidth <= cell.width {
+				switch cell.Align {
+				case AlignCenter:
+					textX += (cell.width - textWidth) / 2
+				case AlignRight:
+					textX += cell.width - textWidth
+				}
+			} else {
+				visibleEnd = cell.width
+				switch cell.Align {
+				case AlignCenter:
+					visibleStart = (textWidth - cell.width) / 2
+				case AlignRight:
+					visibleStart = textWidth - cell.width
+				}
+				visibleEnd += visibleStart
+			}
+
+			for _, span := range spans {
+				start, end := span.Start, span.End
+				if start < visibleStart {
+					start = visibleStart
+				}
+				if end > visibleEnd {
+					end = visibleEnd
+				}
+				if end <= start {
+					continue
+				}
+				for screenX := textX + start - visibleStart; screenX < textX+end-visibleStart; screenX++ {
+					mainc, combc, _, width := screen.GetContent(screenX, cell.y)
+					screen.SetContent(screenX, cell.y, mainc, combc, span.Style)
+					if width > 1 {
+						screenX += width - 1
+					}
+				}
+			}
+		}
+	}
 }
 
 // SetContent sets a new content type for this table. This allows you to back
@@ -724,6 +854,48 @@ func (t *Table) SetOffset(row, column int) *Table {
 // rows and columns the table is scrolled down and to the right.
 func (t *Table) GetOffset() (row, column int) {
 	return t.rowOffset, t.columnOffset
+}
+
+// ScrollToColumn makes a non-fixed column the first scrollable column when it
+// is not already visible. Fixed columns are always visible and leave the
+// current horizontal offset unchanged.
+func (t *Table) ScrollToColumn(column int) *Table {
+	if column < t.fixedColumns {
+		return t
+	}
+	for _, visibleColumn := range t.visibleColumnIndices {
+		if visibleColumn == column {
+			return t
+		}
+	}
+	t.columnOffset = column - t.fixedColumns
+	if t.columnOffset < 0 {
+		t.columnOffset = 0
+	}
+	t.trackEnd = false
+	return t
+}
+
+// ScrollToRow makes a non-fixed row visible without moving the selection.
+func (t *Table) ScrollToRow(row int) *Table {
+	if row < t.fixedRows {
+		return t
+	}
+	firstVisible := t.fixedRows + t.rowOffset
+	visibleScrollableRows := t.visibleRows - t.fixedRows
+	if visibleScrollableRows > 0 && row >= firstVisible && row < firstVisible+visibleScrollableRows {
+		return t
+	}
+	if visibleScrollableRows > 0 && row >= firstVisible {
+		t.rowOffset = row - t.fixedRows - visibleScrollableRows + 1
+	} else {
+		t.rowOffset = row - t.fixedRows
+	}
+	if t.rowOffset < 0 {
+		t.rowOffset = 0
+	}
+	t.trackEnd = false
+	return t
 }
 
 // SetEvaluateAllRows sets a flag which determines the rows to be evaluated when
@@ -1190,6 +1362,11 @@ func (t *Table) Draw(screen tcell.Screen) {
 			expansionTotal -= expansion
 		}
 	}
+
+	// Selection backgrounds are applied with deferred calls near the end of
+	// Draw. Register this first so spans run afterwards and remain visible on
+	// the selected row.
+	defer t.drawCellStyleSpans(screen, rows, columns)
 
 	// Helper function which draws border runes.
 	borderStyle := tcell.StyleDefault.Background(t.GetBackgroundColor()).Foreground(t.bordersColor)

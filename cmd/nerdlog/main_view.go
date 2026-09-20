@@ -53,8 +53,9 @@ type MainViewParams struct {
 	// TODO: support command history
 	OnCmd OnCmdCallback
 
-	CmdHistory   *clhistory.CLHistory
-	QueryHistory *clhistory.CLHistory
+	CmdHistory    *clhistory.CLHistory
+	SearchHistory *clhistory.CLHistory
+	QueryHistory  *clhistory.CLHistory
 
 	Logger *log.Logger
 }
@@ -92,6 +93,10 @@ type MainView struct {
 	// focused. Once the user is done editing command, focusedBeforeCmd
 	// normally resumes focus.
 	focusedBeforeCmd tview.Primitive
+	cmdlineMode      cmdlineMode
+
+	tableSearch     tableSearchState
+	tableSearchEdit *tableSearchEditSnapshot
 
 	histogram *Histogram
 
@@ -159,6 +164,24 @@ type modalFocusItem struct {
 	modal             tview.Primitive
 	modalGrid         *tview.Grid
 	previouslyFocused tview.Primitive
+}
+
+type cmdlineMode int
+
+const (
+	cmdlineModeNone cmdlineMode = iota
+	cmdlineModeCommand
+	cmdlineModeSearch
+)
+
+type tableSearchEditSnapshot struct {
+	query                string
+	activeMatch          tableSearchMatch
+	hasActiveMatch       bool
+	highlightsSuppressed bool
+	selectedRow          int
+	selectedColumn       int
+	offsetRow, offsetCol int
 }
 
 type CmdOpts struct {
@@ -648,6 +671,17 @@ func NewMainView(params *MainViewParams) *MainView {
 			case ':':
 				mv.focusCmdline()
 				return nil
+			case '/':
+				mv.focusTableSearch()
+				return nil
+			case 'n':
+				if mv.repeatTableSearch(true) {
+					return nil
+				}
+			case 'N':
+				if mv.repeatTableSearch(false) {
+					return nil
+				}
 
 			case 'i', 'a':
 				mv.params.App.SetFocus(mv.queryInput)
@@ -758,59 +792,15 @@ func NewMainView(params *MainViewParams) *MainView {
 	mv.cmdInput = tview.NewInputField()
 	mv.cmdInput.SetFieldStyle(cmdLineCommand)
 	mv.cmdInput.SetChangedFunc(func(text string) {
-		if text == "" {
-			mv.params.App.SetFocus(mv.focusedBeforeCmd)
-		}
+		mv.cmdlineChanged(text)
 	})
 
 	mv.cmdInput.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		cmd := mv.cmdInput.GetText()
-		// Remove the ":" prefix
-		cmd = cmd[1:]
-
-		switch event.Key() {
-		case tcell.KeyCtrlP, tcell.KeyUp:
-			item, _ := mv.params.CmdHistory.Prev(cmd)
-			mv.cmdInput.SetText(":" + item.Str)
-			return nil
-
-		case tcell.KeyCtrlN, tcell.KeyDown:
-			item, _ := mv.params.CmdHistory.Next(cmd)
-			mv.cmdInput.SetText(":" + item.Str)
-			return nil
-		}
-
-		mv.params.CmdHistory.Reset()
-
-		return event
+		return mv.cmdlineInputCapture(event)
 	})
 
 	mv.cmdInput.SetDoneFunc(func(key tcell.Key) {
-		switch key {
-		case tcell.KeyEnter:
-			cmd := mv.cmdInput.GetText()
-
-			// Remove the ":" prefix
-			cmd = cmd[1:]
-
-			if cmd != "" {
-				mv.params.OnCmd(cmd, CmdOpts{})
-			} else {
-				// Similarly to zsh, make it so that an empty command causes history to
-				// be reloaded.  TODO: maybe make it so that we reload it after any
-				// command, actually.
-				mv.params.CmdHistory.Load()
-			}
-
-		case tcell.KeyEsc:
-		// Gonna just stop editing it
-		default:
-			// Ignore it
-			return
-		}
-
-		mv.cmdInput.SetText("")
-		mv.params.CmdHistory.Reset()
+		mv.cmdlineDone(key)
 	})
 
 	mainFlex.AddItem(mv.cmdInput, 1, 0, false)
@@ -883,9 +873,228 @@ func (mv *MainView) eventHandlerBrowserLike(event *tcell.EventKey) *tcell.EventK
 
 func (mv *MainView) focusCmdline() {
 	mv.cmdInput.SetFieldStyle(cmdLineCommand)
-	mv.cmdInput.SetText(":")
 	mv.focusedBeforeCmd = mv.params.App.GetFocus()
+	mv.cmdlineMode = cmdlineModeCommand
+	mv.cmdInput.SetText(":")
 	mv.params.App.SetFocus(mv.cmdInput)
+}
+
+func (mv *MainView) cmdlineChanged(text string) {
+	if text == "" {
+		if mv.cmdlineMode == cmdlineModeSearch {
+			mv.restoreTableSearchEdit(true)
+			if mv.params.SearchHistory != nil {
+				mv.params.SearchHistory.Reset()
+			}
+		}
+		mv.cmdlineMode = cmdlineModeNone
+		mv.params.App.SetFocus(mv.focusedBeforeCmd)
+		return
+	}
+	if mv.cmdlineMode != cmdlineModeSearch {
+		return
+	}
+
+	query := strings.TrimPrefix(text, "/")
+	if query == "" {
+		mv.restoreTableSearchPreview()
+		return
+	}
+	originRow, _ := mv.logsTable.GetSelection()
+	if mv.tableSearchEdit != nil {
+		originRow = mv.tableSearchEdit.selectedRow
+	}
+	mv.tableSearch.highlightsSuppressed = false
+	mv.tableSearch.rebuild(mv.logsTable, query, originRow)
+	if match, ok := mv.tableSearch.activeMatch(); ok {
+		mv.previewTableSearchMatch(match)
+	}
+}
+
+func (mv *MainView) cmdlineInputCapture(event *tcell.EventKey) *tcell.EventKey {
+	var history *clhistory.CLHistory
+	var prefix string
+	switch mv.cmdlineMode {
+	case cmdlineModeCommand:
+		history = mv.params.CmdHistory
+		prefix = ":"
+	case cmdlineModeSearch:
+		history = mv.params.SearchHistory
+		prefix = "/"
+	default:
+		return event
+	}
+	if history == nil {
+		return event
+	}
+	text := strings.TrimPrefix(mv.cmdInput.GetText(), prefix)
+
+	switch event.Key() {
+	case tcell.KeyCtrlP, tcell.KeyUp:
+		item, _ := history.Prev(text)
+		mv.cmdInput.SetText(prefix + item.Str)
+		return nil
+	case tcell.KeyCtrlN, tcell.KeyDown:
+		item, _ := history.Next(text)
+		mv.cmdInput.SetText(prefix + item.Str)
+		return nil
+	}
+
+	history.Reset()
+	return event
+}
+
+func (mv *MainView) cmdlineDone(key tcell.Key) {
+	if mv.cmdlineMode == cmdlineModeSearch {
+		switch key {
+		case tcell.KeyEnter:
+			mv.acceptTableSearch()
+		case tcell.KeyEsc:
+			mv.cancelTableSearch()
+		}
+		return
+	}
+
+	switch key {
+	case tcell.KeyEnter:
+		cmd := strings.TrimPrefix(mv.cmdInput.GetText(), ":")
+		if cmd != "" {
+			mv.params.OnCmd(cmd, CmdOpts{})
+		} else {
+			// Similarly to zsh, make it so that an empty command causes history to
+			// be reloaded. TODO: maybe reload it after any command.
+			mv.params.CmdHistory.Load()
+		}
+	case tcell.KeyEsc:
+		// Stop editing the command line.
+	default:
+		return
+	}
+
+	mv.cmdlineMode = cmdlineModeNone
+	mv.cmdInput.SetText("")
+	mv.params.CmdHistory.Reset()
+}
+
+func (mv *MainView) focusTableSearch() {
+	if mv.params.SearchHistory != nil {
+		mv.params.SearchHistory.Reset()
+	}
+	selectedRow, selectedColumn := mv.logsTable.GetSelection()
+	offsetRow, offsetCol := mv.logsTable.GetOffset()
+	mv.tableSearchEdit = &tableSearchEditSnapshot{
+		query:                mv.tableSearch.query,
+		highlightsSuppressed: mv.tableSearch.highlightsSuppressed,
+		selectedRow:          selectedRow,
+		selectedColumn:       selectedColumn,
+		offsetRow:            offsetRow,
+		offsetCol:            offsetCol,
+	}
+	mv.tableSearchEdit.activeMatch, mv.tableSearchEdit.hasActiveMatch = mv.tableSearch.activeMatch()
+	mv.focusedBeforeCmd = mv.params.App.GetFocus()
+	mv.cmdlineMode = cmdlineModeSearch
+	mv.cmdInput.SetFieldStyle(cmdLineCommand)
+	mv.cmdInput.SetText("/")
+	mv.params.App.SetFocus(mv.cmdInput)
+}
+
+func (mv *MainView) restoreTableSearchPreview() {
+	if mv.tableSearchEdit == nil {
+		return
+	}
+	mv.tableSearch.rebuild(mv.logsTable, mv.tableSearchEdit.query, mv.tableSearchEdit.selectedRow)
+	mv.tableSearch.restoreActiveMatch(mv.tableSearchEdit.activeMatch, mv.tableSearchEdit.hasActiveMatch)
+	mv.tableSearch.highlightsSuppressed = mv.tableSearchEdit.highlightsSuppressed
+	mv.tableSearch.applySpans(mv.logsTable)
+}
+
+func (mv *MainView) restoreTableSearchEdit(restoreCursor bool) {
+	if mv.tableSearchEdit == nil {
+		return
+	}
+	snapshot := *mv.tableSearchEdit
+	mv.tableSearch.rebuild(mv.logsTable, snapshot.query, snapshot.selectedRow)
+	mv.tableSearch.restoreActiveMatch(snapshot.activeMatch, snapshot.hasActiveMatch)
+	mv.tableSearch.highlightsSuppressed = snapshot.highlightsSuppressed
+	mv.tableSearch.applySpans(mv.logsTable)
+	if restoreCursor {
+		mv.logsTable.Select(snapshot.selectedRow, snapshot.selectedColumn)
+		mv.logsTable.SetOffset(snapshot.offsetRow, snapshot.offsetCol)
+	}
+	mv.tableSearchEdit = nil
+}
+
+func (mv *MainView) closeCmdline() {
+	mv.cmdlineMode = cmdlineModeNone
+	mv.cmdInput.SetText("")
+	if mv.params.SearchHistory != nil {
+		mv.params.SearchHistory.Reset()
+	}
+}
+
+func (mv *MainView) acceptTableSearch() {
+	query := strings.TrimPrefix(mv.cmdInput.GetText(), "/")
+	if query != "" && mv.params.SearchHistory != nil {
+		_ = mv.params.SearchHistory.Add(query)
+	}
+	if query == "" {
+		mv.restoreTableSearchPreview()
+		if match, ok := mv.tableSearch.move(mv.logsTable, true); ok {
+			mv.jumpToTableSearchMatch(match)
+		}
+	} else if match, ok := mv.tableSearch.activeMatch(); ok {
+		mv.tableSearch.highlightsSuppressed = false
+		mv.tableSearch.applySpans(mv.logsTable)
+		mv.jumpToTableSearchMatch(match)
+	}
+
+	matched := len(mv.tableSearch.matches) > 0
+	mv.tableSearchEdit = nil
+	mv.closeCmdline()
+	if !matched {
+		mv.printMsg("Pattern not found: "+query, nlMsgLevelWarn)
+	}
+}
+
+func (mv *MainView) suppressTableSearchHighlights() {
+	mv.tableSearch.suppressHighlights(mv.logsTable)
+}
+
+func (mv *MainView) cancelTableSearch() {
+	mv.restoreTableSearchEdit(true)
+	mv.closeCmdline()
+}
+
+func (mv *MainView) repeatTableSearch(forward bool) bool {
+	if mv.tableSearch.query == "" {
+		return false
+	}
+	match, ok := mv.tableSearch.move(mv.logsTable, forward)
+	if !ok {
+		mv.printMsg("Pattern not found: "+mv.tableSearch.query, nlMsgLevelWarn)
+		return true
+	}
+	mv.jumpToTableSearchMatch(match)
+	return true
+}
+
+func (mv *MainView) jumpToTableSearchMatch(match tableSearchMatch) {
+	mv.logsTable.Select(match.row, 0)
+	mv.logsTable.ScrollToColumn(match.column)
+}
+
+func (mv *MainView) previewTableSearchMatch(match tableSearchMatch) {
+	mv.logsTable.ScrollToRow(match.row)
+	mv.logsTable.ScrollToColumn(match.column)
+}
+
+func (mv *MainView) refreshTableSearch() {
+	if mv.tableSearch.query == "" {
+		mv.logsTable.SetCellStyleSpans(nil)
+		return
+	}
+	selectedRow, _ := mv.logsTable.GetSelection()
+	mv.tableSearch.rebuild(mv.logsTable, mv.tableSearch.query, selectedRow)
 }
 
 type nlMsgLevel string
@@ -1289,13 +1498,25 @@ func (mv *MainView) applyLogs(resp *core.LogRespTotal) {
 		// Replaced all logs
 		mv.logsTable.Select(len(resp.Logs)+1, 0)
 		mv.logsTable.ScrollToEnd()
+		mv.tableSearch.active = -1
 		mv.bumpTimeRange(true)
 	} else {
 		// Loaded more (earlier) logs
 		numNewRows := mv.logsTable.GetRowCount() - oldNumRows
 		mv.logsTable.SetOffset(offsetRow+numNewRows, offsetCol)
 		mv.logsTable.Select(selectedRow+numNewRows, 0)
+		for index := range mv.tableSearch.matches {
+			mv.tableSearch.matches[index].row += numNewRows
+		}
+		if mv.tableSearchEdit != nil {
+			mv.tableSearchEdit.selectedRow += numNewRows
+			mv.tableSearchEdit.offsetRow += numNewRows
+			if mv.tableSearchEdit.hasActiveMatch {
+				mv.tableSearchEdit.activeMatch.row += numNewRows
+			}
+		}
 	}
+	mv.refreshTableSearch()
 
 	statusMsg := fmt.Sprintf("Query took: %s", resp.QueryDur.Round(1*time.Millisecond))
 	statusLevel := nlMsgLevelInfo

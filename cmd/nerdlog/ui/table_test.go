@@ -128,3 +128,65 @@ func TestTableNavigationMatchesPinnedTview(t *testing.T) {
 		assertScreensEqual(t, upstreamScreen, ownedScreen)
 	}
 }
+
+func TestTableCellStyleSpansApplyAfterSelectionAndClip(t *testing.T) {
+	table := NewTable().SetSelectable(true, false)
+	table.SetRect(0, 0, 8, 2)
+	table.SetCell(0, 0, NewTableCell("abcdefghij"))
+	table.SetCell(1, 0, NewTableCell("界-wide"))
+	table.Select(0, 0)
+
+	ordinary := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorYellow)
+	active := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorOrange).Bold(true)
+	table.SetCellStyleSpans([]CellStyleSpan{
+		{Row: 0, Column: 0, Start: 2, End: 5, Style: active},
+		{Row: 0, Column: 0, Start: 7, End: 12, Style: ordinary},
+		{Row: 1, Column: 0, Start: 0, End: 2, Style: ordinary},
+	})
+
+	screen := newTableTestScreen(t, 8, 2)
+	table.Draw(screen)
+
+	for x := 2; x < 5; x++ {
+		_, _, style, _ := screen.GetContent(x, 0)
+		assert.Equal(t, active, style, "active span style at x=%d", x)
+	}
+	_, _, clippedStyle, _ := screen.GetContent(7, 0)
+	assert.Equal(t, ordinary, clippedStyle)
+	_, _, wideStyle, _ := screen.GetContent(0, 1)
+	assert.Equal(t, ordinary, wideStyle)
+
+	table.SetCellStyleSpans(nil)
+	table.Draw(screen)
+	_, _, styleWithoutSpan, _ := screen.GetContent(2, 0)
+	assert.NotEqual(t, active, styleWithoutSpan)
+}
+
+func TestTableScrollToColumnPreservesVerticalOffset(t *testing.T) {
+	table := NewTable().SetFixed(1, 1).SetOffset(4, 0)
+	table.ScrollToColumn(3)
+	rowOffset, columnOffset := table.GetOffset()
+	assert.Equal(t, 4, rowOffset)
+	assert.Equal(t, 2, columnOffset)
+
+	table.ScrollToColumn(0)
+	rowOffset, columnOffset = table.GetOffset()
+	assert.Equal(t, 4, rowOffset)
+	assert.Equal(t, 2, columnOffset)
+}
+
+func TestTableScrollToRowDoesNotMoveSelection(t *testing.T) {
+	table := NewTable().SetFixed(1, 0).SetSelectable(true, false).Select(2, 0)
+	table.SetRect(0, 0, 10, 4)
+	for row := 0; row < 10; row++ {
+		table.SetCell(row, 0, NewTableCell("row"))
+	}
+	screen := newTableTestScreen(t, 10, 4)
+	table.Draw(screen)
+
+	table.ScrollToRow(8)
+	selectedRow, _ := table.GetSelection()
+	rowOffset, _ := table.GetOffset()
+	assert.Equal(t, 2, selectedRow)
+	assert.Equal(t, 5, rowOffset)
+}

@@ -246,7 +246,8 @@ UI consists of a few key elements:
 
   And on the right side, there are 3 numbers like `1201 / 1455 / 2948122`. The rightmost number (2948122) is the total number of log messages that matched the query and the timerange (and included in the timeline histogram above). The next number (1455) is the number of actual log lines currently loaded in the nerdlog app, and the leftmost (1201) is just the cursor within those available logs.
 
-- Command line: Vim-like command line. Hit `:` to enter command mode.
+- Command line: Vim-like command line. Hit `:` to enter command mode or `/` to
+  search the currently loaded logs.
 
 ## Navigation
 
@@ -269,6 +270,11 @@ If you know Vim though, you'll feel right at home in nerdlog too since it suppor
 - Keys `h`, `j`, `k`, `l`, `g`, `G`, `Ctrl+U`, `Ctrl+D`, etc move cursor whenever you're not in some text-editing field, like query input or others
 - Hitting Escape eventually brings you to the "Normal mode", which means that the logs table is focused (and all of those `h`, `j`, `k`, `l`, etc work there)
 - `:` focuses the command line where you can input some commands (see below)
+- `/` searches the currently loaded logs. Matches are highlighted incrementally
+  as you type, with the next match highlighted separately. `Enter` moves the
+  cursor to that match, and `n`/`N` move to the next/previous match with
+  wrapping. Matching is case-insensitive unless the pattern contains an
+  uppercase character, and uses simple strings for now, not regular expressions.
 - `i` or `a` focuses the main query input field
 
 When in an input field (command line, query input, etc), you can go through input history using `Up` / `Down` or `Ctrl+P` / `Ctrl+N`.
@@ -313,6 +319,10 @@ If filename is omitted, `/tmp/last_nerdlog` is used.
 `:refresh!` Hard refresh, i.e. also rebuild the index for every logstream. This
 can be done from the Menu too, or using a keyboard shortcut `Alt+Ctrl+R` or
 `Shift+F5`.
+
+`:noh` or `:nohlsearch` Hide table-search highlights without forgetting the
+search pattern. Using `n` or `N` resumes the search and shows the highlights
+again.
 
 `:reconnect` Reconnect to all logstreams
 

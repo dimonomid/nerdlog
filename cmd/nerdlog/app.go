@@ -31,6 +31,8 @@ type nerdlogApp struct {
 
 	// cmdLineHistory is the command line history
 	cmdLineHistory *clhistory.CLHistory
+	// searchHistory is the history of table search patterns.
+	searchHistory *clhistory.CLHistory
 
 	// queryBLHistory is the history of queries, as shell strings like this:
 	// - nerdlog --lstreams 'localhost' --time -10h --pattern '/something/'
@@ -67,6 +69,7 @@ type nerdlogAppParams struct {
 
 	logstreamsConfigPath string
 	cmdHistoryFile       string
+	searchHistoryFile    string
 
 	noJournalctlAccessWarn bool
 }
@@ -96,6 +99,12 @@ func newNerdlogApp(
 	if err != nil {
 		return nil, errors.Annotatef(err, "initializing cmdline history")
 	}
+	searchHistory, err := clhistory.New(clhistory.CLHistoryParams{
+		Filename: params.searchHistoryFile,
+	})
+	if err != nil {
+		return nil, errors.Annotatef(err, "initializing search history")
+	}
 
 	app := &nerdlogApp{
 		params: params,
@@ -109,6 +118,7 @@ func newNerdlogApp(
 		tviewApp: tview.NewApplication(),
 
 		cmdLineHistory: cmdLineHistory,
+		searchHistory:  searchHistory,
 		queryBLHistory: blhistory.New(),
 		queryCLHistory: queryCLHistory,
 
@@ -162,8 +172,9 @@ func newNerdlogApp(
 			}
 		},
 
-		CmdHistory:   app.cmdLineHistory,
-		QueryHistory: app.queryCLHistory,
+		CmdHistory:    app.cmdLineHistory,
+		SearchHistory: app.searchHistory,
+		QueryHistory:  app.queryCLHistory,
 
 		Logger: logger,
 	})
@@ -471,6 +482,7 @@ func (app *nerdlogApp) handleCmdLine(cmdCh <-chan cmdWithOpts) {
 func (app *nerdlogApp) afterUserCmdOrOptionChange() {
 	app.mainView.formatTimeRange()
 	app.mainView.formatLogs()
+	app.mainView.refreshTableSearch()
 	app.lsman.SetDefaultTransportMode(app.options.GetTransportMode())
 }
 

@@ -22,6 +22,9 @@ func (app *nerdlogApp) handleCmd(cmd string) {
 	}
 
 	switch parts[0] {
+	case "noh", "nohlsearch":
+		app.mainView.suppressTableSearchHighlights()
+
 	case "h", "help":
 		var sb strings.Builder
 		sb.WriteString("There is no built-in help yet, but check out these resources:\n")
