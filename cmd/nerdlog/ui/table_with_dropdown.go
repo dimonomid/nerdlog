@@ -6,7 +6,7 @@ import (
 )
 
 type TableWithDropdown struct {
-	*tview.Table
+	*Table
 
 	// The options from which the user can choose.
 	options []*dropDownOption
@@ -26,7 +26,7 @@ type TableWithDropdown struct {
 
 func NewTableWithDropdown() *TableWithDropdown {
 	t := &TableWithDropdown{
-		Table: tview.NewTable(),
+		Table: NewTable(),
 
 		optionPrefix: " ",
 		optionSuffix: " ",

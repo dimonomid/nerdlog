@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dimonomid/nerdlog/cmd/nerdlog/ui"
 	"github.com/dimonomid/nerdlog/core"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -70,12 +71,12 @@ func TestHistogramExternalCursorFollowsOnlyResolvedFocusedRows(t *testing.T) {
 	t1 := time.Date(2026, 9, 20, 10, 0, 0, 0, time.UTC)
 	t2 := t1.Add(time.Minute)
 	mv := &MainView{
-		logsTable: tview.NewTable(),
+		logsTable: ui.NewTable(),
 		histogram: NewHistogram(),
 	}
-	mv.logsTable.SetCell(2, 0, tview.NewTableCell("").SetReference(core.LogMsg{Time: t1}))
-	mv.logsTable.SetCell(3, 0, tview.NewTableCell("").SetReference(core.LogMsg{Malformed: true}))
-	mv.logsTable.SetCell(4, 0, tview.NewTableCell("").SetReference(core.LogMsg{Time: t2}))
+	mv.logsTable.SetCell(2, 0, ui.NewTableCell("").SetReference(core.LogMsg{Time: t1}))
+	mv.logsTable.SetCell(3, 0, ui.NewTableCell("").SetReference(core.LogMsg{Malformed: true}))
+	mv.logsTable.SetCell(4, 0, ui.NewTableCell("").SetReference(core.LogMsg{Time: t2}))
 	mv.logsTable.Focus(nil)
 
 	mv.bumpHistogramExternalCursor(2)

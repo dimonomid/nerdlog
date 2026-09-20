@@ -692,7 +692,7 @@ func (rdv *RowDetailsView) updateUI() {
 	names = append(names, extraNames...)
 
 	for i, name := range names {
-		var nCell *tview.TableCell
+		var nCell *ui.TableCell
 		if name.idx >= 0 {
 			txt := fmt.Sprintf("%d", name.idx+1)
 			if name.field.Sticky {
@@ -712,7 +712,7 @@ func (rdv *RowDetailsView) updateUI() {
 		var val string
 		valExists := false
 
-		var valueCell *tview.TableCell
+		var valueCell *ui.TableCell
 
 		if rdv.msg != nil {
 			switch name.field.Name {

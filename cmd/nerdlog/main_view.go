@@ -68,7 +68,7 @@ type MainView struct {
 	screenHeight int
 
 	rootPages *tview.Pages
-	logsTable *tview.Table
+	logsTable *ui.Table
 
 	queryLabel *tview.TextView
 	queryInput *tview.InputField
@@ -605,7 +605,7 @@ func NewMainView(params *MainViewParams) *MainView {
 
 	mainFlex.AddItem(mv.histogram, 6, 0, false)
 
-	mv.logsTable = tview.NewTable()
+	mv.logsTable = ui.NewTable()
 	mv.updateTableHeader(nil)
 
 	//mv.logsTable.SetEvaluateAllRows(true)
@@ -1473,7 +1473,7 @@ func (mv *MainView) formatLogs() {
 		timeStr, timeColor := logMsgDisplayTimeCell(msg, tz)
 
 		for i, colName := range colNames {
-			var cell *tview.TableCell
+			var cell *ui.TableCell
 
 			switch colName {
 			case FieldNameTime:
@@ -1609,20 +1609,20 @@ func (mv *MainView) bumpHistogramExternalCursor(row int) {
 	}
 }
 
-func newTableCellHeader(text string) *tview.TableCell {
-	return tview.NewTableCell(text).
+func newTableCellHeader(text string) *ui.TableCell {
+	return ui.NewTableCell(text).
 		SetTextColor(tcell.ColorLightBlue).
 		SetAttributes(tcell.AttrBold).
 		SetAlign(tview.AlignLeft).
 		SetSelectable(false)
 }
 
-func newTableCellLogmsg(text string) *tview.TableCell {
-	return tview.NewTableCell(text).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft)
+func newTableCellLogmsg(text string) *ui.TableCell {
+	return ui.NewTableCell(text).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignLeft)
 }
 
-func newTableCellButton(text string) *tview.TableCell {
-	return tview.NewTableCell(text).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignCenter)
+func newTableCellButton(text string) *ui.TableCell {
+	return ui.NewTableCell(text).SetTextColor(tcell.ColorWhite).SetAlign(tview.AlignCenter)
 }
 
 func (mv *MainView) setQuery(q string) {

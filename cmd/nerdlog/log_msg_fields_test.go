@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/dimonomid/clock"
+	"github.com/dimonomid/nerdlog/cmd/nerdlog/ui"
 	"github.com/dimonomid/nerdlog/core"
-	"github.com/rivo/tview"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -111,7 +111,7 @@ func TestWildcardIncludesBuiltInFileFields(t *testing.T) {
 			Options: NewOptionsShared(Options{Timezone: time.UTC}),
 		},
 		selectQuery: selectQuery,
-		logsTable:   tview.NewTable(),
+		logsTable:   ui.NewTable(),
 	}
 
 	fields := mv.updateTableHeader([]core.LogMsg{{
