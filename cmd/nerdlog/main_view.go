@@ -694,13 +694,8 @@ func NewMainView(params *MainViewParams) *MainView {
 		firstCell := mv.logsTable.GetCell(row, 0)
 		msg := firstCell.GetReference().(core.LogMsg)
 
-		existingNamesSet := map[string]struct{}{
-			FieldNameTime:    {},
-			FieldNameMessage: {},
-		}
-		for key := range msg.Context {
-			existingNamesSet[key] = struct{}{}
-		}
+		existingNamesSet := newLogMsgFieldNamesSet()
+		addLogMsgFieldNames(existingNamesSet, msg)
 
 		rdv := NewRowDetailsView(mv, &RowDetailsViewParams{
 			DoneFunc:         mv.applyQueryEditData,
@@ -1199,14 +1194,9 @@ func (mv *MainView) updateTableHeader(msgs []core.LogMsg) (colNames []string) {
 	// - If IncludeAll is set: build a list of tags which are not specified explicitly,
 	//   and sort them
 
-	existingTags := map[string]struct{}{
-		FieldNameTime:    {},
-		FieldNameMessage: {},
-	}
+	existingTags := newLogMsgFieldNamesSet()
 	for _, msg := range msgs {
-		for name := range msg.Context {
-			existingTags[name] = struct{}{}
-		}
+		addLogMsgFieldNames(existingTags, msg)
 	}
 
 	numSticky := 0
@@ -1448,14 +1438,9 @@ func (mv *MainView) formatLogs() {
 	mv.logsTable.Clear()
 
 	// Update existingTagNames
-	mv.existingTagNames = map[string]struct{}{
-		FieldNameTime:    {},
-		FieldNameMessage: {},
-	}
+	mv.existingTagNames = newLogMsgFieldNamesSet()
 	for _, msg := range resp.Logs {
-		for name := range msg.Context {
-			mv.existingTagNames[name] = struct{}{}
-		}
+		addLogMsgFieldNames(mv.existingTagNames, msg)
 	}
 
 	// Update table header
@@ -1496,7 +1481,8 @@ func (mv *MainView) formatLogs() {
 			case FieldNameMessage:
 				cell = newTableCellLogmsg(tview.Escape(msg.Msg)).SetTextColor(msgColor)
 			default:
-				cell = newTableCellLogmsg(msg.Context[colName]).SetTextColor(msgColor)
+				value, _ := logMsgFieldValue(msg, colName)
+				cell = newTableCellLogmsg(value).SetTextColor(msgColor)
 			}
 
 			mv.logsTable.SetCell(rowIdx, i, cell)
@@ -1935,7 +1921,7 @@ func (mv *MainView) showOriginalMsg(msg core.LogMsg) {
 	if msg.LogFilename != core.SpecialFilenameJournalctl {
 		sb.WriteString(fmt.Sprintf(
 			"ssh -t %s 'vim +\"set ft=messages\" +%d <(tail -n +%d %s | head -n %d)'\n\n",
-			msg.Context["lstream"], lnOffsetUp+1, lnBegin, msg.LogFilename, lnOffsetUp+lnOffsetDown,
+			msg.LogStreamName, lnOffsetUp+1, lnBegin, msg.LogFilename, lnOffsetUp+lnOffsetDown,
 		))
 	}
 

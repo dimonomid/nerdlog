@@ -117,6 +117,11 @@ type MinuteStatsItem struct {
 type LogMsg struct {
 	Time time.Time
 
+	// LogStreamName is added by Nerdlog rather than parsed from the log record.
+	// Keeping it outside Context prevents a parsed "lstream" field from replacing
+	// the value Nerdlog uses for sorting and source-related actions.
+	LogStreamName string
+
 	// Malformed indicates that Msg contains the unparsed original log line.
 	// Time can be zero when no preceding valid record has been loaded yet.
 	Malformed bool
@@ -135,7 +140,10 @@ type LogMsg struct {
 	// which should be used for --lines-until param.
 	CombinedLinenumber int
 
-	Msg     string
+	Msg string
+
+	// Context contains fields parsed from the log record. Fields added by
+	// Nerdlog, such as lstream, are stored in dedicated LogMsg members.
 	Context map[string]string
 	Level   LogLevel
 

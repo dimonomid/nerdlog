@@ -233,6 +233,11 @@ func runCoreTestScenario(t *testing.T, tsCtx *coreTestScenarioContext) error {
 			if err != nil {
 				return errors.Annotatef(err, "test step #%d: querying logs %+v", i, query.Params)
 			}
+			for _, msg := range logResp.Logs {
+				assert.NotEmpty(t, msg.LogStreamName, assertArgs...)
+				_, hasLegacyLStreamContext := msg.Context["lstream"]
+				assert.False(t, hasLegacyLStreamContext, assertArgs...)
+			}
 
 			logRespStr := formatLogResp(logResp)
 			err = os.WriteFile(filepath.Join(stepOutputDir, "got_log_resp.txt"), []byte(logRespStr), 0644)
@@ -589,7 +594,16 @@ func printLogs(w io.Writer, logs []LogMsg) {
 			fmt.Fprintf(w, ",%s", msg.Msg)
 		}
 
-		ctxData, _ := json.Marshal(msg.Context)
+		// Keep the legacy golden-test representation stable while lstream moves
+		// from parsed Context into typed LogMsg metadata.
+		contextWithSyntheticFields := make(map[string]string, len(msg.Context)+1)
+		for name, value := range msg.Context {
+			contextWithSyntheticFields[name] = value
+		}
+		if msg.LogStreamName != "" {
+			contextWithSyntheticFields["lstream"] = msg.LogStreamName
+		}
+		ctxData, _ := json.Marshal(contextWithSyntheticFields)
 		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "  context: %s", string(ctxData))
 

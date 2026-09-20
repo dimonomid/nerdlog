@@ -996,8 +996,7 @@ func (lsman *LStreamsManager) mergeLogRespsAndSend() {
 			return ret.Logs[i].Time.Before(ret.Logs[j].Time)
 		}
 
-		// TODO: make it less hacky, store lstream somewhere outside of Context as well.
-		return ret.Logs[i].Context["lstream"] < ret.Logs[j].Context["lstream"]
+		return ret.Logs[i].LogStreamName < ret.Logs[j].LogStreamName
 	})
 
 	// Cut potentially incomplete dated logs, but retain malformed records whose

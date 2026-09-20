@@ -39,7 +39,7 @@ func NewLStreamsResolver(params LStreamsResolverParams) *LStreamsResolver {
 
 type LogStream struct {
 	// Name is an arbitrary string which will be included in log messages as the
-	// "lstream" context tag; it must uniquely identify the LogStream.
+	// built-in "lstream" field; it must uniquely identify the LogStream.
 	Name string
 
 	// NOTE: all fields below are shell-specific; so if at some point we want

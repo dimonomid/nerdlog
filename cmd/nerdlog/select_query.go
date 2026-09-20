@@ -6,16 +6,18 @@ import (
 	"github.com/juju/errors"
 )
 
-var DefaultSelectQuery SelectQuery = FieldNameTime + " STICKY, " + FieldNameMessage + ", lstream, *"
+var DefaultSelectQuery SelectQuery = FieldNameTime + " STICKY, " + FieldNameMessage + ", " + FieldNameLStream + ", *"
 
 const (
 	FieldNameTime    = "time"
 	FieldNameMessage = "message"
+	FieldNameLStream = "lstream"
 )
 
 var FieldNamesSpecial = map[string]struct{}{
 	FieldNameTime:    {},
 	FieldNameMessage: {},
+	FieldNameLStream: {},
 }
 
 // TODO explain

@@ -454,7 +454,7 @@ func NewRowDetailsView(
 				}
 			}
 
-			if rCtx.valExists && rCtx.field.Name != FieldNameTime && rCtx.field.Name != "lstream" {
+			if rCtx.valExists && rCtx.field.Name != FieldNameTime && rCtx.field.Name != FieldNameLStream {
 				if !rCtx.filteredByValue {
 					rdv.tbl.AddOption("[ ] Filter logs containing value", getToggleFilterByValue(rCtx.awkValue))
 				} else {
@@ -621,9 +621,9 @@ func (rdv *RowDetailsView) setData(
 	rdv.sq = sq
 	rdv.msg = msg
 
-	rdv.allNamesSet = map[string]struct{}{
-		FieldNameTime:    {},
-		FieldNameMessage: {},
+	rdv.allNamesSet = newLogMsgFieldNamesSet()
+	if msg != nil {
+		addLogMsgFieldNames(rdv.allNamesSet, *msg)
 	}
 	for _, field := range rdv.sq.Fields {
 		rdv.allNamesSet[field.Name] = struct{}{}
@@ -729,11 +729,8 @@ func (rdv *RowDetailsView) updateUI() {
 					val = rdv.msg.Time.String()
 				}
 				valExists = true
-			case FieldNameMessage:
-				val = rdv.msg.Msg
-				valExists = true
 			default:
-				val, valExists = rdv.msg.Context[name.field.Name]
+				val, valExists = logMsgFieldValue(*rdv.msg, name.field.Name)
 			}
 		}
 

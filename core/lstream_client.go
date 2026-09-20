@@ -672,6 +672,7 @@ func (lsc *LStreamClient) run() {
 						// which will encirch it.
 						rawLogMsg := LogMsg{
 							// Time will be set later
+							LogStreamName: lsc.params.LogStream.Name,
 
 							LogFilename:   logFilename,
 							LogLinenumber: logLineno,
@@ -683,9 +684,7 @@ func (lsc *LStreamClient) run() {
 						}
 
 						parsedLogMsg := rawLogMsg
-						parsedLogMsg.Context = map[string]string{
-							"lstream": lsc.params.LogStream.Name,
-						}
+						parsedLogMsg.Context = map[string]string{}
 						err = lsc.parseLine(&parsedLogMsg)
 						var logMsg LogMsg
 						if err != nil {
@@ -699,7 +698,6 @@ func (lsc *LStreamClient) run() {
 								rawLogMsg,
 								parsedLogMsg.Time,
 								respCtx.lastTime,
-								lsc.params.LogStream.Name,
 							)
 						} else {
 							logMsg = parsedLogMsg
@@ -1460,8 +1458,8 @@ func clampDecreasedTimestamp(logMsg *LogMsg, lastTime time.Time) {
 
 // makeMalformedLogMsg restores the raw record after parsing failed, retaining
 // a timestamp parsed before a later parsing stage failed when one is available.
-func makeMalformedLogMsg(rawLogMsg LogMsg, parsedTime, lastTime time.Time, lstreamName string) LogMsg {
-	rawLogMsg.Context = map[string]string{"lstream": lstreamName}
+func makeMalformedLogMsg(rawLogMsg LogMsg, parsedTime, lastTime time.Time) LogMsg {
+	rawLogMsg.Context = map[string]string{}
 	rawLogMsg.Malformed = true
 	rawLogMsg.Time = parsedTime
 	if rawLogMsg.Time.IsZero() {
