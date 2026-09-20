@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 
+	"github.com/dimonomid/nerdlog/cmd/nerdlog/ui"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -29,11 +30,16 @@ type MessageViewParams struct {
 
 	Buttons         []string
 	OnButtonPressed func(label string, idx int)
+	ButtonDropdowns []MessageViewDropdown
 
 	OnEsc func()
 
 	// Width and Height are 40 and 10 by default
 	Width, Height int
+
+	// Scrollable makes the message text navigable when it does not fit in the
+	// visible area.
+	Scrollable bool
 
 	// By default, tview.AlignLeft (because it happens to be 0)
 	Align int
@@ -54,6 +60,12 @@ type MessageViewCheckboxParams struct {
 	Checked bool
 }
 
+type MessageViewDropdown struct {
+	Label      string
+	Options    []string
+	OnSelected func(index int, label string)
+}
+
 type MessageView struct {
 	params   MessageViewParams
 	mainView *MainView
@@ -63,6 +75,7 @@ type MessageView struct {
 	frame       *tview.Frame
 
 	textView    *tview.TextView
+	scrollbar   *messageViewScrollbar
 	inputFields []*tview.InputField
 	checkboxes  []*tview.Checkbox
 	buttons     []*tview.Button
@@ -75,6 +88,90 @@ type MessageView struct {
 
 	curWidth  int
 	curHeight int
+}
+
+// messageViewScrollbar is the visual scroll indicator for a scrollable
+// message. tview's TextView supports scrolling but does not draw a scrollbar.
+type messageViewScrollbar struct {
+	*tview.Box
+	textView *tview.TextView
+}
+
+func (s *messageViewScrollbar) Draw(screen tcell.Screen) {
+	s.Box.DrawForSubclass(screen, s)
+
+	x, y, width, height := s.GetInnerRect()
+	if width <= 0 || height <= 0 {
+		return
+	}
+
+	_, _, textWidth, _ := s.textView.GetRect()
+	if textWidth <= 0 {
+		return
+	}
+
+	text := s.textView.GetText(true)
+	totalLines := getWrappedTextViewLineCount(text, textWidth)
+	if totalLines <= height {
+		return
+	}
+
+	offset, _ := s.textView.GetScrollOffset()
+	maxOffset := totalLines - height
+	if offset < 0 {
+		offset = 0
+	}
+	if offset > maxOffset {
+		offset = maxOffset
+	}
+	thumbHeight := height * height / totalLines
+	if thumbHeight < 1 {
+		thumbHeight = 1
+	}
+	if thumbHeight > height {
+		thumbHeight = height
+	}
+	thumbTop := offset * (height - thumbHeight) / maxOffset
+	if thumbTop < 0 {
+		thumbTop = 0
+	}
+	if thumbTop+thumbHeight > height {
+		thumbTop = height - thumbHeight
+	}
+
+	trackStyle := tcell.StyleDefault.Foreground(tcell.ColorDarkGray)
+	thumbStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite)
+	for row := 0; row < height; row++ {
+		style := trackStyle
+		ch := '│'
+		if row >= thumbTop && row < thumbTop+thumbHeight {
+			style = thumbStyle
+			ch = '█'
+		}
+		screen.SetContent(x+width-1, y+row, ch, nil, style)
+	}
+}
+
+// getWrappedTextViewLineCount estimates how many display rows tview's wrapped
+// TextView needs for text at the given width. It mirrors the current TextView
+// configuration: wrapping is enabled and word wrapping is disabled.
+func getWrappedTextViewLineCount(text string, width int) int {
+	if width <= 0 {
+		return 0
+	}
+
+	totalLines := 0
+	for _, line := range strings.Split(text, "\n") {
+		// Use screen-cell width rather than byte length so the scrollbar also
+		// behaves correctly for Unicode text.
+		lineWidth := tview.TaggedStringWidth(line)
+		lineCount := (lineWidth + width - 1) / width
+		if lineCount == 0 {
+			lineCount = 1
+		}
+		totalLines += lineCount
+	}
+	return totalLines
 }
 
 // onButtonBlurRevert specifies the index and old value of a button (that we
@@ -171,16 +268,26 @@ func NewMessageView(
 	msgv.textView.SetText(strings.TrimSpace(params.Message))
 	msgv.textView.SetTextAlign(msgv.params.Align)
 	msgv.textView.SetDynamicColors(true)
-
+	msgv.textView.SetScrollable(msgv.params.Scrollable)
 	if msgv.params.BackgroundColor != tcell.ColorDefault {
 		msgv.textView.SetBackgroundColor(msgv.params.BackgroundColor)
 	}
 
+	textViewPrimitive := tview.Primitive(msgv.textView)
+	if msgv.params.Scrollable {
+		msgv.scrollbar = &messageViewScrollbar{
+			Box:      tview.NewBox(),
+			textView: msgv.textView,
+		}
+		textViewPrimitive = tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(msgv.textView, 0, 1, false).
+			AddItem(msgv.scrollbar, 1, 0, false)
+	}
 	msgv.msgboxFlex.AddItem(
-		msgv.textView,
+		textViewPrimitive,
 		0,
 		1,
-		len(params.Buttons) == 0 && len(params.InputFields) == 0 && len(params.Checkboxes) == 0,
+		!msgv.params.Scrollable && len(params.Buttons) == 0 && len(params.InputFields) == 0 && len(params.Checkboxes) == 0,
 	)
 
 	for i, fieldParams := range msgv.params.InputFields {
@@ -296,6 +403,10 @@ func NewMessageView(
 		msgv.focusers = append(msgv.focusers, btn)
 		tabHandler := msgv.getGenericTabHandler(btn)
 		btn.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+			if msgv.scrollTextView(event) {
+				return nil
+			}
+
 			// Handle Esc key
 			switch event.Key() {
 			case tcell.KeyEsc:
@@ -340,6 +451,116 @@ func NewMessageView(
 		)
 	}
 
+	for i, dropdownParams := range params.ButtonDropdowns {
+		var dropdown *ui.DropDown
+		dropdown = ui.NewDropDown()
+		labels := dropdownParams.Options
+		dropdown.SetOptions(labels, func(label string, index int) {
+			if index >= 0 && dropdownParams.OnSelected != nil {
+				dropdown.SetCurrentOption(-1)
+				dropdownParams.OnSelected(index, label)
+			}
+		})
+		dropdown.SetListStyles(menuUnselected, menuSelected)
+
+		fieldWidth := 10
+		dropdown.SetFieldWidth(fieldWidth)
+		label := dropdownParams.Label
+		labelWidth := len([]rune(label))
+		leftPadding := (fieldWidth - labelWidth) / 2
+		rightPadding := fieldWidth - labelWidth - leftPadding
+		dropdown.SetTextOptions(
+			" ", " ", " ", " ",
+			strings.Repeat(" ", leftPadding)+label+strings.Repeat(" ", rightPadding),
+		)
+
+		if i > 0 || len(params.Buttons) > 0 {
+			msgv.buttonsFlex.AddItem(nil, 1, 0, false)
+		}
+
+		msgv.buttonsFlex.AddItem(dropdown, fieldWidth, 0, false)
+		msgv.focusers = append(msgv.focusers, dropdown)
+
+		dropdown.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+			list := dropdown.GetList()
+			if event.Key() == tcell.KeyRune {
+				if dropdown.IsListOpen() {
+					switch event.Rune() {
+					case 'j', 'l':
+						index := list.GetCurrentItem() + 1
+						if index >= list.GetItemCount() {
+							index = 0
+						}
+						list.SetCurrentItem(index)
+						return nil
+					case 'k', 'h':
+						index := list.GetCurrentItem() - 1
+						if index < 0 {
+							index = list.GetItemCount() - 1
+						}
+						list.SetCurrentItem(index)
+						return nil
+					case 'g':
+						list.SetCurrentItem(0)
+						return nil
+					case 'G':
+						list.SetCurrentItem(list.GetItemCount() - 1)
+						return nil
+					}
+				} else if event.Rune() == 'j' || event.Rune() == 'k' {
+					dropdown.OpenList(func(primitive tview.Primitive) {
+						params.App.SetFocus(primitive)
+					})
+					if event.Rune() == 'j' {
+						list.SetCurrentItem(0)
+					} else {
+						list.SetCurrentItem(list.GetItemCount() - 1)
+					}
+					return nil
+				}
+			}
+
+			if event.Key() == tcell.KeyEscape && dropdown.IsListOpen() {
+				dropdown.SetCurrentOption(-1)
+				dropdown.CloseList(func(primitive tview.Primitive) {
+					params.App.SetFocus(primitive)
+				})
+				return nil
+			}
+
+			return event
+		})
+
+		// Escape closes the message view when the dropdown itself is focused.
+		// Escape pressed while its list is open is handled internally by the
+		// dropdown and only closes the list.
+		dropdown.SetDoneFunc(func(key tcell.Key) {
+			switch key {
+			case tcell.KeyEscape:
+				if params.OnEsc != nil {
+					params.OnEsc()
+				}
+			case tcell.KeyTab, tcell.KeyBacktab:
+				for index, focuser := range msgv.focusers {
+					if focuser != dropdown {
+						continue
+					}
+					next := index + 1
+					if key == tcell.KeyBacktab {
+						next = index - 1
+					}
+					if next < 0 {
+						next = len(msgv.focusers) - 1
+					} else if next >= len(msgv.focusers) {
+						next = 0
+					}
+					params.App.SetFocus(msgv.focusers[next])
+					break
+				}
+			}
+		})
+	}
+
 	// Add a spacer at the right of the buttons, to make them centered
 	// (there's also a spacer at the left, added before)
 	msgv.buttonsFlex.AddItem(nil, 0, 1, false)
@@ -355,6 +576,65 @@ func NewMessageView(
 	msgv.curHeight = msgv.params.Height
 
 	return msgv
+}
+
+// scrollTextView handles navigation keys while one of the message buttons has
+// focus. The text view itself remains non-focusable so it cannot trap focus.
+func (msgv *MessageView) scrollTextView(event *tcell.EventKey) bool {
+	if !msgv.params.Scrollable {
+		return false
+	}
+
+	delta := 0
+	switch event.Key() {
+	case tcell.KeyHome:
+		msgv.textView.ScrollToBeginning()
+		return true
+	case tcell.KeyEnd:
+		msgv.textView.ScrollToEnd()
+		return true
+	case tcell.KeyUp:
+		delta = -1
+	case tcell.KeyDown:
+		delta = 1
+	case tcell.KeyPgUp:
+		delta = -msgv.textViewPageSize()
+	case tcell.KeyPgDn:
+		delta = msgv.textViewPageSize()
+	case tcell.KeyCtrlU:
+		delta = -msgv.textViewPageSize() / 2
+	case tcell.KeyCtrlD:
+		delta = msgv.textViewPageSize() / 2
+	case tcell.KeyRune:
+		switch event.Rune() {
+		case 'g':
+			msgv.textView.ScrollToBeginning()
+			return true
+		case 'G':
+			msgv.textView.ScrollToEnd()
+			return true
+		case 'k':
+			delta = -1
+		case 'j':
+			delta = 1
+		default:
+			return false
+		}
+	default:
+		return false
+	}
+
+	row, column := msgv.textView.GetScrollOffset()
+	msgv.textView.ScrollTo(row+delta, column)
+	return true
+}
+
+func (msgv *MessageView) textViewPageSize() int {
+	_, _, _, height := msgv.textView.GetRect()
+	if height < 1 {
+		return 1
+	}
+	return height
 }
 
 func (msgv *MessageView) Show() {
@@ -451,6 +731,10 @@ func (msgv *MessageView) getOptimalSize(text string) (int, int) {
 
 	// extraWidth covers padding and border
 	extraWidth := 4
+	// A scrollable message adds a one-cell scrollbar beside the text view.
+	if msgv.params.Scrollable {
+		extraWidth++
+	}
 	// extraHeight covers padding, border, buttons, fields, and checkboxes.
 	extraHeight := 6 + inputFieldsHeight + len(msgv.params.Checkboxes)
 

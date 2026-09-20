@@ -57,6 +57,18 @@ type LogResp struct {
 }
 
 type LogstreamDebugInfo struct {
+	// AgentIndexFile is the logstream-side path to the index file used by this
+	// query.
+	AgentIndexFile string `json:",omitempty"`
+
+	// AgentCommand is the command sent to the logstream shell for this query.
+	AgentCommand string `json:",omitempty"`
+
+	// AgentRawStdout and AgentRawStderr contain the complete line-oriented output
+	// received while this query command was running, before any protocol parsing.
+	AgentRawStdout []string `json:",omitempty"`
+	AgentRawStderr []string `json:",omitempty"`
+
 	// AgentStdout and AgentStderr contain arbitrary human-readable debugging
 	// info printed by the agent script.
 	AgentStdout []string

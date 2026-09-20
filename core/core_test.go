@@ -521,7 +521,18 @@ func formatLogResp(logResp *LogRespTotal) string {
 	printLogs(&sb, logResp.Logs)
 
 	sb.WriteString("\n")
-	debugInfoData, _ := json.MarshalIndent(logResp.DebugInfo, "", "  ")
+	// The raw agent command and streams are useful interactively, but are not
+	// worth asserting in the core golden tests: they are verbose implementation
+	// details and make the fixtures needlessly brittle.
+	testDebugInfo := make(map[string]LogstreamDebugInfo, len(logResp.DebugInfo))
+	for lstreamName, debugInfo := range logResp.DebugInfo {
+		debugInfo.AgentIndexFile = ""
+		debugInfo.AgentCommand = ""
+		debugInfo.AgentRawStdout = nil
+		debugInfo.AgentRawStderr = nil
+		testDebugInfo[lstreamName] = debugInfo
+	}
+	debugInfoData, _ := json.MarshalIndent(testDebugInfo, "", "  ")
 	sb.WriteString(fmt.Sprintf("DebugInfo:\n%s", debugInfoData))
 
 	return sb.String()

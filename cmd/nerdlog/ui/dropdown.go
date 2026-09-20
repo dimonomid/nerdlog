@@ -522,13 +522,14 @@ func (d *DropDown) openList(setFocus func(tview.Primitive)) {
 		// An option was selected. Close the list again.
 		d.currentOption = index
 		d.closeList(setFocus)
+		option := d.options[index]
 
 		// Trigger "selected" event.
 		if d.selected != nil {
-			d.selected(d.options[d.currentOption].Text, d.currentOption)
+			d.selected(option.Text, index)
 		}
-		if d.options[d.currentOption].Selected != nil {
-			d.options[d.currentOption].Selected()
+		if option.Selected != nil {
+			option.Selected()
 		}
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {

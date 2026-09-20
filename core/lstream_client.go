@@ -532,6 +532,12 @@ func (lsc *LStreamClient) run() {
 					continue
 				}
 
+				if cmdCtx.cmd.queryLogs != nil {
+					cmdCtx.queryLogsCtx.Resp.DebugInfo.AgentRawStdout = append(
+						cmdCtx.queryLogsCtx.Resp.DebugInfo.AgentRawStdout, line,
+					)
+				}
+
 				if lsc.checkCommandDone(line, cmdCtx, false) {
 					continue
 				}
@@ -745,6 +751,12 @@ func (lsc *LStreamClient) run() {
 				if cmdCtx == nil {
 					// We received some line before printing any command, just ignore that.
 					continue
+				}
+
+				if cmdCtx.cmd.queryLogs != nil {
+					cmdCtx.queryLogsCtx.Resp.DebugInfo.AgentRawStderr = append(
+						cmdCtx.queryLogsCtx.Resp.DebugInfo.AgentRawStderr, line,
+					)
 				}
 
 				if lsc.checkCommandDone(line, cmdCtx, true) {
@@ -1167,6 +1179,8 @@ func (lsc *LStreamClient) startCmd(cmd lstreamCmd) {
 
 		cmd := strings.Join(parts, " ") + "\n"
 		lsc.params.Logger.Verbose2f("Executing query command(%s): %s", lsc.params.LogStream.Name, cmd)
+		cmdCtx.queryLogsCtx.Resp.DebugInfo.AgentIndexFile = lsc.getLStreamIndexFilePath()
+		cmdCtx.queryLogsCtx.Resp.DebugInfo.AgentCommand = cmd
 
 		lsc.conn.conn.Stdin().Write([]byte(cmd))
 

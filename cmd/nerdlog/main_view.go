@@ -1580,11 +1580,89 @@ func (mv *MainView) getLastQueryDebugInfo() string {
 
 func (mv *MainView) showLastQueryDebugInfo() {
 	text := mv.getLastQueryDebugInfo()
+	items := mv.queryDebugMenuItems()
+	var dropdowns []MessageViewDropdown
+	if len(items) > 0 {
+		labels := make([]string, len(items))
+		for i := range items {
+			labels[i] = items[i].label
+		}
+		dropdowns = []MessageViewDropdown{{
+			Label:   "More",
+			Options: labels,
+			OnSelected: func(index int, _ string) {
+				item := items[index]
+				content := item.content
+				if content == "" {
+					content = "-- No output --"
+				}
+				mv.showMessagebox(
+					"query_debug_detail",
+					item.label,
+					content,
+					&MessageboxParams{
+						Buttons:         []string{"OK"},
+						CopyButton:      true,
+						Scrollable:      true,
+						BackgroundColor: tcell.ColorDarkBlue,
+					},
+				)
+			},
+		}}
+	}
 
 	mv.showMessagebox("debug", "Debug info for the last query", text, &MessageboxParams{
 		BackgroundColor: tcell.ColorDarkBlue,
 		CopyButton:      true,
+		ButtonDropdowns: dropdowns,
 	})
+}
+
+// queryDebugMenuItem describes one selectable piece of per-logstream query
+// debug output.
+type queryDebugMenuItem struct {
+	// label is like "<logstream> - command" or "<logstream> - stdout", etc.
+	label string
+	// content is what to show in the dialog.
+	content string
+}
+
+// queryDebugMenuItems returns the per-logstream index, command, stdout, and stderr
+// entries shown in the query debug details menu.
+func (mv *MainView) queryDebugMenuItems() []queryDebugMenuItem {
+	if mv.curLogResp == nil {
+		return nil
+	}
+
+	lstreamNames := make([]string, 0, len(mv.curLogResp.DebugInfo))
+	for lstreamName := range mv.curLogResp.DebugInfo {
+		lstreamNames = append(lstreamNames, lstreamName)
+	}
+	sort.Strings(lstreamNames)
+
+	items := make([]queryDebugMenuItem, 0, len(lstreamNames)*4)
+	for _, lstreamName := range lstreamNames {
+		debugInfo := mv.curLogResp.DebugInfo[lstreamName]
+		items = append(items,
+			queryDebugMenuItem{
+				label:   fmt.Sprintf("%s - command", lstreamName),
+				content: debugInfo.AgentCommand,
+			},
+			queryDebugMenuItem{
+				label:   fmt.Sprintf("%s - stdout", lstreamName),
+				content: strings.Join(debugInfo.AgentRawStdout, "\n"),
+			},
+			queryDebugMenuItem{
+				label:   fmt.Sprintf("%s - stderr", lstreamName),
+				content: strings.Join(debugInfo.AgentRawStderr, "\n"),
+			},
+			queryDebugMenuItem{
+				label:   fmt.Sprintf("%s - index file", lstreamName),
+				content: debugInfo.AgentIndexFile,
+			},
+		)
+	}
+	return items
 }
 
 func (mv *MainView) getConnDebugInfo() string {
@@ -2015,6 +2093,8 @@ type MessageboxParams struct {
 	// ignored (there will be no Copy button).
 	CopyButton bool
 
+	ButtonDropdowns []MessageViewDropdown
+
 	InputFields []MessageViewInputFieldParams
 	// Checkboxes are displayed between the message/input fields and buttons.
 	Checkboxes []MessageViewCheckboxParams
@@ -2028,6 +2108,10 @@ type MessageboxParams struct {
 	OnInputFieldPressed func(label string, idx int, value string, event *tcell.EventKey) *tcell.EventKey
 
 	Width, Height int
+
+	// Scrollable makes the message text navigable when it does not fit in the
+	// visible area.
+	Scrollable bool
 
 	// By default, tview.AlignLeft (because it happens to be 0)
 	Align int
@@ -2098,10 +2182,12 @@ func (mv *MainView) showMessagebox(
 		OnInputFieldPressed: params.OnInputFieldPressed,
 		Buttons:             params.Buttons,
 		OnButtonPressed:     params.OnButtonPressed,
+		ButtonDropdowns:     params.ButtonDropdowns,
 		OnEsc:               params.OnEsc,
 
-		Width:  params.Width,
-		Height: params.Height,
+		Width:      params.Width,
+		Height:     params.Height,
+		Scrollable: params.Scrollable,
 
 		Align: params.Align,
 
