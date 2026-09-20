@@ -20,7 +20,7 @@ ti║ Query history:  Back <Ctrl+K>  and  Forth <Ctrl+J>                        
   ║ /error/                                                                                               ║
   ║                                                                                                       ║
   ║ Select field expression. Example: "time STICKY, message, lstream, level_name AS level, *".            ║
-  ║ time STICKY, lstream, message, *                                                                Edit  ║
+  ║ time STICKY, lstream, message, hostname, pid, program                                           Edit  ║
   ║                                                                                                       ║
   ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 

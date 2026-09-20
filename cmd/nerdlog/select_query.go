@@ -9,15 +9,19 @@ import (
 var DefaultSelectQuery SelectQuery = FieldNameTime + " STICKY, " + FieldNameMessage + ", " + FieldNameLStream + ", *"
 
 const (
-	FieldNameTime    = "time"
-	FieldNameMessage = "message"
-	FieldNameLStream = "lstream"
+	FieldNameTime      = "time"
+	FieldNameMessage   = "message"
+	FieldNameLStream   = "lstream"
+	FieldNameLogFile   = "logfile"
+	FieldNameLogLineno = "loglineno"
 )
 
 var FieldNamesSpecial = map[string]struct{}{
-	FieldNameTime:    {},
-	FieldNameMessage: {},
-	FieldNameLStream: {},
+	FieldNameTime:      {},
+	FieldNameMessage:   {},
+	FieldNameLStream:   {},
+	FieldNameLogFile:   {},
+	FieldNameLogLineno: {},
 }
 
 // TODO explain

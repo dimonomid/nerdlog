@@ -1,14 +1,14 @@
 awk pattern:                                                     Sep18 10:00 to Sep18 11:00 (1h)  Edit   Menu
        10▀
 ╔════════════════════════════════════════════════Row details═════════════════════════════════════════════════╗
-║ 1s time    --- MALFORMED ---                                                                               ║
-║ 2  lstream testhost-corrupted                                                                              ║
-║ 3  message Sep 18 10:01:00 testhost app[1]: corrupted                                                      ║
-║                                                                                                            ║
-║                                                                                                            ║
-║                                                                                                            ║
-║                                                                                                            ║
-║                                                                                                            ║
+║ 1s time      --- MALFORMED ---                                                                             ║
+║ 2  lstream   testhost-corrupted                                                                            ║
+║ 3  message   Sep 18 10:01:00 testhost app[1]: corrupted                                                    ║
+║ 4  hostname                                                                                                ║
+║ 5  pid                                                                                                     ║
+║ 6  program                                                                                                 ║
+║ x  logfile   /tmp/nerdlog_e2e_test_output/05_query_warnings/lstreams/testhost-corrupted/logfile            ║
+║ x  loglineno 2                                                                                             ║
 ║                                                                                                            ║
 ║                                                                                                            ║
 ║                                                                                                            ║

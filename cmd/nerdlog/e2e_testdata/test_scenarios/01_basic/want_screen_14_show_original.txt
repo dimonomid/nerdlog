@@ -1,13 +1,13 @@
 awk pattern:                                                     Mar9 15:00 to Mar12 11:00 (68h)  Edit   Menu
  60▀                               ▌
 ┌────────────────────────────────────────────────Row details─────────────────────────────────────────────────┐
-│ 1s time     2025-03-12 05:40:06 +0000 UTC                                                                  │
-│ 2  lstream  testhost-01                                                                                    │
-│ 3  message  <err> System performance degraded                                                              │
-│ …  hostname myhost                                                                                         │
-│ …  pid      3048                                                                                           │
-│ …  program  authpriv                                                                                       │
-│                                                                                                            │
+│ 1s time      2025-03-12 05:40:06 +0000 UTC                                                                 │
+│ 2  lstream   testhost-01                                                                                   │
+│ 3  message   <err> System performance degraded                                                             │
+│ 4  hostname  myhost                                                                                        │
+│ 5  pid       3048                                                                                          │
+│ 6  program   authpriv                                                                                      │
+│ x  logfile   /tmp/nerdlog_e2e_test_output/01_basic/lstreams/testhost-01/logfile                            │
 ╔══════════════════════════════════════════════════Message═══════════════════════════════════════════════════╗
 ║                                                                                                            ║
 ║ ssh -t testhost-01 'vim +"set ft=messages" +686 <(tail -n +1 /tmp/nerdlog_e2e_test_output/01_basic/lstream ║

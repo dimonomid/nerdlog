@@ -454,7 +454,7 @@ func NewRowDetailsView(
 				}
 			}
 
-			if rCtx.valExists && rCtx.field.Name != FieldNameTime && rCtx.field.Name != FieldNameLStream {
+			if rCtx.valExists && canFilterLogMsgFieldValue(rCtx.field.Name) {
 				if !rCtx.filteredByValue {
 					rdv.tbl.AddOption("[ ] Filter logs containing value", getToggleFilterByValue(rCtx.awkValue))
 				} else {

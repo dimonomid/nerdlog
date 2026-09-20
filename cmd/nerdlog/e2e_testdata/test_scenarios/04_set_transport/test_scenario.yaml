@@ -42,7 +42,7 @@ test_steps:
         # Select fields
         'Tab',
         'C-u',
-        'time STICKY, lstream, message, *',
+        'time STICKY, lstream, message, hostname, pid, program',
 
         # Enter
         'C-m',
