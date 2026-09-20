@@ -98,6 +98,10 @@ func TestTableNavigationMatchesPinnedTview(t *testing.T) {
 	upstream := tview.NewTable()
 	populateTables(owned, upstream)
 	configureTables(owned, upstream)
+	// Keep this parity test away from the intentional right-edge persistence
+	// difference covered by TestTableVerticalNavigationPreservesHorizontalViewport.
+	owned.SetOffset(1, 0)
+	upstream.SetOffset(1, 0)
 
 	ownedScreen := newTableTestScreen(t, 30, 7)
 	upstreamScreen := newTableTestScreen(t, 30, 7)
@@ -107,9 +111,9 @@ func TestTableNavigationMatchesPinnedTview(t *testing.T) {
 	events := []*tcell.EventKey{
 		tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone),
 		tcell.NewEventKey(tcell.KeyRune, 'k', tcell.ModNone),
-		tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone),
 		tcell.NewEventKey(tcell.KeyPgUp, 0, tcell.ModNone),
 		tcell.NewEventKey(tcell.KeyRune, 'G', tcell.ModNone),
+		tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone),
 	}
 	for _, event := range events {
 		owned.InputHandler()(event, func(tview.Primitive) {})
@@ -127,6 +131,72 @@ func TestTableNavigationMatchesPinnedTview(t *testing.T) {
 		assert.Equal(t, upstreamColumnOffset, ownedColumnOffset)
 		assertScreensEqual(t, upstreamScreen, ownedScreen)
 	}
+}
+
+func TestTableVerticalNavigationPreservesHorizontalViewport(t *testing.T) {
+	table := NewTable().SetFixed(0, 1).SetSelectable(true, false)
+	table.SetRect(0, 0, 30, 1)
+	populate := func(rows int) {
+		table.Clear()
+		for row := 0; row < rows; row++ {
+			for column := 0; column < 6; column++ {
+				text := "meta"
+				switch column {
+				case 0:
+					text = "time"
+				case 1:
+					text = "program"
+				case 2:
+					text = "a message much wider than the available table viewport"
+				}
+				table.SetCell(row, column, NewTableCell(text))
+			}
+		}
+	}
+	populate(2)
+	table.Select(0, 0)
+	screen := newTableTestScreen(t, 30, 1)
+	table.Draw(screen)
+	assert.Equal(t, []int{0, 1, 2}, table.visibleColumnIndices)
+
+	table.InputHandler()(tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone), func(tview.Primitive) {})
+	table.Draw(screen)
+	assert.Equal(t, []int{0, 2}, table.visibleColumnIndices)
+
+	table.InputHandler()(tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone), func(tview.Primitive) {})
+	table.Draw(screen)
+	require.Equal(t, []int{0, 2, 3, 4, 5}, table.visibleColumnIndices)
+
+	table.InputHandler()(tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone), func(tview.Primitive) {})
+	table.Draw(screen)
+	selectedRow, _ := table.GetSelection()
+	assert.Equal(t, 1, selectedRow)
+	assert.Equal(t, []int{0, 2, 3, 4, 5}, table.visibleColumnIndices)
+
+	table.InputHandler()(tcell.NewEventKey(tcell.KeyRune, 'k', tcell.ModNone), func(tview.Primitive) {})
+	table.Draw(screen)
+	selectedRow, _ = table.GetSelection()
+	assert.Equal(t, 0, selectedRow)
+	assert.Equal(t, []int{0, 2, 3, 4, 5}, table.visibleColumnIndices)
+
+	// Leaving the right-aligned layout should return to the preceding viewport,
+	// and moving right should enter it again.
+	table.InputHandler()(tcell.NewEventKey(tcell.KeyLeft, 0, tcell.ModNone), func(tview.Primitive) {})
+	table.Draw(screen)
+	assert.Equal(t, []int{0, 2}, table.visibleColumnIndices)
+	table.InputHandler()(tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone), func(tview.Primitive) {})
+	table.Draw(screen)
+	assert.Equal(t, []int{0, 2, 3, 4, 5}, table.visibleColumnIndices)
+
+	// Loading earlier data inserts rows above the viewport and adjusts only the
+	// vertical offset and selection. The right-aligned viewport must survive.
+	selectedRow, _ = table.GetSelection()
+	rowOffset, _ := table.GetOffset()
+	populate(3)
+	table.SetRowOffset(rowOffset + 1)
+	table.Select(selectedRow+1, 0)
+	table.Draw(screen)
+	assert.Equal(t, []int{0, 2, 3, 4, 5}, table.visibleColumnIndices)
 }
 
 func TestTableCellStyleSpansApplyAfterSelectionAndClip(t *testing.T) {

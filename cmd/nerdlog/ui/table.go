@@ -577,6 +577,10 @@ type Table struct {
 
 	// If set to true, the table's last row will always be visible.
 	trackEnd bool
+	// If set to true, the table's last column will remain visible. This is set
+	// when horizontal scrolling reaches the right edge and the visible columns
+	// are laid out backwards to use the available width.
+	trackColumnEnd bool
 
 	// The number of visible rows the last time the table was drawn.
 	visibleRows int
@@ -847,6 +851,16 @@ func (t *Table) Select(row, column int) *Table {
 func (t *Table) SetOffset(row, column int) *Table {
 	t.rowOffset, t.columnOffset = row, column
 	t.trackEnd = false
+	t.trackColumnEnd = false
+	return t
+}
+
+// SetRowOffset sets how many non-fixed rows should be skipped without changing
+// the horizontal viewport. This is useful when rows are inserted above the
+// visible area and the same columns should remain on screen.
+func (t *Table) SetRowOffset(row int) *Table {
+	t.rowOffset = row
+	t.trackEnd = false
 	return t
 }
 
@@ -873,6 +887,7 @@ func (t *Table) ScrollToColumn(column int) *Table {
 		t.columnOffset = 0
 	}
 	t.trackEnd = false
+	t.trackColumnEnd = false
 	return t
 }
 
@@ -1062,6 +1077,7 @@ func (t *Table) cellAt(x, y int) (row, column int) {
 // there is a selection.
 func (t *Table) ScrollToBeginning() *Table {
 	t.trackEnd = false
+	t.trackColumnEnd = false
 	t.columnOffset = 0
 	t.rowOffset = 0
 	return t
@@ -1073,6 +1089,7 @@ func (t *Table) ScrollToBeginning() *Table {
 // corrected if there is a selection.
 func (t *Table) ScrollToEnd() *Table {
 	t.trackEnd = true
+	t.trackColumnEnd = false
 	t.columnOffset = 0
 	t.rowOffset = t.content.GetRowCount()
 	return t
@@ -1319,31 +1336,43 @@ func (t *Table) Draw(screen tcell.Screen) {
 		fixedTableWidth = tableWidth
 		fixedExpansionTotal = expansionTotal
 
-		// Add unclamped columns.
-		if column := indexColumns(t.fixedColumns+t.columnOffset, columnCount); !includesSelection || column < 0 && t.columnOffset > 0 {
-			// Offset is not optimal. Try again.
-			if !includesSelection {
-				// Clamp to selection.
-				resetColumns()
-				if t.selectedColumn <= t.fixedColumns+t.columnOffset {
-					// It's on the left. Start with the selection.
-					t.columnOffset = t.selectedColumn - t.fixedColumns
-					indexColumns(t.fixedColumns+t.columnOffset, columnCount)
-				} else {
-					// It's on the right. End with the selection.
-					if column := indexColumns(t.selectedColumn, t.fixedColumns); column >= 0 {
-						t.columnOffset = column + 1 - t.fixedColumns
+		backfillColumnsFromEnd := func() {
+			resetColumns()
+			if column := indexColumns(columnCount-1, t.fixedColumns); column >= 0 {
+				t.columnOffset = column + 1 - t.fixedColumns
+			} else {
+				t.columnOffset = 0
+			}
+			t.trackColumnEnd = true
+		}
+
+		if t.trackColumnEnd && !t.columnsSelectable {
+			backfillColumnsFromEnd()
+		} else {
+			// Add unclamped columns.
+			column := indexColumns(t.fixedColumns+t.columnOffset, columnCount)
+			needsSelectionClamp := !includesSelection
+			shouldBackfillColumns := column < 0 && t.columnOffset > 0
+			if needsSelectionClamp || shouldBackfillColumns {
+				// Offset is not optimal. Try again.
+				if needsSelectionClamp {
+					// Clamp to selection.
+					resetColumns()
+					if t.selectedColumn <= t.fixedColumns+t.columnOffset {
+						// It's on the left. Start with the selection.
+						t.columnOffset = t.selectedColumn - t.fixedColumns
+						indexColumns(t.fixedColumns+t.columnOffset, columnCount)
 					} else {
-						t.columnOffset = 0
+						// It's on the right. End with the selection.
+						if column := indexColumns(t.selectedColumn, t.fixedColumns); column >= 0 {
+							t.columnOffset = column + 1 - t.fixedColumns
+						} else {
+							t.columnOffset = 0
+						}
 					}
-				}
-			} else if tableWidth < netWidth {
-				// Don't waste space. Try to fit as much on screen as possible.
-				resetColumns()
-				if column := indexColumns(columnCount-1, t.fixedColumns); column >= 0 {
-					t.columnOffset = column + 1 - t.fixedColumns
-				} else {
-					t.columnOffset = 0
+				} else if tableWidth < netWidth {
+					// Don't waste space. Try to fit as much on screen as possible.
+					backfillColumnsFromEnd()
 				}
 			}
 		}
@@ -1687,6 +1716,7 @@ func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p Primi
 					next()
 				} else {
 					t.trackEnd = false
+					t.trackColumnEnd = false
 					t.rowOffset = 0
 					t.columnOffset = 0
 				}
@@ -1700,6 +1730,7 @@ func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p Primi
 					previous()
 				} else {
 					t.trackEnd = true
+					t.trackColumnEnd = false
 					t.columnOffset = 0
 				}
 			}
@@ -1763,7 +1794,13 @@ func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p Primi
 						t.selectedColumn = startColumn
 					}
 				} else {
-					t.columnOffset--
+					if t.trackColumnEnd {
+						// The right-aligned layout starts one column earlier than
+						// its logical scroll position. Leave that layout first.
+						t.trackColumnEnd = false
+					} else {
+						t.columnOffset--
+					}
 				}
 			}
 
@@ -1780,7 +1817,9 @@ func (t *Table) InputHandler() func(event *tcell.EventKey, setFocus func(p Primi
 						t.selectedColumn = startColumn
 					}
 				} else {
-					t.columnOffset++
+					if !t.trackColumnEnd {
+						t.columnOffset++
+					}
 				}
 			}
 

@@ -1490,7 +1490,7 @@ func (mv *MainView) applyLogs(resp *core.LogRespTotal) {
 
 	oldNumRows := mv.logsTable.GetRowCount()
 	selectedRow, _ := mv.logsTable.GetSelection()
-	offsetRow, offsetCol := mv.logsTable.GetOffset()
+	offsetRow, _ := mv.logsTable.GetOffset()
 
 	mv.formatLogs()
 
@@ -1503,7 +1503,7 @@ func (mv *MainView) applyLogs(resp *core.LogRespTotal) {
 	} else {
 		// Loaded more (earlier) logs
 		numNewRows := mv.logsTable.GetRowCount() - oldNumRows
-		mv.logsTable.SetOffset(offsetRow+numNewRows, offsetCol)
+		mv.logsTable.SetRowOffset(offsetRow + numNewRows)
 		mv.logsTable.Select(selectedRow+numNewRows, 0)
 		for index := range mv.tableSearch.matches {
 			mv.tableSearch.matches[index].row += numNewRows

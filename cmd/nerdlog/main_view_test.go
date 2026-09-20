@@ -1,15 +1,106 @@
 package main
 
 import (
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/dimonomid/clock"
 	"github.com/dimonomid/nerdlog/cmd/nerdlog/ui"
 	"github.com/dimonomid/nerdlog/core"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func simulationScreenLine(screen tcell.SimulationScreen, row int) string {
+	width, _ := screen.Size()
+	line := make([]rune, 0, width)
+	for column := 0; column < width; column++ {
+		mainRune, _, _, _ := screen.GetContent(column, row)
+		if mainRune == 0 {
+			mainRune = ' '
+		}
+		line = append(line, mainRune)
+	}
+	return string(line)
+}
+
+// TestMainViewApplyLogsPreservesRightAlignedViewportWhenLoadingEarlier covers
+// the MOAR regression where loading earlier rows changed the table from its
+// rightmost, backfilled layout (s3) to the preceding message-only layout (s2).
+// The two layouts share a column offset, so the rendered header is compared to
+// ensure applyLogs preserves the table's additional right-edge state.
+func TestMainViewApplyLogsPreservesRightAlignedViewportWhenLoadingEarlier(t *testing.T) {
+	selectQuery, err := ParseSelectQuery(
+		"time STICKY, program, message, lstream, hostname, logfile, loglineno, pid",
+	)
+	require.NoError(t, err)
+	mv := &MainView{
+		params: MainViewParams{
+			Clock:   clock.New(),
+			Options: NewOptionsShared(Options{Timezone: time.UTC}),
+		},
+		selectQuery:     selectQuery,
+		logsTable:       ui.NewTable().SetSelectable(true, false),
+		histogram:       NewHistogram(),
+		statusLineRight: tview.NewTextView(),
+		cmdInput:        tview.NewInputField(),
+	}
+	logMessage := func(index int) core.LogMsg {
+		return core.LogMsg{
+			Time:          time.Date(2026, 9, 20, 12, index, 0, 0, time.UTC),
+			LogStreamName: "dimon@127.0.0.1:2231",
+			LogFilename:   "/var/log/syslog",
+			LogLinenumber: 75850 + index,
+			Msg:           strings.Repeat("wide message ", 12),
+			Context: map[string]string{
+				"program":  "systemd",
+				"hostname": "dimon-ThinkStation-P620",
+				"pid":      "4453",
+			},
+		}
+	}
+	initialLogs := []core.LogMsg{logMessage(1), logMessage(2)}
+	mv.curLogResp = &core.LogRespTotal{Logs: initialLogs}
+	mv.formatLogs()
+	// This width leaves the message column truncated while allowing the narrow
+	// metadata columns to fit when the table reaches its right-aligned layout.
+	mv.logsTable.SetRect(0, 0, 100, 4)
+	mv.logsTable.Select(2, 0)
+
+	screen := tcell.NewSimulationScreen("UTF-8")
+	require.NoError(t, screen.Init())
+	t.Cleanup(screen.Fini)
+	screen.SetSize(100, 4)
+	mv.logsTable.Draw(screen)
+
+	// The first Right shows the wide message alone (s2). The second reaches the
+	// right edge and backfills the remaining width with message + metadata (s3).
+	mv.logsTable.InputHandler()(tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone), func(tview.Primitive) {})
+	mv.logsTable.Draw(screen)
+	firstRightHeader := simulationScreenLine(screen, 0)
+	mv.logsTable.InputHandler()(tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone), func(tview.Primitive) {})
+	mv.logsTable.Draw(screen)
+	rightAlignedHeader := simulationScreenLine(screen, 0)
+	require.NotEqual(t, firstRightHeader, rightAlignedHeader)
+	require.Contains(t, rightAlignedHeader, "hostname")
+	require.Contains(t, rightAlignedHeader, "logfile")
+
+	// MOAR returns the complete result set with earlier records prepended.
+	mv.applyLogs(&core.LogRespTotal{
+		LoadedEarlier: true,
+		Logs:          []core.LogMsg{logMessage(0), initialLogs[0], initialLogs[1]},
+	})
+	mv.logsTable.Draw(screen)
+
+	// Comparing the rendered header catches a fallback to s2 even though its
+	// stored column offset is the same as the s3 offset.
+	assert.Equal(t, rightAlignedHeader, simulationScreenLine(screen, 0))
+	selectedRow, _ := mv.logsTable.GetSelection()
+	assert.Equal(t, 3, selectedRow)
+}
 
 // TestLogMsgDisplayTimeColorsDecreasesByAmount verifies that the table shows
 // an out-of-order record's parsed timestamp with severity based on its decrease.
