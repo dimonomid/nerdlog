@@ -37,6 +37,9 @@ positional_args=()
 
 max_num_lines=100
 
+awktime_prep_month_year_day_hhmm=''
+awktime_prep_hhmm=''
+awktime_prep_minute_key=''
 awktime_month='monthByName[substr($0, 1, 3)]'
 awktime_year='yearByMonth[month]'
 awktime_day='(substr($0, 5, 1) == " ") ? "0" substr($0, 6, 1) : substr($0, 5, 2)'
@@ -269,6 +272,21 @@ while [[ $# -gt 0 ]]; do
       shift # past value
       ;;
 
+    --awktime-prep-month-year-day-hhmm)
+      awktime_prep_month_year_day_hhmm="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --awktime-prep-hhmm)
+      awktime_prep_hhmm="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    --awktime-prep-minute-key)
+      awktime_prep_minute_key="$2"
+      shift # past argument
+      shift # past value
+      ;;
     --awktime-month)
       awktime_month="$2"
       shift # past argument
@@ -547,6 +565,7 @@ function run_awk_script_logfiles {
   }
   '$awk_pattern'
   {
+    '"$awktime_prep_minute_key"'
     curMinKey = '"$awktime_minute_key"';
 
     # NOTE: this was a naive attempt to better handle the case when timestamps
@@ -755,6 +774,7 @@ function run_awk_script_journalctl {
   # pace at which the percentage progresses will vary based on the intensivity
   # of the logs), but for journalctl we can hardly do any better.
   NR % 1000 == 0 {
+    '"$awktime_prep_month_year_day_hhmm"'
     month = '"$awktime_month"';
     year = '"$awktime_year"';
     day = '"$awktime_day"';
@@ -773,6 +793,7 @@ function run_awk_script_journalctl {
   '$awk_pattern_check'
   '$awk_skip_n_latest_check'
   {
+    '"$awktime_prep_minute_key"'
     stats['"$awktime_minute_key"']++;
 
     if (curline < maxlines) {
@@ -1007,6 +1028,7 @@ function isValidIndexTimestr(timestr) {
   scriptSetCurTimestr='
     bytenr_cur = bytenr_next - length($0) - 1;
 
+    '"$awktime_prep_month_year_day_hhmm"'
     month = '"$awktime_month"';
     year = '"$awktime_year"';
     day = '"$awktime_day"';
@@ -1043,9 +1065,11 @@ function isValidIndexTimestr(timestr) {
   }
   '
 
+  # Used in indexing only.
   script1='BEGIN { bytenr_next=1; lastPercent=0; malformedIndexTimestrCount=0; firstMalformedIndexTimestrLine=0 }
 {
   bytenr_next += length($0)+1
+  '"$awktime_prep_hhmm"'
   curHHMM = '"$awktime_hhmm"';
 }'
 

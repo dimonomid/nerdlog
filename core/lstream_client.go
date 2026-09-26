@@ -1772,6 +1772,9 @@ func shellQuote(s string) string {
 
 func agentQueryTimeFormatArgs(awkExpr *TimeFormatAWKExpr) []string {
 	return []string{
+		"--awktime-prep-month-year-day-hhmm", shellQuote(awkExpr.PrepStatementsMonthYearDayHHMM),
+		"--awktime-prep-hhmm", shellQuote(awkExpr.PrepStatementsHHMM),
+		"--awktime-prep-minute-key", shellQuote(awkExpr.PrepStatementsMinuteKey),
 		"--awktime-month", shellQuote(awkExpr.Month),
 		"--awktime-year", shellQuote(awkExpr.Year),
 		"--awktime-day", shellQuote(awkExpr.Day),
