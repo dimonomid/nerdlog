@@ -10,14 +10,36 @@ import (
 	"github.com/juju/errors"
 )
 
+// TimestampFormat describes a timestamp position and layout in the log file.
+//
+// The agent runs awk in byte mode, so these positions have identical meanings
+// in Go and awk.
+type TimestampFormat struct {
+	// Layout is a Go-style time layout which should parse the entire timestamp
+	// in the log line, e.g. "Jan _2 15:04:05" or
+	// "2006-01-02T15:04:05.000000Z07:00". The starting position where we should
+	// look for this Layout is defined by StartFieldIdx and StartSubstrOffset
+	// below.
+	Layout string
+
+	// StartFieldIdx identifies index of the first field (as per strings.Fields)
+	// where the timestamp starts as per Layout (after StartSubstrOffset though).
+	StartFieldIdx int
+	// StartSubstrOffset is a byte position within the field at StartFieldIdx at
+	// which the timestamp starts as per Layout.
+	StartSubstrOffset int
+}
+
 // TimeFormatDescr contains all data necessary for Nerdlog to parse timestamps
 // in the particular logstream. It contains info for both the awk script and Go
 // client.
+//
+// The TimestampFormat field is the most important one; all others can be
+// derived from it, and are here just for convenience of having everything in
+// one place.
 type TimeFormatDescr struct {
-	// TimestampLayout is a Go-style time layout which should parse the entire
-	// timestamp in the log line, e.g. "Jan _2 15:04:05" or
-	// "2006-01-02T15:04:05.000000Z07:00".
-	TimestampLayout string
+	// TimestampFormat defines how to parse timestamp.
+	TimestampFormat TimestampFormat
 
 	// MinuteKeyLayout is a Go-style time layout which should parse the time
 	// captured by the awk expression `TimeFormatAWKExpr.MinuteKey` (read there
@@ -125,23 +147,23 @@ func InferTimeFormatDescr(logFilename string, logLines []string) (*TimeFormatDes
 	descrs := make([]*TimeFormatDescr, 0, len(logLines))
 
 	for i, line := range logLines {
-		layout := DetectTimeLayout(line)
-		if layout == "" {
-			return nil, errors.Errorf("unable to detect time format in %q from %q", logFilename, line)
+		timestampFormat, err := DetectTimestampFormat(logFilename, line)
+		if err != nil {
+			return nil, errors.Annotatef(err, "in %q", logFilename)
 		}
 
-		timeDescr, err := GenerateTimeDescr(layout)
+		timeDescr, err := GenerateTimeDescr(*timestampFormat)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
 
 		if i > 0 {
-			if descrs[0].TimestampLayout != timeDescr.TimestampLayout {
+			if descrs[0].TimestampFormat != timeDescr.TimestampFormat {
 				return nil, errors.Errorf(
 					"log file %q has lines with different formats: %s and %s",
 					logFilename,
-					descrs[0].TimestampLayout,
-					timeDescr.TimestampLayout,
+					descrs[0].TimestampFormat.Layout,
+					timeDescr.TimestampFormat.Layout,
 				)
 			}
 		}
@@ -152,11 +174,11 @@ func InferTimeFormatDescr(logFilename string, logLines []string) (*TimeFormatDes
 	return descrs[0], nil
 }
 
-// DetectTimeLayout tries to detect a time format from a log line.
+// DetectTimestampFormat tries to detect a time format from a log line.
 //
 // TODO: it's pretty simplistic and could be improved, even to avoid having
 // a predefined set of known formats, but good enough for now.
-func DetectTimeLayout(logLine string) string {
+func DetectTimestampFormat(logFilename, logLine string) (*TimestampFormat, error) {
 	var knownFormats = []string{
 		"Jan _2 15:04:05",                  // Traditional rsyslog format without year
 		"2006-01-02T15:04:05.000000Z07:00", // ISO8601, used in modern rsyslog by default
@@ -180,16 +202,18 @@ func DetectTimeLayout(logLine string) string {
 			sub := logLine[:curLen]
 			_, err := time.Parse(layout, sub)
 			if err == nil {
-				return layout
+				return &TimestampFormat{Layout: layout}, nil
 			}
 		}
 	}
-	return ""
+	return nil, errors.New("unable to detect timestamp format")
 }
 
-// GenerateTimeDescr takes a Go-style time layout, and returns the full time
-// format descriptor to be used for parsing all logs.
-func GenerateTimeDescr(layout string) (*TimeFormatDescr, error) {
+// GenerateTimeDescr takes a timestamp format, and returns the full time format
+// descriptor to be used for parsing all logs.
+func GenerateTimeDescr(timestampFormat TimestampFormat) (*TimeFormatDescr, error) {
+	layout := timestampFormat.Layout
+
 	// Find index positions of time components
 	partInfo := map[string]*indexAndLength{
 		"year":   indexAndLengthOfTimeComponent(layout, "2006"),
@@ -261,7 +285,7 @@ func GenerateTimeDescr(layout string) (*TimeFormatDescr, error) {
 	minuteLayout := layout[minuteKeyStart:minuteKeyEnd]
 
 	return &TimeFormatDescr{
-		TimestampLayout: layout,
+		TimestampFormat: timestampFormat,
 		MinuteKeyLayout: minuteLayout,
 		AWKExpr:         awk,
 	}, nil
