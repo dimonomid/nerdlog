@@ -117,9 +117,9 @@ type TimeFormatAWKExpr struct {
 	MinuteKey string
 }
 
-func GetTimeFormatDescrFromLogLines(logLines []string) (*TimeFormatDescr, error) {
+func InferTimeFormatDescr(logFilename string, logLines []string) (*TimeFormatDescr, error) {
 	if len(logLines) == 0 {
-		return nil, errors.Errorf("no logs, can't detect time format")
+		return nil, errors.Errorf("no logs in %q, can't detect time format", logFilename)
 	}
 
 	descrs := make([]*TimeFormatDescr, 0, len(logLines))
@@ -127,7 +127,7 @@ func GetTimeFormatDescrFromLogLines(logLines []string) (*TimeFormatDescr, error)
 	for i, line := range logLines {
 		layout := DetectTimeLayout(line)
 		if layout == "" {
-			return nil, errors.Errorf("unable to detect time format from %q", line)
+			return nil, errors.Errorf("unable to detect time format in %q from %q", logFilename, line)
 		}
 
 		timeDescr, err := GenerateTimeDescr(layout)
@@ -138,7 +138,8 @@ func GetTimeFormatDescrFromLogLines(logLines []string) (*TimeFormatDescr, error)
 		if i > 0 {
 			if descrs[0].TimestampLayout != timeDescr.TimestampLayout {
 				return nil, errors.Errorf(
-					"log lines have different formats: %s and %s",
+					"log file %q has lines with different formats: %s and %s",
+					logFilename,
 					descrs[0].TimestampLayout,
 					timeDescr.TimestampLayout,
 				)

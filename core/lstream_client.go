@@ -1359,7 +1359,10 @@ func (lsc *LStreamClient) handleCommandResultsIfDone(cmdCtx *lstreamCmdCtx) {
 			}
 
 			// Let's now try to autodetect the envelope log format.
-			timeFormat, err := GetTimeFormatDescrFromLogLines(lsc.exampleLogLines)
+			timeFormat, err := InferTimeFormatDescr(
+				lsc.params.LogStream.LogFileLast(),
+				lsc.exampleLogLines,
+			)
 			if err != nil {
 				cmdCtx.errs = append(cmdCtx.errs, err)
 			} else {
