@@ -1370,7 +1370,7 @@ func (lsc *LStreamClient) handleCommandResultsIfDone(cmdCtx *lstreamCmdCtx) {
 				lsc.params.Logger.Infof(
 					"Detected time format based on %d log lines: %q",
 					len(lsc.exampleLogLines),
-					timeFormat.TimestampLayout,
+					timeFormat.TimestampFormat.Layout,
 				)
 				lsc.timeFormat = timeFormat
 				lsc.changeState(LStreamClientStateConnectedIdle)
@@ -1526,7 +1526,7 @@ func (lsc *LStreamClient) parseLine(logMsg *LogMsg) error {
 func (lsc *LStreamClient) parseLogMsgTimestamp(logMsg *LogMsg) error {
 	msg := logMsg.Msg
 
-	timeLayout := lsc.timeFormat.TimestampLayout
+	timeLayout := lsc.timeFormat.TimestampFormat.Layout
 	timestampLen := len(timeLayout)
 
 	// If the layout ends with the offset like "Z07" or "Z07:00", but the
