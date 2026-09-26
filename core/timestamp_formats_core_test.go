@@ -68,6 +68,13 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		}
 		return t.Truncate(time.Second).Format(timestampFormatTestTimeLayout)
 	}
+	truncateToMillisecond := func(s string) string {
+		t, err := time.Parse(timestampFormatTestTimeLayout, s)
+		if err != nil {
+			panic(err)
+		}
+		return t.Truncate(time.Millisecond).Format(timestampFormatTestTimeLayout)
+	}
 
 	tests := []timestampFormatCoreTestCase{
 		{
@@ -104,36 +111,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			name:          "rfc3339 milliseconds",
 			filename:      "syslog",
 			format:        TimestampFormat{Layout: "2006-01-02T15:04:05.000Z07:00"},
-			transformTime: identityTime,
-			want: &timestampFormatCoreResult{
-				NumMsgsTotal: 7,
-				Errs:         []string{},
-				NumWarnings:  7,
-				Warnings: []string{
-					`timestamps: showing malformed log record at syslog:1 as raw text: parsing time: parsing time in log msg: parsing time "2025-09-08T08:09:10.123Z ": extra text: " "`,
-					`timestamps: showing malformed log record at syslog:2 as raw text: parsing time: parsing time in log msg: parsing time "2025-09-08T08:09:20.223Z ": extra text: " "`,
-					`timestamps: showing malformed log record at syslog:3 as raw text: parsing time: parsing time in log msg: parsing time "2025-09-18T09:10:11.234Z ": extra text: " "`,
-					`timestamps: showing malformed log record at syslog:4 as raw text: parsing time: parsing time in log msg: parsing time "2025-10-08T10:11:12.345Z ": extra text: " "`,
-					`timestamps: showing malformed log record at syslog:5 as raw text: parsing time: parsing time in log msg: parsing time "2025-10-08T10:11:22.445Z ": extra text: " "`,
-					"timestamps: 2 additional query warnings omitted",
-				},
-				MinuteStats: map[string]int{
-					"2025-09-08T08:09Z": 2,
-					"2025-09-18T09:10Z": 1,
-					"2025-10-08T10:11Z": 2,
-					"2025-10-18T11:12Z": 1,
-					"2025-11-18T12:13Z": 1,
-				},
-				Logs: []timestampFormatCoreLog{
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-09-08T08:09:10.123Z myhost app[123]: message one"},
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-09-08T08:09:20.223Z myhost app[123]: message two"},
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-09-18T09:10:11.234Z myhost app[123]: message three"},
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-10-08T10:11:12.345Z myhost app[123]: message four"},
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-10-08T10:11:22.445Z myhost app[123]: message five"},
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-10-18T11:12:13.456Z myhost app[123]: message six"},
-					{Time: "0001-01-01T00:00:00.000000000Z", Msg: "2025-11-18T12:13:14.567Z myhost app[123]: message seven"},
-				},
-			},
+			transformTime: truncateToMillisecond,
 		},
 		{
 			name:          "apache access",

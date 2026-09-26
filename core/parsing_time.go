@@ -184,8 +184,8 @@ func DetectTimestampFormat(logFilename, logLine string) (*TimestampFormat, error
 		"2006-01-02T15:04:05.000000Z07:00", // ISO8601, used in modern rsyslog by default
 		"2006-01-02T15:04:05.000000-0700",  // Used by older versions of journalctl with --output=short-iso-precise
 		"2006-01-02 15:04:05",
-		"2006-01-02T15:04:05Z07:00",
 		"2006-01-02T15:04:05.000Z07:00",
+		"2006-01-02T15:04:05Z07:00",
 		"02/Jan/2006:15:04:05 -0700",
 		"2006/01/02 15:04:05",
 		"Mon Jan 2 15:04:05 2006",
