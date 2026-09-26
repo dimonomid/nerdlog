@@ -39,6 +39,25 @@ type TimeFormatDescr struct {
 // TimeFormatAWKExpr contains all the awk expressions which will be used by
 // the nerdlog_agent.sh script to get the time components from logs.
 type TimeFormatAWKExpr struct {
+	// PrepStatementsMonthYearDayHHMM, PrepStatementsMinuteKey and
+	// PrepStatementsHHMM are AWK statements executed before the expressions
+	// below. They can create variables to hold shared calculations used by
+	// multiple component expressions.
+
+	// PrepStatementsMonthYearDayHHMM is executed right before evaluating the
+	// following four expressions below: Month, Year, Day, HHMM.
+	//
+	// Note that if the HHMM part needs something from it, it also needs to be
+	// duplicated in the PrepStatementsHHMM below.
+	PrepStatementsMonthYearDayHHMM string
+	// PrepStatementsMinuteKey is executed right before evaluating MinuteKey.
+	PrepStatementsMinuteKey string
+	// PrepStatementsHHMM is executed right before evaluating just the HHMM.
+	//
+	// If not empty, it should likely be also duplicated in
+	// PrepStatementsMonthYearDayHHMM above.
+	PrepStatementsHHMM string
+
 	// Month is an AWK expression to get month number as a string, from "01" to
 	// "12". It may use `monthByName`, which is a map from a 3-char string like
 	// "Jan" to the corresponding string like "01".
