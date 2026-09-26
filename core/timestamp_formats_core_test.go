@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -28,7 +29,13 @@ type timestampFormatCoreResult struct {
 	NumWarnings  int
 	Warnings     []string
 	MinuteStats  map[string]int
+	IndexEntries []timestampFormatCoreIndexEntry
 	Logs         []timestampFormatCoreLog
+}
+
+type timestampFormatCoreIndexEntry struct {
+	Time string
+	Line int
 }
 
 type timestampFormatCoreLog struct {
@@ -149,10 +156,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			format:        TimestampFormat{Layout: "Mon Jan 2 15:04:05 2006"},
 			transformTime: identityTime,
 			want: &timestampFormatCoreResult{
-				Errs:        []string{"in \"syslog\": unable to detect timestamp format"},
-				Warnings:    []string{},
-				MinuteStats: map[string]int{},
-				Logs:        []timestampFormatCoreLog{},
+				Errs:         []string{"in \"syslog\": unable to detect timestamp format"},
+				Warnings:     []string{},
+				MinuteStats:  map[string]int{},
+				IndexEntries: []timestampFormatCoreIndexEntry{},
+				Logs:         []timestampFormatCoreLog{},
 			},
 		},
 		{
@@ -166,8 +174,9 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 				Warnings: []string{
 					"timestamps: log index ignored 7 malformed timestamp candidates; first malformed line: syslog:1",
 				},
-				MinuteStats: map[string]int{},
-				Logs:        []timestampFormatCoreLog{},
+				MinuteStats:  map[string]int{},
+				IndexEntries: []timestampFormatCoreIndexEntry{},
+				Logs:         []timestampFormatCoreLog{},
 			},
 		},
 	}
@@ -186,6 +195,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			clockMock := clock.NewMock()
 			clockMock.Set(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC))
 			updatesCh := make(chan LStreamsManagerUpdate, 100)
+			clientID := fmt.Sprintf("timestamp-format-%s", testutils.Slug(tc.name))
 			manager := NewLStreamsManager(LStreamsManagerParams{
 				ConfigLogStreams: ConfigLogStreams{
 					"timestamps": {
@@ -195,7 +205,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 					},
 				},
 				InitialLStreams:             "timestamps",
-				ClientID:                    fmt.Sprintf("timestamp-format-%s", testutils.Slug(tc.name)),
+				ClientID:                    clientID,
 				UpdatesCh:                   updatesCh,
 				Clock:                       clockMock,
 				InitialDefaultTransportMode: mustParseTransportModeForTest(),
@@ -236,10 +246,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			poll.Stop()
 
 			got := timestampFormatCoreResult{
-				Errs:        []string{},
-				Warnings:    []string{},
-				MinuteStats: map[string]int{},
-				Logs:        []timestampFormatCoreLog{},
+				Errs:         []string{},
+				Warnings:     []string{},
+				MinuteStats:  map[string]int{},
+				IndexEntries: []timestampFormatCoreIndexEntry{},
+				Logs:         []timestampFormatCoreLog{},
 			}
 			if !connected {
 				got.Errs = append(got.Errs, bootstrapErr)
@@ -280,6 +291,28 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 					got.Errs = append(got.Errs, err.Error())
 				}
 			}
+			if connected {
+				indexPath := fmt.Sprintf("/tmp/nerdlog_agent_index_%s_%s", clientID, filepathToId(logFilename))
+				indexData, err := os.ReadFile(indexPath)
+				if err != nil {
+					got.Errs = append(got.Errs, err.Error())
+				} else {
+					for _, line := range strings.Split(strings.TrimSpace(string(indexData)), "\n") {
+						fields := strings.Split(line, "\t")
+						if len(fields) >= 4 && fields[0] == "idx" {
+							line, lineErr := strconv.Atoi(fields[2])
+							if lineErr != nil {
+								got.Errs = append(got.Errs, fmt.Sprintf("malformed index entry: %s", strings.Join(fields, "\t")))
+								continue
+							}
+							got.IndexEntries = append(got.IndexEntries, timestampFormatCoreIndexEntry{
+								Time: fields[1],
+								Line: line,
+							})
+						}
+					}
+				}
+			}
 
 			want := timestampFormatCoreResult{
 				NumMsgsTotal: 7,
@@ -291,6 +324,13 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 					"2025-10-08T10:11Z": 2,
 					"2025-10-18T11:12Z": 1,
 					"2025-11-18T12:13Z": 1,
+				},
+				IndexEntries: []timestampFormatCoreIndexEntry{
+					{Time: "2025-09-08-08:09", Line: 1},
+					{Time: "2025-09-18-09:10", Line: 3},
+					{Time: "2025-10-08-10:11", Line: 4},
+					{Time: "2025-10-18-11:12", Line: 6},
+					{Time: "2025-11-18-12:13", Line: 7},
 				},
 				Logs: []timestampFormatCoreLog{
 					{Time: tc.transformTime("2025-09-08T08:09:10.123456000Z"), Msg: "message one"},
