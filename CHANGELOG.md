@@ -1,6 +1,26 @@
 # Changelog
 
 
+## [1.12.0](https://github.com/dimonomid/nerdlog/compare/v1.11.0...v1.12.0) (2026-09-26)
+
+
+### Features
+
+* Add logfile and loglineno fields ([b387a23](https://github.com/dimonomid/nerdlog/commit/b387a2353a98d949c70246188c243e05cb9c3e77))
+* Add more query debugging info ([6050e84](https://github.com/dimonomid/nerdlog/commit/6050e84107d5b173e8e32d6ce5a575df83654f85))
+* add Vim-style search to the logs table ([45ec78d](https://github.com/dimonomid/nerdlog/commit/45ec78d0ba5f4d508061f3761fd94b8320a4d01a))
+* Color decreased timestamps by severity ([7452596](https://github.com/dimonomid/nerdlog/commit/74525966f943c34d8b73677a133f8d92c5a5e13d))
+* Don't add malformed timestamps to log indexes ([7893e7b](https://github.com/dimonomid/nerdlog/commit/7893e7bebc4a97e42f0f92298482d50e6a38129e))
+* Show malformed log records instead of dropping them ([5e6e160](https://github.com/dimonomid/nerdlog/commit/5e6e1604f8f36bc046c0a0a8e9a767edcfbfc726))
+* Show original timestamps for out-of-order log records ([b63a6e1](https://github.com/dimonomid/nerdlog/commit/b63a6e1bde182f9a7d4d562fa7b5d2f1b7fd635f))
+* Still show available logs when some parsing failed ([0cd875f](https://github.com/dimonomid/nerdlog/commit/0cd875fa34420cbba4179eefe639c144de1489fb))
+
+
+### Bug Fixes
+
+* preserve table viewport across vertical movement ([e7f0af7](https://github.com/dimonomid/nerdlog/commit/e7f0af71653c84bd11ba2063bc9cd0fa9e05b8f9))
+* **UI:** Fix colors for status line messages ([c4820d9](https://github.com/dimonomid/nerdlog/commit/c4820d928aa305ae05dc8e5c7e35dcaee0de03bd))
+
 ## [1.11.0](https://github.com/dimonomid/nerdlog/compare/v1.10.0...v1.11.0) (2026-09-17)
 
 
