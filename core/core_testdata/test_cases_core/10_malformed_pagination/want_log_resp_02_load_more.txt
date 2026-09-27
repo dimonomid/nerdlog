@@ -2,11 +2,13 @@ NumMsgsTotal: 8
 LoadedEarlier: true
 Num errors: 0
 
-Num warnings: 4
-- testhost-malformed-pagination: showing malformed log record at /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile:3 as raw text: parsing time: parsing time in log msg: parsing time "BROKEN malforme" as "Jan _2 15:04:05": cannot parse "BROKEN malforme" as "Jan"
-- testhost-malformed-pagination: showing malformed log record at /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile:4 as raw text: parsing time: parsing time in log msg: parsing time "BROKEN malforme" as "Jan _2 15:04:05": cannot parse "BROKEN malforme" as "Jan"
-- testhost-malformed-pagination: showing malformed log record at /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile:5 as raw text: parsing time: parsing time in log msg: parsing time "BROKEN malforme" as "Jan _2 15:04:05": cannot parse "BROKEN malforme" as "Jan"
-- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malfo" as "Jan _2 15:04": cannot parse "BROKEN malfo" as "Jan"
+Num warnings: 6
+- testhost-malformed-pagination: showing malformed log record at /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile:3 as raw text: parsing time: line "BROKEN malformed-one" does not contain the timestamp fields
+- testhost-malformed-pagination: showing malformed log record at /tmp/nerdlog_core_test_output/10_malformed_pagination/lstreams/testhost-malformed-pagination/logfile:4 as raw text: parsing time: line "BROKEN malformed-two" does not contain the timestamp fields
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malformed-o..." as "Jan _2 15:04": cannot parse "BROKEN malformed-o..." as "Jan"
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malformed-t..." as "Jan _2 15:04": cannot parse "BROKEN malformed-t..." as "Jan"
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malformed-t..." as "Jan _2 15:04": cannot parse "BROKEN malformed-t..." as "Jan"
+- testhost-malformed-pagination: 1 additional query warnings omitted
 
 Num MinuteStats: 5
 - 2026-09-21-10-00: 1

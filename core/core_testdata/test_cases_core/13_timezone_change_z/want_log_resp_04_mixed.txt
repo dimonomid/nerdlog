@@ -7,14 +7,14 @@ Num MinuteStats: 2
 - 2025-01-01-10-30: 6
 
 Num Logs: 7
-- 2025-01-01T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000001,000001,----,app: utc one
-  context: {"lstream":"timezone-change-z"}
+- 2025-01-01T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000001,000001,----,utc one
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
   orig: 2025-01-01T10:00:00Z host app: utc one
-- 2025-01-01T10:30:00.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000002,000002,----,app: utc two
-  context: {"lstream":"timezone-change-z"}
+- 2025-01-01T10:30:00.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000002,000002,----,utc two
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
   orig: 2025-01-01T10:30:00Z host app: utc two
-- 2025-01-01T10:30:30.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000003,000003,----,app: utc two-b
-  context: {"lstream":"timezone-change-z"}
+- 2025-01-01T10:30:30.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000003,000003,----,utc two-b
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
   orig: 2025-01-01T10:30:30Z host app: utc two-b
 - 2025-01-01T10:30:40.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000004,000004,----,utc+4 four
   context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}

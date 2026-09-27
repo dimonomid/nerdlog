@@ -68,6 +68,8 @@ test-all-variations:
 # After running it, it's your job to examine the diff carefully, and if all the
 # changes look legit, commit them.
 update-test-expectations:
+	NERDLOG_UPDATE_TIMESTAMP_FORMAT_CASES=1 \
+    go test ./core -run '^TestUpdateTimestampFormatCases$$' -count 1
 	rm -rf                             \
     /tmp/nerdlog_agent_test_output   \
     /tmp/nerdlog_core_test_output    \

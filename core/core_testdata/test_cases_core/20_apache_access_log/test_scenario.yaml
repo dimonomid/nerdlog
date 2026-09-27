@@ -1,0 +1,24 @@
+descr: "Parse bracketed Apache access log timestamps"
+current_time: "2011-05-19T00:00:00Z"
+manager_params:
+  config_log_streams:
+    apache-access:
+      log_files:
+        kind: all_from_dir
+        dir: ../../input_logfiles/apache_access
+      options:
+        shell_init:
+          - 'export TZ=UTC'
+  initial_lstreams: "apache-*"
+  client_id: "core-test-runner"
+test_steps:
+
+  - descr: "all access log entries"
+    query:
+      params:
+        max_num_lines: 10
+        from: "2011-05-18T00:00:00Z"
+        to: "2011-05-19T00:00:00Z"
+        pattern: ""
+        load_earlier: false
+      want: want_log_resp_01_initial.txt

@@ -3,8 +3,8 @@ LoadedEarlier: false
 Num errors: 0
 
 Num warnings: 2
-- testhost-journal-malformed: showing malformed log record at journalctl:0 as raw text: parsing time: parsing time in log msg: parsing time "MALFORMED JOURNAL OUTPUT WITHOUT" as "2006-01-02T15:04:05.000000Z07:00": cannot parse "MALFORMED JOURNAL OUTPUT WITHOUT" as "2006"
-- testhost-journal-malformed: skipping malformed mstats: parsing time "RMED JOURNAITHOUT" as "01-02T15:04Z07:00": cannot parse "RMED JOURNAITHOUT" as "01"
+- testhost-journal-malformed: showing malformed log record at journalctl:0 as raw text: parsing time: parsing time "MALFORMED" as "2006-01-02T15:04:05.000000Z07:00": cannot parse "MALFORMED" as "2006"
+- testhost-journal-malformed: skipping malformed mstats: parsing time "RMED" as "01-02T15:04Z07:00": cannot parse "RMED" as "01"
 
 Num MinuteStats: 6
 - 2026-09-20-09-57: 1

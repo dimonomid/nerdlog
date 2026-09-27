@@ -1,0 +1,32 @@
+NumMsgsTotal: 2
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 2
+- 2011-05-18-08-48: 1
+- 2011-05-18-19-40: 1
+
+Num Logs: 2
+- 2011-05-18T08:48:10.000000000Z,F,/tmp/nerdlog_core_test_output/20_apache_access_log/lstreams/apache-access/logfile,000001,000001,----,71.141.244.242 - kurt "GET /admin HTTP/1.1" 301 566 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
+  context: {"lstream":"apache-access"}
+  orig: 71.141.244.242 - kurt [18/May/2011:01:48:10 -0700] "GET /admin HTTP/1.1" 301 566 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
+- 2011-05-18T19:40:18.000000000Z,F,/tmp/nerdlog_core_test_output/20_apache_access_log/lstreams/apache-access/logfile,000002,000002,----,134.39.72.245 - - "GET /favicon.ico HTTP/1.1" 200 1189 "-" "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; InfoPath.2; .NET4.0C; .NET4.0E)"
+  context: {"lstream":"apache-access"}
+  orig: 134.39.72.245 - - [18/May/2011:12:40:18 -0700] "GET /favicon.ico HTTP/1.1" 200 1189 "-" "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; InfoPath.2; .NET4.0C; .NET4.0E)"
+
+DebugInfo:
+{
+  "apache-access": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/20_apache_access_log/lstreams/apache-access/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2011-05-18-00:00 isn't found, will use the beginning",
+      "debug:the to 2011-05-19-00:00 is found: 3 (427)",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file to offset 426 in latest /tmp/nerdlog_core_test_output/20_apache_access_log/lstreams/apache-access/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 head -c 426 /tmp/nerdlog_core_test_output/20_apache_access_log/lstreams/apache-access/logfile'",
+      "debug:Filtered out 0 from 2 lines"
+    ]
+  }
+}

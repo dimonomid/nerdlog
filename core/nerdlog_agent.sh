@@ -40,11 +40,11 @@ max_num_lines=100
 awktime_prep_month_year_day_hhmm=''
 awktime_prep_hhmm=''
 awktime_prep_minute_key=''
-awktime_month='monthByName[substr($0, 1, 3)]'
+awktime_month='monthByName[$1]'
 awktime_year='yearByMonth[month]'
-awktime_day='(substr($0, 5, 1) == " ") ? "0" substr($0, 6, 1) : substr($0, 5, 2)'
-awktime_hhmm='substr($0, 8, 5)'
-awktime_minute_key='substr($0, 1, 12)'
+awktime_day='(length($2) == 1) ? "0" $2 : $2'
+awktime_hhmm='substr($3, 1, 5)'
+awktime_minute_key='$1 " " ((length($2) == 1) ? " " $2 : $2) " " substr($3, 1, 5)'
 awktime_timezone='""'
 # TODO: double check that if any of these is provided manually in a flag,
 # then all of them are provided manually.
@@ -1036,7 +1036,6 @@ function inferYear(logMonth, curYear, curMonth) {
 # "Z" -> 0, "+03:00" -> 10800, "-05:30" -> -19800, and "-0700" ->
 # -25200. The result is subtracted from a wall-clock timestamp to get UTC.
 function timezoneOffsetSeconds(timezone) {
-  sub(/^[[:space:]]+/, "", timezone)
   if (timezone == "" || timezone == "Z")
     return 0
 

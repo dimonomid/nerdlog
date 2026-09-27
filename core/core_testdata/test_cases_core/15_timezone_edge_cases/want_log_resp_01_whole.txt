@@ -13,11 +13,11 @@ Num MinuteStats: 8
 - 2025-01-02-09-00: 2
 
 Num Logs: 9
-- 2025-01-01T23:59:50.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000001,000001,----,app: utc before midnight
-  context: {"lstream":"timezone-edge-cases"}
+- 2025-01-01T23:59:50.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000001,000001,----,utc before midnight
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
   orig: 2025-01-01T23:59:50Z host app: utc before midnight
-- 2025-01-02T00:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000002,000002,----,app: utc after midnight
-  context: {"lstream":"timezone-edge-cases"}
+- 2025-01-02T00:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000002,000002,----,utc after midnight
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
   orig: 2025-01-02T00:00:10Z host app: utc after midnight
 - 2025-01-02T03:50:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000003,000003,----,negative offset four
   context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}

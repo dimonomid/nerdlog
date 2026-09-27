@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/juju/errors"
 
@@ -611,6 +613,7 @@ func (lsc *LStreamClient) run() {
 
 						t, err := time.ParseInLocation(lsc.timeFormat.MinuteKeyLayout, parts[0], lsc.location)
 						if err != nil {
+							err = shortenTimestampParseError(err, lsc.timeFormat.MinuteKeyLayout)
 							respCtx.addWarning(errors.Annotatef(err, "skipping malformed mstats"))
 							continue
 						}
@@ -1526,26 +1529,13 @@ func (lsc *LStreamClient) parseLine(logMsg *LogMsg) error {
 func (lsc *LStreamClient) parseLogMsgTimestamp(logMsg *LogMsg) error {
 	msg := logMsg.Msg
 
-	timeLayout := lsc.timeFormat.TimestampFormat.Layout
-	timestampLen := len(timeLayout)
-
-	// If the layout ends with the offset like "Z07" or "Z07:00", but the
-	// actual timestamp string is in UTC and it ends with just "Z", we then
-	// need to remove that extra
-	zIdx := strings.Index(timeLayout, "Z07")
-	if zIdx >= 0 && len(msg) >= zIdx && msg[zIdx] == 'Z' {
-		// We have a Z in the timestamp, so there should be no offset after it.
-		timestampLen = zIdx + 1
-	}
-
-	if len(msg) < timestampLen {
-		return errors.Errorf("line %q is too short to have a timestamp", msg)
-	}
-
-	t, err := time.ParseInLocation(timeLayout, msg[:timestampLen], lsc.location)
+	compiledTimestampFormat := &lsc.timeFormat.TimestampFormat
+	t, extractionDetails, err := compiledTimestampFormat.parseInLocationWithDetails(msg, lsc.location)
 	if err != nil {
-		return errors.Annotatef(err, "parsing time in log msg")
+		return errors.Trace(err)
 	}
+	timestampStart := extractionDetails.origStart
+	timestampEnd := extractionDetails.origEnd
 
 	// If the location we get from the actual logs doesn't match what we have,
 	// trust the logs more.
@@ -1575,10 +1565,37 @@ func (lsc *LStreamClient) parseLogMsgTimestamp(logMsg *LogMsg) error {
 	}
 	t = t.UTC()
 
-	// Parsed the time successfully; update it in the LogMsg, and also remove the
-	// leading timestamp from the message.
+	// Parsed the time successfully; update it in the LogMsg, and remove the
+	// matched timestamp while preserving any text before or after it in the
+	// same fields. Whitespace immediately adjacent to the removed timestamp is
+	// replaced by one space when the timestamp is in the middle of the line.
 	logMsg.Time = t
-	logMsg.Msg = strings.TrimSpace(msg[len(timeLayout):])
+	left := timestampStart
+	for left > 0 {
+		r, size := utf8.DecodeLastRuneInString(msg[:left])
+		if !unicode.IsSpace(r) {
+			break
+		}
+		left -= size
+	}
+	right := timestampEnd
+	for right < len(msg) {
+		r, size := utf8.DecodeRuneInString(msg[right:])
+		if !unicode.IsSpace(r) {
+			break
+		}
+		right += size
+	}
+
+	prefix, suffix := msg[:left], msg[right:]
+	switch {
+	case prefix != "" && suffix != "":
+		logMsg.Msg = prefix + " " + suffix
+	case prefix != "":
+		logMsg.Msg = prefix
+	default:
+		logMsg.Msg = suffix
+	}
 
 	return nil
 }
