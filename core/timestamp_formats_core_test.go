@@ -16,14 +16,17 @@ import (
 )
 
 type timestampFormatCoreTestCase struct {
-	name     string
-	filename string
-	format   TimestampFormat
+	name          string
+	filename      string
+	prefix        string
+	wantMsgPrefix string
+	format        TimestampFormat
 	// skipTimezoneTest is true for formats without a timezone, whose wall-clock
 	// timestamps cannot be shifted while keeping the server timezone at UTC.
-	skipTimezoneTest bool
-	transformTime    func(string) string
-	want             *timestampFormatCoreResult
+	skipTimezoneTest   bool
+	transformTime      func(string) string
+	wantDetectedFormat *TimestampFormat
+	want               *timestampFormatCoreResult
 }
 
 // timestampFormatCoreTimezone describes a timezone to use when running test
@@ -40,13 +43,14 @@ type timestampFormatCoreTimezone struct {
 }
 
 type timestampFormatCoreResult struct {
-	NumMsgsTotal int
-	Errs         []string
-	NumWarnings  int
-	Warnings     []string
-	MinuteStats  map[string]int
-	IndexEntries []timestampFormatCoreIndexEntry
-	Logs         []timestampFormatCoreLog
+	DetectedFormat *TimestampFormat
+	NumMsgsTotal   int
+	Errs           []string
+	NumWarnings    int
+	Warnings       []string
+	MinuteStats    map[string]int
+	IndexEntries   []timestampFormatCoreIndexEntry
+	Logs           []timestampFormatCoreLog
 }
 
 type timestampFormatCoreIndexEntry struct {
@@ -64,18 +68,18 @@ const timestampFormatTestMinuteLayout = "2006-01-02T15:04Z07:00"
 
 func TestTimestampFormatsThroughAgent(t *testing.T) {
 	commonSuffixes := []string{
-		" myhost app[123]: message one",
-		" myhost app[123]: message two",
-		" myhost app[123]: message three",
-		" myhost app[123]: message four",
-		" myhost app[123]: message five",
-		" myhost app[123]: message six",
-		" myhost app[123]: message seven",
-		" myhost app[123]: message eight",
-		" myhost app[123]: message nine",
-		" myhost app[123]: message ten",
-		" myhost app[123]: message eleven",
-		" myhost app[123]: message twelve",
+		"myhost app[123]: message one",
+		"myhost app[123]: message two",
+		"myhost app[123]: message three",
+		"myhost app[123]: message four",
+		"myhost app[123]: message five",
+		"myhost app[123]: message six",
+		"myhost app[123]: message seven",
+		"myhost app[123]: message eight",
+		"myhost app[123]: message nine",
+		"myhost app[123]: message ten",
+		"myhost app[123]: message eleven",
+		"myhost app[123]: message twelve",
 	}
 
 	inputTimes := []time.Time{
@@ -101,6 +105,13 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		}
 		return t.Truncate(time.Second).Format(timestampFormatTestTimeLayout)
 	}
+	truncateToMinute := func(s string) string {
+		t, err := time.Parse(timestampFormatTestTimeLayout, s)
+		if err != nil {
+			panic(err)
+		}
+		return t.Truncate(time.Minute).Format(timestampFormatTestTimeLayout)
+	}
 	truncateToMillisecond := func(s string) string {
 		t, err := time.Parse(timestampFormatTestTimeLayout, s)
 		if err != nil {
@@ -109,111 +120,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		return t.Truncate(time.Millisecond).Format(timestampFormatTestTimeLayout)
 	}
 
-	tests := []timestampFormatCoreTestCase{
-		{
-			name:             "syslog",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "Jan _2 15:04:05"},
-			skipTimezoneTest: true,
-			transformTime:    truncateToSecond,
-		},
-		{
-			name:          "iso8601 microseconds utc",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "2006-01-02T15:04:05.000000Z07:00"},
-			transformTime: identityTime,
-		},
-		{
-			name:          "iso8601 microseconds numeric timezone",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "2006-01-02T15:04:05.000000-0700"},
-			transformTime: identityTime,
-		},
-		{
-			name:             "space separated iso8601",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "2006-01-02 15:04:05"},
-			skipTimezoneTest: true,
-			transformTime:    truncateToSecond,
-		},
-		{
-			name:          "rfc3339",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "2006-01-02T15:04:05Z07:00"},
-			transformTime: truncateToSecond,
-		},
-		{
-			name:          "rfc3339 milliseconds",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "2006-01-02T15:04:05.000Z07:00"},
-			transformTime: truncateToMillisecond,
-		},
-		{
-			name:          "apache access",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "02/Jan/2006:15:04:05 -0700"},
-			transformTime: truncateToSecond,
-		},
-		{
-			name:             "slash separated date",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "2006/01/02 15:04:05"},
-			skipTimezoneTest: true,
-			transformTime:    truncateToSecond,
-		},
-		{
-			name:             "hyphenated month",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "02-Jan-2006 15:04:05"},
-			skipTimezoneTest: true,
-			transformTime:    truncateToSecond,
-		},
-		{
-			name:             "month day",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "Jan 02 15:04:05"},
-			skipTimezoneTest: true,
-			transformTime:    truncateToSecond,
-		},
-		{
-			name:             "apache microseconds",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "[Mon Jan 02 15:04:05.999999 2006]"},
-			skipTimezoneTest: true,
-			transformTime:    identityTime,
-		},
-		{
-			name:             "weekday date is not generated yet",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "Mon Jan 2 15:04:05 2006"},
-			skipTimezoneTest: true,
-			transformTime:    identityTime,
-			want: &timestampFormatCoreResult{
-				Errs:         []string{"in \"syslog\": unable to detect timestamp format"},
-				Warnings:     []string{},
-				MinuteStats:  map[string]int{},
-				IndexEntries: []timestampFormatCoreIndexEntry{},
-				Logs:         []timestampFormatCoreLog{},
-			},
-		},
-		{
-			name:             "apache seconds is shadowed by microseconds format",
-			filename:         "syslog",
-			format:           TimestampFormat{Layout: "[Mon Jan 02 15:04:05 2006]"},
-			skipTimezoneTest: true,
-			transformTime:    identityTime,
-			want: &timestampFormatCoreResult{
-				Errs:        []string{},
-				NumWarnings: 1,
-				Warnings: []string{
-					"timestamps: log index ignored 12 malformed timestamp candidates; first malformed line: syslog:1",
-				},
-				MinuteStats:  map[string]int{},
-				IndexEntries: []timestampFormatCoreIndexEntry{},
-				Logs:         []timestampFormatCoreLog{},
-			},
-		},
-	}
+	tests := timestampFormatCoreCases(identityTime, truncateToMinute, truncateToSecond, truncateToMillisecond)
 
 	timezones := []timestampFormatCoreTimezone{
 		{name: "UTC", location: time.UTC},
@@ -227,11 +134,79 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 				if tc.skipTimezoneTest && timezone.location != time.UTC {
 					continue
 				}
+				suffixModeName := "space-separated"
+				suffixSeparator := " "
+				if tc.format.HasTrailingChars {
+					suffixModeName = "adjacent"
+					suffixSeparator = ""
+				}
 				t.Run(tc.name, func(t *testing.T) {
-					runTimestampFormatTest(t, timezone, tc, inputTimes, commonSuffixes)
+					runTimestampFormatTest(t, timezone, tc, inputTimes, commonSuffixes, suffixSeparator, suffixModeName)
 				})
 			}
 		})
+	}
+}
+
+func timestampFormatCoreCases(
+	identityTime func(string) string,
+	truncateToMinute func(string) string,
+	truncateToSecond func(string) string,
+	truncateToMillisecond func(string) string,
+) []timestampFormatCoreTestCase {
+	tests := make([]timestampFormatCoreTestCase, 0, len(timestampFormatCases))
+	for _, tc := range timestampFormatCases {
+		detectedFormat := tc.detectedFormat()
+		prefix := strings.Repeat("before ", tc.format.StartFieldIdx)
+		agentErr := tc.wantAgentErr
+		var wantDetectedFormat *TimestampFormat
+		if agentErr == "" {
+			wantDetectedFormat = &detectedFormat
+		}
+		wantMsgPrefix := ""
+		if prefix != "" {
+			wantMsgPrefix = prefix + "myhost app[123]: "
+		}
+		coreCase := timestampFormatCoreTestCase{
+			name:               tc.name,
+			filename:           "syslog",
+			prefix:             prefix,
+			wantMsgPrefix:      wantMsgPrefix,
+			format:             tc.format,
+			skipTimezoneTest:   agentErr != "" || tc.wantAWK.Timezone == "",
+			transformTime:      timestampFormatTransform(detectedFormat.Layout, identityTime, truncateToMinute, truncateToSecond, truncateToMillisecond),
+			wantDetectedFormat: wantDetectedFormat,
+		}
+		if agentErr != "" {
+			coreCase.want = &timestampFormatCoreResult{
+				Errs:         []string{agentErr},
+				Warnings:     []string{},
+				MinuteStats:  map[string]int{},
+				IndexEntries: []timestampFormatCoreIndexEntry{},
+				Logs:         []timestampFormatCoreLog{},
+			}
+		}
+		tests = append(tests, coreCase)
+	}
+	return tests
+}
+
+func timestampFormatTransform(
+	layout string,
+	identityTime func(string) string,
+	truncateToMinute func(string) string,
+	truncateToSecond func(string) string,
+	truncateToMillisecond func(string) string,
+) func(string) string {
+	switch {
+	case strings.Contains(layout, ".000000"):
+		return identityTime
+	case strings.Contains(layout, ".000"):
+		return truncateToMillisecond
+	case !strings.Contains(layout, "05"):
+		return truncateToMinute
+	default:
+		return truncateToSecond
 	}
 }
 
@@ -241,12 +216,14 @@ func runTimestampFormatTest(
 	tc timestampFormatCoreTestCase,
 	inputTimes []time.Time,
 	commonSuffixes []string,
+	suffixSeparator string,
+	suffixModeName string,
 ) {
 	logFilename := filepath.Join(t.TempDir(), tc.filename)
 	data := ""
 	formatLayout := strings.ReplaceAll(tc.format.Layout, ".999999", ".000000")
 	for i, inputTime := range inputTimes {
-		line := inputTime.In(timezone.location).Format(formatLayout) + commonSuffixes[i]
+		line := tc.prefix + inputTime.In(timezone.location).Format(formatLayout) + suffixSeparator + commonSuffixes[i]
 		data += line + "\n"
 	}
 	_ = os.WriteFile(logFilename, []byte(data), 0644)
@@ -254,7 +231,7 @@ func runTimestampFormatTest(
 	clockMock := clock.NewMock()
 	clockMock.Set(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC))
 	updatesCh := make(chan LStreamsManagerUpdate, 100)
-	clientID := fmt.Sprintf("timestamp-format-%s", testutils.Slug(tc.name))
+	clientID := fmt.Sprintf("timestamp-format-%s-%s", testutils.Slug(tc.name), testutils.Slug(suffixModeName))
 	manager := NewLStreamsManager(LStreamsManagerParams{
 		ConfigLogStreams: ConfigLogStreams{
 			"timestamps": {
@@ -285,24 +262,32 @@ func runTimestampFormatTest(
 	var bootstrapErr string
 	connected := false
 	deadline := time.NewTimer(5 * time.Second)
-	poll := time.NewTicker(100 * time.Millisecond)
-waitForConnection:
-	for {
-		if th.isConnected() {
-			connected = true
-			break
-		}
+	if tc.want != nil {
 		select {
 		case bootstrapErr = <-bootstrapIssues:
-			break waitForConnection
 		case <-deadline.C:
-			bootstrapErr = "timed out waiting for connection"
-			break waitForConnection
-		case <-poll.C:
+			bootstrapErr = "timed out waiting for bootstrap rejection"
 		}
+	} else {
+		poll := time.NewTicker(100 * time.Millisecond)
+	waitForConnection:
+		for {
+			if th.isConnected() {
+				connected = true
+				break
+			}
+			select {
+			case bootstrapErr = <-bootstrapIssues:
+				break waitForConnection
+			case <-deadline.C:
+				bootstrapErr = "timed out waiting for connection"
+				break waitForConnection
+			case <-poll.C:
+			}
+		}
+		poll.Stop()
 	}
 	deadline.Stop()
-	poll.Stop()
 
 	got := timestampFormatCoreResult{
 		Errs:         []string{},
@@ -346,6 +331,12 @@ waitForConnection:
 				})
 			}
 		}
+		detectedFormat, err := timestampFormatDetectedByManager(manager, "timestamps")
+		if err != nil {
+			got.Errs = append(got.Errs, err.Error())
+		} else {
+			got.DetectedFormat = detectedFormat
+		}
 		if err := th.CloseAndWait(); err != nil {
 			got.Errs = append(got.Errs, err.Error())
 		}
@@ -376,9 +367,10 @@ waitForConnection:
 	}
 
 	want := timestampFormatCoreResult{
-		NumMsgsTotal: 12,
-		Errs:         []string{},
-		Warnings:     []string{},
+		DetectedFormat: tc.wantDetectedFormat,
+		NumMsgsTotal:   12,
+		Errs:           []string{},
+		Warnings:       []string{},
 		MinuteStats: map[string]int{
 			"2025-09-08T08:09Z": 2,
 			"2025-09-18T09:10Z": 1,
@@ -415,7 +407,24 @@ waitForConnection:
 	if tc.want != nil {
 		want = *tc.want
 	}
+	if tc.wantMsgPrefix != "" {
+		for i := range want.Logs {
+			want.Logs[i].Msg = tc.wantMsgPrefix + want.Logs[i].Msg
+		}
+	}
 	assert.Equal(t, want, got)
+}
+
+func timestampFormatDetectedByManager(manager *LStreamsManager, lstreamName string) (*TimestampFormat, error) {
+	client, ok := manager.lscs[lstreamName]
+	if !ok {
+		return nil, fmt.Errorf("missing logstream client %q", lstreamName)
+	}
+	if client.timeFormat == nil {
+		return nil, fmt.Errorf("logstream client %q has no detected time format", lstreamName)
+	}
+	detectedFormat := client.timeFormat.TimestampFormat.TimestampFormat
+	return &detectedFormat, nil
 }
 
 func testMyTime(t time.Time) testutils.MyTime {

@@ -2,8 +2,10 @@ NumMsgsTotal: 8
 LoadedEarlier: true
 Num errors: 0
 
-Num warnings: 1
-- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malfo" as "Jan _2 15:04": cannot parse "BROKEN malfo" as "Jan"
+Num warnings: 3
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malformed-o..." as "Jan _2 15:04": cannot parse "BROKEN malformed-o..." as "Jan"
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malformed-t..." as "Jan _2 15:04": cannot parse "BROKEN malformed-t..." as "Jan"
+- testhost-malformed-pagination: skipping malformed mstats: parsing time "BROKEN malformed-t..." as "Jan _2 15:04": cannot parse "BROKEN malformed-t..." as "Jan"
 
 Num MinuteStats: 5
 - 2026-09-21-10-00: 1

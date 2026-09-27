@@ -4,16 +4,16 @@ awk pattern:                                                     Sep18 10:00 to 
 
 
           ▄▖ ▄▖
-          ▘ 10:00        ▘ 10:10        ▘ 10:20        ▘ 10:30        ▘ 10:40        ▘ 10:50
 ╔═════════════════════════════════════════════Log query warning══════════════════════════════════════════════╗
 ║                                                                                                            ║
 ║ 2 warnings:                                                                                                ║
 ║ 1: testhost-corrupted: showing malformed log record at /tmp/nerdlog_e2e_test_output/05_query_warnings/lstr ║
-║ eams/testhost-corrupted/logfile:2 as raw text: parsing time: parsing time in log msg: parsing time "\x00\x ║
-║ 00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan _2 15:04:05": cannot parse "\x00\x00\x00\x ║
-║ 00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"                                                   ║
+║ eams/testhost-corrupted/logfile:2 as raw text: parsing time: parsing time "\x00\x00\x00\x00\x00\x00\x00\x0 ║
+║ 0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00..." as "Jan _2 15:04:05": cannot parse "\x00\x00 ║
+║ \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00..." as "Jan"              ║
 ║ 2: testhost-corrupted: skipping malformed mstats: parsing time "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x ║
-║ 00\x00" as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" as "Jan"        ║
+║ 00\x00\x00\x00\x00\x00\x00\x00..." as "Jan _2 15:04": cannot parse "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x ║
+║ 00\x00\x00\x00\x00\x00\x00\x00\x00..." as "Jan"                                                            ║
 ║                                                                                                            ║
 ║ Some log data could not be processed, so the results may be incomplete.                                    ║
 ║                                                                                                            ║
