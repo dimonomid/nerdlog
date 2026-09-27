@@ -200,193 +200,198 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		{name: "UTC", location: time.UTC},
 	}
 
-	{
-		runTimestampFormatTest := func(t *testing.T, timezone timestampFormatCoreTimezone, tc timestampFormatCoreTestCase) {
-			logFilename := filepath.Join(t.TempDir(), tc.filename)
-			data := ""
-			formatLayout := strings.ReplaceAll(tc.format.Layout, ".999999", ".000000")
-			for i, inputTime := range inputTimes {
-				line := inputTime.In(timezone.location).Format(formatLayout) + commonSuffixes[i]
-				data += line + "\n"
-			}
-			_ = os.WriteFile(logFilename, []byte(data), 0644)
-
-			clockMock := clock.NewMock()
-			clockMock.Set(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC))
-			updatesCh := make(chan LStreamsManagerUpdate, 100)
-			clientID := fmt.Sprintf("timestamp-format-%s", testutils.Slug(tc.name))
-			manager := NewLStreamsManager(LStreamsManagerParams{
-				ConfigLogStreams: ConfigLogStreams{
-					"timestamps": {
-						Hostname: "localhost",
-						LogFiles: []string{logFilename},
-						Options:  ConfigLogStreamOptions{ShellInit: []string{"export TZ=UTC"}},
-					},
-				},
-				InitialLStreams:             "timestamps",
-				ClientID:                    clientID,
-				UpdatesCh:                   updatesCh,
-				Clock:                       clockMock,
-				InitialDefaultTransportMode: mustParseTransportModeForTest(),
-				Logger:                      log.NewLogger(log.Verbose1).WithStdout(true),
-			})
-
-			th := &LStreamsManagerTestHelper{manager: manager, updatesCh: updatesCh, clock: clockMock}
-			bootstrapIssues := make(chan string, 1)
-			go func() {
-				for upd := range updatesCh {
-					if upd.BootstrapIssue != nil {
-						bootstrapIssues <- strings.ReplaceAll(upd.BootstrapIssue.Err, logFilename, tc.filename)
-					}
-					th.applyUpdate(upd)
-				}
-			}()
-
-			var bootstrapErr string
-			connected := false
-			deadline := time.NewTimer(5 * time.Second)
-			poll := time.NewTicker(100 * time.Millisecond)
-		waitForConnection:
-			for {
-				if th.isConnected() {
-					connected = true
-					break
-				}
-				select {
-				case bootstrapErr = <-bootstrapIssues:
-					break waitForConnection
-				case <-deadline.C:
-					bootstrapErr = "timed out waiting for connection"
-					break waitForConnection
-				case <-poll.C:
-				}
-			}
-			deadline.Stop()
-			poll.Stop()
-
-			got := timestampFormatCoreResult{
-				Errs:         []string{},
-				Warnings:     []string{},
-				MinuteStats:  map[string]int{},
-				IndexEntries: []timestampFormatCoreIndexEntry{},
-				Logs:         []timestampFormatCoreLog{},
-			}
-			if !connected {
-				got.Errs = append(got.Errs, bootstrapErr)
-				if err := th.CloseAndWait(); err != nil {
-					got.Errs = append(got.Errs, err.Error())
-				}
-			} else {
-				resp, err := th.QueryLogs(CoreTestStepQueryParams{
-					MaxNumLines:  20,
-					From:         testMyTime(time.Date(2025, 9, 1, 0, 0, 0, 0, time.UTC)),
-					To:           testMyTime(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC)),
-					RefreshIndex: true,
+	for _, timezone := range timezones {
+		t.Run(timezone.name, func(t *testing.T) {
+			for _, tc := range tests {
+				t.Run(tc.name, func(t *testing.T) {
+					runTimestampFormatTest(t, timezone, tc, inputTimes, commonSuffixes)
 				})
-				if err != nil {
-					got.Errs = append(got.Errs, err.Error())
-				}
-				if resp != nil {
-					got.NumMsgsTotal = resp.NumMsgsTotal
-					got.NumWarnings = resp.NumWarnings
-					for _, err := range resp.Errs {
-						got.Errs = append(got.Errs, err.Error())
-					}
-					for _, warning := range resp.Warnings {
-						warningString := fmt.Sprintf("%s: %s", warning.LStreamName, warning.Err.Error())
-						got.Warnings = append(got.Warnings, strings.ReplaceAll(warningString, logFilename, tc.filename))
-					}
-					for minute, stats := range resp.MinuteStats {
-						got.MinuteStats[time.Unix(minute, 0).UTC().Format(timestampFormatTestMinuteLayout)] = stats.NumMsgs
-					}
-					for _, logMsg := range resp.Logs {
-						got.Logs = append(got.Logs, timestampFormatCoreLog{
-							Time: logMsg.Time.Format(timestampFormatTestTimeLayout),
-							Msg:  logMsg.Msg,
-						})
-					}
-				}
-				if err := th.CloseAndWait(); err != nil {
-					got.Errs = append(got.Errs, err.Error())
-				}
 			}
-			if connected {
-				indexPath := fmt.Sprintf("/tmp/nerdlog_agent_index_%s_%s", clientID, filepathToId(logFilename))
-				indexData, err := os.ReadFile(indexPath)
-				if err != nil {
-					got.Errs = append(got.Errs, err.Error())
-				} else {
-					for _, line := range strings.Split(strings.TrimSpace(string(indexData)), "\n") {
-						fields := strings.Split(line, "\t")
-						if len(fields) >= 4 && fields[0] == "idx" {
-							line, lineErr := strconv.Atoi(fields[2])
-							if lineErr != nil {
-								got.Errs = append(got.Errs, fmt.Sprintf("malformed index entry: %s", strings.Join(fields, "\t")))
-								continue
-							}
-							got.IndexEntries = append(got.IndexEntries, timestampFormatCoreIndexEntry{
-								Time: fields[1],
-								Line: line,
-							})
-						}
-					}
-				}
-			}
+		})
+	}
+}
 
-			want := timestampFormatCoreResult{
-				NumMsgsTotal: 12,
-				Errs:         []string{},
-				Warnings:     []string{},
-				MinuteStats: map[string]int{
-					"2025-09-08T08:09Z": 2,
-					"2025-09-18T09:10Z": 1,
-					"2025-10-08T10:11Z": 2,
-					"2025-10-18T11:12Z": 1,
-					"2025-11-18T12:13Z": 1,
-					"2025-11-18T22:45Z": 3,
-					"2025-11-18T23:57Z": 2,
-				},
-				IndexEntries: []timestampFormatCoreIndexEntry{
-					{Time: "2025-09-08-08:09", Line: 1},
-					{Time: "2025-09-18-09:10", Line: 3},
-					{Time: "2025-10-08-10:11", Line: 4},
-					{Time: "2025-10-18-11:12", Line: 6},
-					{Time: "2025-11-18-12:13", Line: 7},
-					{Time: "2025-11-18-22:45", Line: 8},
-					{Time: "2025-11-18-23:57", Line: 11},
-				},
-				Logs: []timestampFormatCoreLog{
-					{Time: tc.transformTime("2025-09-08T08:09:10.123456000Z"), Msg: "message one"},
-					{Time: tc.transformTime("2025-09-08T08:09:20.223456000Z"), Msg: "message two"},
-					{Time: tc.transformTime("2025-09-18T09:10:11.234567000Z"), Msg: "message three"},
-					{Time: tc.transformTime("2025-10-08T10:11:12.345678000Z"), Msg: "message four"},
-					{Time: tc.transformTime("2025-10-08T10:11:22.445678000Z"), Msg: "message five"},
-					{Time: tc.transformTime("2025-10-18T11:12:13.456789000Z"), Msg: "message six"},
-					{Time: tc.transformTime("2025-11-18T12:13:14.567890000Z"), Msg: "message seven"},
-					{Time: tc.transformTime("2025-11-18T22:45:36.678901000Z"), Msg: "message eight"},
-					{Time: tc.transformTime("2025-11-18T22:45:46.800123000Z"), Msg: "message nine"},
-					{Time: tc.transformTime("2025-11-18T22:45:56.789012000Z"), Msg: "message ten"},
-					{Time: tc.transformTime("2025-11-18T23:57:36.890123000Z"), Msg: "message eleven"},
-					{Time: tc.transformTime("2025-11-18T23:57:56.901234000Z"), Msg: "message twelve"},
-				},
-			}
-			if tc.want != nil {
-				want = *tc.want
-			}
+func runTimestampFormatTest(
+	t *testing.T,
+	timezone timestampFormatCoreTimezone,
+	tc timestampFormatCoreTestCase,
+	inputTimes []time.Time,
+	commonSuffixes []string,
+) {
+	logFilename := filepath.Join(t.TempDir(), tc.filename)
+	data := ""
+	formatLayout := strings.ReplaceAll(tc.format.Layout, ".999999", ".000000")
+	for i, inputTime := range inputTimes {
+		line := inputTime.In(timezone.location).Format(formatLayout) + commonSuffixes[i]
+		data += line + "\n"
+	}
+	_ = os.WriteFile(logFilename, []byte(data), 0644)
 
-			assert.Equal(t, want, got)
+	clockMock := clock.NewMock()
+	clockMock.Set(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC))
+	updatesCh := make(chan LStreamsManagerUpdate, 100)
+	clientID := fmt.Sprintf("timestamp-format-%s", testutils.Slug(tc.name))
+	manager := NewLStreamsManager(LStreamsManagerParams{
+		ConfigLogStreams: ConfigLogStreams{
+			"timestamps": {
+				Hostname: "localhost",
+				LogFiles: []string{logFilename},
+				Options:  ConfigLogStreamOptions{ShellInit: []string{"export TZ=UTC"}},
+			},
+		},
+		InitialLStreams:             "timestamps",
+		ClientID:                    clientID,
+		UpdatesCh:                   updatesCh,
+		Clock:                       clockMock,
+		InitialDefaultTransportMode: mustParseTransportModeForTest(),
+		Logger:                      log.NewLogger(log.Verbose1).WithStdout(true),
+	})
+
+	th := &LStreamsManagerTestHelper{manager: manager, updatesCh: updatesCh, clock: clockMock}
+	bootstrapIssues := make(chan string, 1)
+	go func() {
+		for upd := range updatesCh {
+			if upd.BootstrapIssue != nil {
+				bootstrapIssues <- strings.ReplaceAll(upd.BootstrapIssue.Err, logFilename, tc.filename)
+			}
+			th.applyUpdate(upd)
 		}
+	}()
 
-		for _, timezone := range timezones {
-			t.Run(timezone.name, func(t *testing.T) {
-				for _, tc := range tests {
-					t.Run(tc.name, func(t *testing.T) {
-						runTimestampFormatTest(t, timezone, tc)
-					})
-				}
-			})
+	var bootstrapErr string
+	connected := false
+	deadline := time.NewTimer(5 * time.Second)
+	poll := time.NewTicker(100 * time.Millisecond)
+waitForConnection:
+	for {
+		if th.isConnected() {
+			connected = true
+			break
+		}
+		select {
+		case bootstrapErr = <-bootstrapIssues:
+			break waitForConnection
+		case <-deadline.C:
+			bootstrapErr = "timed out waiting for connection"
+			break waitForConnection
+		case <-poll.C:
 		}
 	}
+	deadline.Stop()
+	poll.Stop()
+
+	got := timestampFormatCoreResult{
+		Errs:         []string{},
+		Warnings:     []string{},
+		MinuteStats:  map[string]int{},
+		IndexEntries: []timestampFormatCoreIndexEntry{},
+		Logs:         []timestampFormatCoreLog{},
+	}
+	if !connected {
+		got.Errs = append(got.Errs, bootstrapErr)
+		if err := th.CloseAndWait(); err != nil {
+			got.Errs = append(got.Errs, err.Error())
+		}
+	} else {
+		resp, err := th.QueryLogs(CoreTestStepQueryParams{
+			MaxNumLines:  20,
+			From:         testMyTime(time.Date(2025, 9, 1, 0, 0, 0, 0, time.UTC)),
+			To:           testMyTime(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC)),
+			RefreshIndex: true,
+		})
+		if err != nil {
+			got.Errs = append(got.Errs, err.Error())
+		}
+		if resp != nil {
+			got.NumMsgsTotal = resp.NumMsgsTotal
+			got.NumWarnings = resp.NumWarnings
+			for _, err := range resp.Errs {
+				got.Errs = append(got.Errs, err.Error())
+			}
+			for _, warning := range resp.Warnings {
+				warningString := fmt.Sprintf("%s: %s", warning.LStreamName, warning.Err.Error())
+				got.Warnings = append(got.Warnings, strings.ReplaceAll(warningString, logFilename, tc.filename))
+			}
+			for minute, stats := range resp.MinuteStats {
+				got.MinuteStats[time.Unix(minute, 0).UTC().Format(timestampFormatTestMinuteLayout)] = stats.NumMsgs
+			}
+			for _, logMsg := range resp.Logs {
+				got.Logs = append(got.Logs, timestampFormatCoreLog{
+					Time: logMsg.Time.Format(timestampFormatTestTimeLayout),
+					Msg:  logMsg.Msg,
+				})
+			}
+		}
+		if err := th.CloseAndWait(); err != nil {
+			got.Errs = append(got.Errs, err.Error())
+		}
+	}
+	if connected {
+		indexPath := fmt.Sprintf("/tmp/nerdlog_agent_index_%s_%s", clientID, filepathToId(logFilename))
+		indexData, err := os.ReadFile(indexPath)
+		if err != nil {
+			got.Errs = append(got.Errs, err.Error())
+		} else {
+			for _, line := range strings.Split(strings.TrimSpace(string(indexData)), "\n") {
+				fields := strings.Split(line, "\t")
+				if len(fields) >= 4 && fields[0] == "idx" {
+					line, lineErr := strconv.Atoi(fields[2])
+					if lineErr != nil {
+						got.Errs = append(got.Errs, fmt.Sprintf("malformed index entry: %s", strings.Join(fields, "\t")))
+						continue
+					}
+					got.IndexEntries = append(got.IndexEntries, timestampFormatCoreIndexEntry{
+						Time: fields[1],
+						Line: line,
+					})
+				}
+			}
+		}
+
+	}
+
+	want := timestampFormatCoreResult{
+		NumMsgsTotal: 12,
+		Errs:         []string{},
+		Warnings:     []string{},
+		MinuteStats: map[string]int{
+			"2025-09-08T08:09Z": 2,
+			"2025-09-18T09:10Z": 1,
+			"2025-10-08T10:11Z": 2,
+			"2025-10-18T11:12Z": 1,
+			"2025-11-18T12:13Z": 1,
+			"2025-11-18T22:45Z": 3,
+			"2025-11-18T23:57Z": 2,
+		},
+		IndexEntries: []timestampFormatCoreIndexEntry{
+			{Time: "2025-09-08-08:09", Line: 1},
+			{Time: "2025-09-18-09:10", Line: 3},
+			{Time: "2025-10-08-10:11", Line: 4},
+			{Time: "2025-10-18-11:12", Line: 6},
+			{Time: "2025-11-18-12:13", Line: 7},
+			{Time: "2025-11-18-22:45", Line: 8},
+			{Time: "2025-11-18-23:57", Line: 11},
+		},
+		Logs: []timestampFormatCoreLog{
+			{Time: tc.transformTime("2025-09-08T08:09:10.123456000Z"), Msg: "message one"},
+			{Time: tc.transformTime("2025-09-08T08:09:20.223456000Z"), Msg: "message two"},
+			{Time: tc.transformTime("2025-09-18T09:10:11.234567000Z"), Msg: "message three"},
+			{Time: tc.transformTime("2025-10-08T10:11:12.345678000Z"), Msg: "message four"},
+			{Time: tc.transformTime("2025-10-08T10:11:22.445678000Z"), Msg: "message five"},
+			{Time: tc.transformTime("2025-10-18T11:12:13.456789000Z"), Msg: "message six"},
+			{Time: tc.transformTime("2025-11-18T12:13:14.567890000Z"), Msg: "message seven"},
+			{Time: tc.transformTime("2025-11-18T22:45:36.678901000Z"), Msg: "message eight"},
+			{Time: tc.transformTime("2025-11-18T22:45:46.800123000Z"), Msg: "message nine"},
+			{Time: tc.transformTime("2025-11-18T22:45:56.789012000Z"), Msg: "message ten"},
+			{Time: tc.transformTime("2025-11-18T23:57:36.890123000Z"), Msg: "message eleven"},
+			{Time: tc.transformTime("2025-11-18T23:57:56.901234000Z"), Msg: "message twelve"},
+		},
+	}
+	if tc.want != nil {
+		want = *tc.want
+	}
+
+	assert.Equal(t, want, got)
 }
 
 func testMyTime(t time.Time) testutils.MyTime {
