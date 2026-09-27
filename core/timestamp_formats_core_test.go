@@ -23,6 +23,11 @@ type timestampFormatCoreTestCase struct {
 	want          *timestampFormatCoreResult
 }
 
+type timestampFormatCoreTimezone struct {
+	name     string
+	location *time.Location
+}
+
 type timestampFormatCoreResult struct {
 	NumMsgsTotal int
 	Errs         []string
@@ -191,13 +196,17 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	timezones := []timestampFormatCoreTimezone{
+		{name: "UTC", location: time.UTC},
+	}
+
+	{
+		runTimestampFormatTest := func(t *testing.T, timezone timestampFormatCoreTimezone, tc timestampFormatCoreTestCase) {
 			logFilename := filepath.Join(t.TempDir(), tc.filename)
 			data := ""
 			formatLayout := strings.ReplaceAll(tc.format.Layout, ".999999", ".000000")
 			for i, inputTime := range inputTimes {
-				line := inputTime.Format(formatLayout) + commonSuffixes[i]
+				line := inputTime.In(timezone.location).Format(formatLayout) + commonSuffixes[i]
 				data += line + "\n"
 			}
 			_ = os.WriteFile(logFilename, []byte(data), 0644)
@@ -366,7 +375,17 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			}
 
 			assert.Equal(t, want, got)
-		})
+		}
+
+		for _, timezone := range timezones {
+			t.Run(timezone.name, func(t *testing.T) {
+				for _, tc := range tests {
+					t.Run(tc.name, func(t *testing.T) {
+						runTimestampFormatTest(t, timezone, tc)
+					})
+				}
+			})
+		}
 	}
 }
 
