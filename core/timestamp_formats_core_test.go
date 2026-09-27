@@ -55,6 +55,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		" myhost app[123]: message five",
 		" myhost app[123]: message six",
 		" myhost app[123]: message seven",
+		" myhost app[123]: message eight",
+		" myhost app[123]: message nine",
+		" myhost app[123]: message ten",
+		" myhost app[123]: message eleven",
+		" myhost app[123]: message twelve",
 	}
 
 	inputTimes := []time.Time{
@@ -65,6 +70,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 		time.Date(2025, 10, 8, 10, 11, 22, 445678000, time.UTC),
 		time.Date(2025, 10, 18, 11, 12, 13, 456789000, time.UTC),
 		time.Date(2025, 11, 18, 12, 13, 14, 567890000, time.UTC),
+		time.Date(2025, 11, 18, 22, 45, 36, 678901000, time.UTC),
+		time.Date(2025, 11, 18, 22, 45, 46, 800123000, time.UTC),
+		time.Date(2025, 11, 18, 22, 45, 56, 789012000, time.UTC),
+		time.Date(2025, 11, 18, 23, 57, 36, 890123000, time.UTC),
+		time.Date(2025, 11, 18, 23, 57, 56, 901234000, time.UTC),
 	}
 
 	identityTime := func(s string) string { return s }
@@ -172,7 +182,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 				Errs:        []string{},
 				NumWarnings: 1,
 				Warnings: []string{
-					"timestamps: log index ignored 7 malformed timestamp candidates; first malformed line: syslog:1",
+					"timestamps: log index ignored 12 malformed timestamp candidates; first malformed line: syslog:1",
 				},
 				MinuteStats:  map[string]int{},
 				IndexEntries: []timestampFormatCoreIndexEntry{},
@@ -259,7 +269,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 				}
 			} else {
 				resp, err := th.QueryLogs(CoreTestStepQueryParams{
-					MaxNumLines:  10,
+					MaxNumLines:  20,
 					From:         testMyTime(time.Date(2025, 9, 1, 0, 0, 0, 0, time.UTC)),
 					To:           testMyTime(time.Date(2025, 12, 1, 0, 0, 0, 0, time.UTC)),
 					RefreshIndex: true,
@@ -315,7 +325,7 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			}
 
 			want := timestampFormatCoreResult{
-				NumMsgsTotal: 7,
+				NumMsgsTotal: 12,
 				Errs:         []string{},
 				Warnings:     []string{},
 				MinuteStats: map[string]int{
@@ -324,6 +334,8 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 					"2025-10-08T10:11Z": 2,
 					"2025-10-18T11:12Z": 1,
 					"2025-11-18T12:13Z": 1,
+					"2025-11-18T22:45Z": 3,
+					"2025-11-18T23:57Z": 2,
 				},
 				IndexEntries: []timestampFormatCoreIndexEntry{
 					{Time: "2025-09-08-08:09", Line: 1},
@@ -331,6 +343,8 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 					{Time: "2025-10-08-10:11", Line: 4},
 					{Time: "2025-10-18-11:12", Line: 6},
 					{Time: "2025-11-18-12:13", Line: 7},
+					{Time: "2025-11-18-22:45", Line: 8},
+					{Time: "2025-11-18-23:57", Line: 11},
 				},
 				Logs: []timestampFormatCoreLog{
 					{Time: tc.transformTime("2025-09-08T08:09:10.123456000Z"), Msg: "message one"},
@@ -340,6 +354,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 					{Time: tc.transformTime("2025-10-08T10:11:22.445678000Z"), Msg: "message five"},
 					{Time: tc.transformTime("2025-10-18T11:12:13.456789000Z"), Msg: "message six"},
 					{Time: tc.transformTime("2025-11-18T12:13:14.567890000Z"), Msg: "message seven"},
+					{Time: tc.transformTime("2025-11-18T22:45:36.678901000Z"), Msg: "message eight"},
+					{Time: tc.transformTime("2025-11-18T22:45:46.800123000Z"), Msg: "message nine"},
+					{Time: tc.transformTime("2025-11-18T22:45:56.789012000Z"), Msg: "message ten"},
+					{Time: tc.transformTime("2025-11-18T23:57:36.890123000Z"), Msg: "message eleven"},
+					{Time: tc.transformTime("2025-11-18T23:57:56.901234000Z"), Msg: "message twelve"},
 				},
 			}
 			if tc.want != nil {
