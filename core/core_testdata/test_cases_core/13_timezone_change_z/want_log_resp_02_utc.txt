@@ -1,0 +1,21 @@
+NumMsgsTotal: 0
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 0
+
+Num Logs: 0
+
+DebugInfo:
+{
+  "timezone-change-z": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:the from 2025-01-01-12:45 isn't found, gonna refresh the index",
+      "debug:the to 2025-01-01-13:45 isn't found, gonna refresh the index",
+      "debug:the from 2025-01-01-12:45 isn't found, will use the beginning",
+      "debug:the to 2025-01-01-13:45 is before the first log we have, will return nothing"
+    ]
+  }
+}

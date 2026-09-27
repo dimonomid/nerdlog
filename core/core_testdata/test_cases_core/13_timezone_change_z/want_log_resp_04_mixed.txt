@@ -1,0 +1,47 @@
+NumMsgsTotal: 7
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 2
+- 2025-01-01-10-00: 1
+- 2025-01-01-10-30: 6
+
+Num Logs: 7
+- 2025-01-01T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000001,000001,----,app: utc one
+  context: {"lstream":"timezone-change-z"}
+  orig: 2025-01-01T10:00:00Z host app: utc one
+- 2025-01-01T10:30:00.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000002,000002,----,app: utc two
+  context: {"lstream":"timezone-change-z"}
+  orig: 2025-01-01T10:30:00Z host app: utc two
+- 2025-01-01T10:30:30.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000003,000003,----,app: utc two-b
+  context: {"lstream":"timezone-change-z"}
+  orig: 2025-01-01T10:30:30Z host app: utc two-b
+- 2025-01-01T10:30:40.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000004,000004,----,utc+4 four
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
+  orig: 2025-01-01T14:30:40+04:00 host app: utc+4 four
+- 2025-01-01T10:30:45.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000005,000005,----,utc+4 four-b
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
+  orig: 2025-01-01T14:30:45+04:00 host app: utc+4 four-b
+- 2025-01-01T10:30:50.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000006,000006,----,utc+4 four-c
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
+  orig: 2025-01-01T14:30:50+04:00 host app: utc+4 four-c
+- 2025-01-01T10:30:55.000000000Z,F,/tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile,000007,000007,----,utc+4 four-d
+  context: {"hostname":"host","lstream":"timezone-change-z","pid":"","program":"app"}
+  orig: 2025-01-01T14:30:55+04:00 host app: utc+4 four-d
+
+DebugInfo:
+{
+  "timezone-change-z": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:the from 2025-01-01-13:15 isn't found, gonna refresh the index",
+      "debug:the from 2025-01-01-13:15 isn't found, will use the beginning",
+      "debug:the to 2025-01-01-15:15 is found: 8 (314)",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file to offset 313 in latest /tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 head -c 313 /tmp/nerdlog_core_test_output/13_timezone_change_z/lstreams/timezone-change-z/logfile'",
+      "debug:Filtered out 0 from 7 lines"
+    ]
+  }
+}

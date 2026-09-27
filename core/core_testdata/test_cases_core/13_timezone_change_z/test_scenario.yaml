@@ -1,0 +1,50 @@
+descr: "Timezone changes from UTC (Z) to UTC+4 in the middle of a log file"
+current_time: "2025-01-02T00:00:00Z"
+manager_params:
+  config_log_streams:
+    timezone-change-z:
+      log_files:
+        kind: all_from_dir
+        dir: ../../input_logfiles/timezone_change_z
+      options:
+        shell_init:
+          - 'export TZ=Etc/GMT-4'
+  initial_lstreams: "timezone-change-z"
+  client_id: "core-test-runner"
+test_steps:
+  - descr: "whole file"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-01-01T08:00:00Z"
+        to: "2025-01-01T13:00:00Z"
+        pattern: ""
+        refresh_index: true
+      want: want_log_resp_01_whole.txt
+  - descr: "UTC part"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-01-01T08:45:00Z"
+        to: "2025-01-01T09:45:00Z"
+        pattern: ""
+        refresh_index: false
+      want: want_log_resp_02_utc.txt
+  - descr: "UTC+4 part"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-01-01T10:15:00Z"
+        to: "2025-01-01T12:15:00Z"
+        pattern: ""
+        refresh_index: false
+      want: want_log_resp_03_utc_plus_4.txt
+  - descr: "mixed range"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-01-01T09:15:00Z"
+        to: "2025-01-01T11:15:00Z"
+        pattern: ""
+        refresh_index: false
+      want: want_log_resp_04_mixed.txt

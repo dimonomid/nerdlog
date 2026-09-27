@@ -242,13 +242,14 @@ func TestGenerateTimeDescr(t *testing.T) {
 			format: TimestampFormat{Layout: "2006-01-02T15:04:05.000000Z07:00"},
 			expected: &TimeFormatDescr{
 				TimestampFormat: TimestampFormat{Layout: "2006-01-02T15:04:05.000000Z07:00"},
-				MinuteKeyLayout: "01-02T15:04",
+				MinuteKeyLayout: "01-02T15:04Z07:00",
 				AWKExpr: TimeFormatAWKExpr{
 					Month:     "substr($0, 6, 2)",
 					Year:      "substr($0, 1, 4)",
 					Day:       "substr($0, 9, 2)",
 					HHMM:      "substr($0, 12, 5)",
 					MinuteKey: "substr($0, 6, 11)",
+					Timezone:  `((substr($0, 27, 1) == "Z") ? "Z" : substr($0, 27, 6))`,
 				},
 			},
 		},
@@ -297,13 +298,14 @@ func TestGenerateTimeDescr(t *testing.T) {
 			format: TimestampFormat{Layout: "2006-01-02T15:04:05.000000-0700"},
 			expected: &TimeFormatDescr{
 				TimestampFormat: TimestampFormat{Layout: "2006-01-02T15:04:05.000000-0700"},
-				MinuteKeyLayout: "01-02T15:04",
+				MinuteKeyLayout: "01-02T15:04-0700",
 				AWKExpr: TimeFormatAWKExpr{
 					Month:     "substr($0, 6, 2)",
 					Year:      "substr($0, 1, 4)",
 					Day:       "substr($0, 9, 2)",
 					HHMM:      "substr($0, 12, 5)",
 					MinuteKey: "substr($0, 6, 11)",
+					Timezone:  "substr($0, 27, 5)",
 				},
 			},
 		},
@@ -312,13 +314,14 @@ func TestGenerateTimeDescr(t *testing.T) {
 			format: TimestampFormat{Layout: "2006-01-02T15:04:05.000Z07:00"},
 			expected: &TimeFormatDescr{
 				TimestampFormat: TimestampFormat{Layout: "2006-01-02T15:04:05.000Z07:00"},
-				MinuteKeyLayout: "01-02T15:04",
+				MinuteKeyLayout: "01-02T15:04Z07:00",
 				AWKExpr: TimeFormatAWKExpr{
 					Month:     "substr($0, 6, 2)",
 					Year:      "substr($0, 1, 4)",
 					Day:       "substr($0, 9, 2)",
 					HHMM:      "substr($0, 12, 5)",
 					MinuteKey: "substr($0, 6, 11)",
+					Timezone:  `((substr($0, 24, 1) == "Z") ? "Z" : substr($0, 24, 6))`,
 				},
 			},
 		},
@@ -327,13 +330,14 @@ func TestGenerateTimeDescr(t *testing.T) {
 			format: TimestampFormat{Layout: "02/Jan/2006:15:04:05 -0700"},
 			expected: &TimeFormatDescr{
 				TimestampFormat: TimestampFormat{Layout: "02/Jan/2006:15:04:05 -0700"},
-				MinuteKeyLayout: "02/Jan/2006:15:04",
+				MinuteKeyLayout: "02/Jan/2006:15:04 -0700",
 				AWKExpr: TimeFormatAWKExpr{
 					Month:     "monthByName[substr($0, 4, 3)]",
 					Year:      "substr($0, 8, 4)",
 					Day:       "substr($0, 1, 2)",
 					HHMM:      "substr($0, 13, 5)",
 					MinuteKey: "substr($0, 1, 17)",
+					Timezone:  `" " substr($0, 22, 5)`,
 				},
 			},
 		},

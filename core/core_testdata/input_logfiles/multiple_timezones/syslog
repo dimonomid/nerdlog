@@ -1,0 +1,13 @@
+2025-02-01T01:00:00-07:00 host app: offset minus seven
+2025-02-01T06:00:00-03:00 host app: offset minus three
+2025-02-01T06:00:30-03:00 host app: offset minus three-b
+2025-02-01T11:00:00+01:00 host app: offset plus one
+2025-02-01T11:00:10+01:00 host app: offset plus one-b
+2025-02-01T11:00:20+01:00 host app: offset plus one-c
+2025-02-01T11:00:30+01:00 host app: offset plus one-d
+2025-02-01T16:00:00+05:30 host app: offset plus five thirty
+2025-02-01T16:00:10+05:30 host app: offset plus five thirty-b
+2025-02-01T16:00:20+05:30 host app: offset plus five thirty-c
+2025-02-01T16:00:30+05:30 host app: offset plus five thirty-d
+2025-02-01T16:00:40+05:30 host app: offset plus five thirty-e
+2025-02-01T22:00:00+09:00 host app: offset plus nine

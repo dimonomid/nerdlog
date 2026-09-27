@@ -1,0 +1,15 @@
+debug:prev logfile /tmp/nerdlog_agent_test_output/timezone_change/01_basic/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file
+debug:index file doesn't exist or is empty, gonna refresh it
+p:stage:1:indexing from scratch
+p:p:5
+p:p:15
+p:p:25
+p:p:50
+p:p:70
+debug:the from 2025-01-01-12:00 isn't found, will use the beginning
+p:stage:3:querying logs
+debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_agent_test_output/timezone_change/01_basic/logfile
+debug:Command to filter logs by time range:
+debug: bash -c 'cat /tmp/nerdlog-empty-file && cat /tmp/nerdlog_agent_test_output/timezone_change/01_basic/logfile'
+debug:Filtered out 0 from 18 lines
+p:stage:4:done

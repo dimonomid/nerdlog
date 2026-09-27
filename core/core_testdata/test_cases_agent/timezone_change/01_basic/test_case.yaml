@@ -1,0 +1,26 @@
+descr: "Explicit timezone changes from UTC+1 to UTC+4"
+logfiles:
+  kind: all_from_dir
+  dir: ../../../input_logfiles/timezone_change
+env:
+  - TZ=Etc/GMT-4
+cur_year: 2025
+cur_month: 1
+# Timestamp format: 2006-01-02T15:04:05Z07:00
+args:
+  - "--max-num-lines"
+  - "20"
+  - "--from"
+  - "2025-01-01-12:00"
+  - "--awktime-month"
+  - "substr($0, 6, 2)"
+  - "--awktime-year"
+  - "substr($0, 1, 4)"
+  - "--awktime-day"
+  - "substr($0, 9, 2)"
+  - "--awktime-hhmm"
+  - "substr($0, 12, 5)"
+  - "--awktime-minute-key"
+  - "substr($0, 6, 11)"
+  - "--awktime-timezone"
+  - "substr($0, 20, 6)"

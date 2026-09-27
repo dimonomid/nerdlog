@@ -619,7 +619,7 @@ func (lsc *LStreamClient) run() {
 						t = t.UTC()
 
 						resp.MinuteStats[t.Unix()] = MinuteStatsItem{
-							NumMsgs: n,
+							NumMsgs: resp.MinuteStats[t.Unix()].NumMsgs + n,
 						}
 
 					case strings.HasPrefix(line, "logfile:"):
@@ -1774,6 +1774,13 @@ func shellQuote(s string) string {
 }
 
 func agentQueryTimeFormatArgs(awkExpr *TimeFormatAWKExpr) []string {
+	timezoneExpr := awkExpr.Timezone
+	if timezoneExpr == "" {
+		// The agent embeds this value into an AWK assignment, so an absent
+		// timezone must be passed as a valid empty AWK string expression.
+		timezoneExpr = `""`
+	}
+
 	return []string{
 		"--awktime-prep-month-year-day-hhmm", shellQuote(awkExpr.PrepStatementsMonthYearDayHHMM),
 		"--awktime-prep-hhmm", shellQuote(awkExpr.PrepStatementsHHMM),
@@ -1783,5 +1790,6 @@ func agentQueryTimeFormatArgs(awkExpr *TimeFormatAWKExpr) []string {
 		"--awktime-day", shellQuote(awkExpr.Day),
 		"--awktime-hhmm", shellQuote(awkExpr.HHMM),
 		"--awktime-minute-key", shellQuote(awkExpr.MinuteKey),
+		"--awktime-timezone", shellQuote(timezoneExpr),
 	}
 }
