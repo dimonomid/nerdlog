@@ -67,17 +67,13 @@ type TimeFormatAWKExpr struct {
 	// multiple component expressions.
 
 	// PrepStatementsMonthYearDayHHMM is executed right before evaluating the
-	// following four expressions below: Month, Year, Day, HHMM.
-	//
-	// Note that if the HHMM part needs something from it, it also needs to be
-	// duplicated in the PrepStatementsHHMM below.
+	// following four expressions below: Month, Year, Day, HHMM, and Timezone.
 	PrepStatementsMonthYearDayHHMM string
-	// PrepStatementsMinuteKey is executed right before evaluating MinuteKey.
+	// PrepStatementsMinuteKey is executed right before evaluating MinuteKey and
+	// Timezone.
 	PrepStatementsMinuteKey string
-	// PrepStatementsHHMM is executed right before evaluating just the HHMM.
-	//
-	// If not empty, it should likely be also duplicated in
-	// PrepStatementsMonthYearDayHHMM above.
+	// PrepStatementsHHMM is executed right before evaluating just the HHMM and
+	// Timezone.
 	PrepStatementsHHMM string
 
 	// Month is an AWK expression to get month number as a string, from "01" to
@@ -137,6 +133,11 @@ type TimeFormatAWKExpr struct {
 	// "substr($0, 1, 16)" (to include the year) or "substr($0, 6, 11)" (to not
 	// include the year).
 	MinuteKey string
+
+	// Timezone is an AWK expression returning the timezone suffix from the
+	// timestamp, including any literal separator needed by MinuteKeyLayout.
+	// It is empty for timestamp formats without an explicit timezone.
+	Timezone string
 }
 
 func InferTimeFormatDescr(logFilename string, logLines []string) (*TimeFormatDescr, error) {
@@ -222,6 +223,7 @@ func GenerateTimeDescr(timestampFormat TimestampFormat) (*TimeFormatDescr, error
 		"hhmm":   indexAndLengthOfTimeComponent(layout, "15:04"),
 		"second": indexAndLengthOfTimeComponent(layout, "05"),
 	}
+	timezoneInfo := indexAndLengthOfTimeComponent(layout, "Z07:00", "-0700")
 
 	// Validate that required fields exist
 	if partInfo["hhmm"] == nil || partInfo["day"] == nil || partInfo["month"] == nil {
@@ -281,8 +283,39 @@ func GenerateTimeDescr(timestampFormat TimestampFormat) (*TimeFormatDescr, error
 		awk.Month = fmt.Sprintf("monthByName[%s]", awk.Month)
 	}
 
-	// Build minute layout (truncated to minute precision)
+	// Build minute layout (truncated to minute precision). For timezone-aware
+	// formats, the agent appends the extracted timezone suffix to MinuteKey.
 	minuteLayout := layout[minuteKeyStart:minuteKeyEnd]
+	if timezoneInfo != nil {
+		// Keep the timezone attached to the minute key. Two wall-clock minutes
+		// with different offsets can represent the same UTC minute, so the
+		// client must parse the offset before converting the key to Unix time.
+		prefixStart := minuteKeyEnd
+		if partInfo["second"] != nil {
+			prefixStart = partInfo["second"].index + partInfo["second"].length
+		}
+		timezonePrefix := layout[prefixStart:timezoneInfo.index]
+		timezonePrefix = strings.Map(func(r rune) rune {
+			if r == '.' || r == '0' || r == '9' {
+				return -1
+			}
+			return r
+		}, timezonePrefix)
+		// For a Go layout such as "Z07:00", the input can contain either a
+		// literal "Z" or a six-character numeric offset. A fixed six-character
+		// substring would consume characters after "Z", so generate a
+		// conditional AWK expression for that case.
+		timezoneExpr := substr(timezoneInfo.index, timezoneInfo.length)
+		if strings.HasPrefix(layout[timezoneInfo.index:], "Z07:00") {
+			timezoneExpr = "((substr($0, " + itoa(timezoneInfo.index+1) + ", 1) == \"Z\") ? \"Z\" : " + timezoneExpr + ")"
+		}
+		if timezonePrefix == "" {
+			awk.Timezone = timezoneExpr
+		} else {
+			awk.Timezone = strconv.Quote(timezonePrefix) + " " + timezoneExpr
+		}
+		minuteLayout += timezonePrefix + layout[timezoneInfo.index:timezoneInfo.index+timezoneInfo.length]
+	}
 
 	return &TimeFormatDescr{
 		TimestampFormat: timestampFormat,

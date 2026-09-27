@@ -130,6 +130,7 @@ func runAgentTestCase(t *testing.T, nerdlogAgentShFname, testCasesDir, repoRoot,
 			"--awktime-day", "substr($0, 9, 2)",
 			"--awktime-hhmm", "substr($0, 12, 5)",
 			"--awktime-minute-key", "substr($0, 6, 11)",
+			"--awktime-timezone", "substr($0, 27, 6)",
 		)
 	}
 

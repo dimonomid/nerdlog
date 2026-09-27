@@ -415,34 +415,6 @@ waitForConnection:
 	if tc.want != nil {
 		want = *tc.want
 	}
-	if timezone.location != time.UTC {
-		// TODO: Once index and minute stats honor explicit log-line timezones,
-		// remove this adjustment and use the UTC values above.
-		_, offset := time.Now().In(timezone.location).Zone()
-		shift := time.Duration(offset) * time.Second
-
-		minuteStats := map[string]int{}
-		for minute, count := range want.MinuteStats {
-			parsedTime, err := time.Parse(timestampFormatTestMinuteLayout, minute)
-			if err != nil {
-				t.Fatalf("parse expected minute stat time %q: %v", minute, err)
-			}
-			minuteStats[parsedTime.Add(shift).Format(timestampFormatTestMinuteLayout)] = count
-		}
-		want.MinuteStats = minuteStats
-
-		indexEntries := make([]timestampFormatCoreIndexEntry, len(want.IndexEntries))
-		for i, entry := range want.IndexEntries {
-			parsedTime, err := time.Parse("2006-01-02-15:04", entry.Time)
-			if err != nil {
-				t.Fatalf("parse expected index time %q: %v", entry.Time, err)
-			}
-			indexEntries[i] = entry
-			indexEntries[i].Time = parsedTime.Add(shift).Format("2006-01-02-15:04")
-		}
-		want.IndexEntries = indexEntries
-	}
-
 	assert.Equal(t, want, got)
 }
 

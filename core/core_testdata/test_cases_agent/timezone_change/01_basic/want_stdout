@@ -1,0 +1,27 @@
+logfile:/tmp/nerdlog-empty-file:0
+logfile:/tmp/nerdlog_agent_test_output/timezone_change/01_basic/logfile:0
+s:01-01T10:00+01:00,1
+s:01-01T10:30+01:00,2
+s:01-01T11:00+01:00,2
+s:01-01T14:00+04:00,4
+s:01-01T14:30+04:00,4
+s:01-01T15:00+04:00,5
+m:1:2025-01-01T10:00:00+01:00 host app: utc+1 one
+m:2:2025-01-01T10:30:00+01:00 host app: utc+1 two
+m:3:2025-01-01T10:30:30+01:00 host app: utc+1 two-b
+m:4:2025-01-01T11:00:00+01:00 host app: utc+1 three
+m:5:2025-01-01T11:00:30+01:00 host app: utc+1 three-b
+m:6:2025-01-01T14:00:40+04:00 host app: utc+4 four
+m:7:2025-01-01T14:00:45+04:00 host app: utc+4 four-b
+m:8:2025-01-01T14:00:50+04:00 host app: utc+4 four-c
+m:9:2025-01-01T14:00:55+04:00 host app: utc+4 four-d
+m:10:2025-01-01T14:30:00+04:00 host app: utc+4 five
+m:11:2025-01-01T14:30:10+04:00 host app: utc+4 five-b
+m:12:2025-01-01T14:30:20+04:00 host app: utc+4 five-c
+m:13:2025-01-01T14:30:30+04:00 host app: utc+4 five-d
+m:14:2025-01-01T15:00:00+04:00 host app: utc+4 six
+m:15:2025-01-01T15:00:10+04:00 host app: utc+4 six-b
+m:16:2025-01-01T15:00:20+04:00 host app: utc+4 six-c
+m:17:2025-01-01T15:00:30+04:00 host app: utc+4 six-d
+m:18:2025-01-01T15:00:40+04:00 host app: utc+4 six-e
+exit_code:0

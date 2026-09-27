@@ -1,0 +1,35 @@
+NumMsgsTotal: 3
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 2
+- 2025-01-01-09-00: 1
+- 2025-01-01-09-30: 2
+
+Num Logs: 3
+- 2025-01-01T09:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/11_timezone_change/lstreams/timezone-change/logfile,000001,000001,----,utc+1 one
+  context: {"hostname":"host","lstream":"timezone-change","pid":"","program":"app"}
+  orig: 2025-01-01T10:00:00+01:00 host app: utc+1 one
+- 2025-01-01T09:30:00.000000000Z,F,/tmp/nerdlog_core_test_output/11_timezone_change/lstreams/timezone-change/logfile,000002,000002,----,utc+1 two
+  context: {"hostname":"host","lstream":"timezone-change","pid":"","program":"app"}
+  orig: 2025-01-01T10:30:00+01:00 host app: utc+1 two
+- 2025-01-01T09:30:30.000000000Z,F,/tmp/nerdlog_core_test_output/11_timezone_change/lstreams/timezone-change/logfile,000003,000003,----,utc+1 two-b
+  context: {"hostname":"host","lstream":"timezone-change","pid":"","program":"app"}
+  orig: 2025-01-01T10:30:30+01:00 host app: utc+1 two-b
+
+DebugInfo:
+{
+  "timezone-change": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/11_timezone_change/lstreams/timezone-change/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:the from 2025-01-01-12:45 isn't found, gonna refresh the index",
+      "debug:the from 2025-01-01-12:45 isn't found, will use the beginning",
+      "debug:the to 2025-01-01-13:45 is found: 4 (141)",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file to offset 140 in latest /tmp/nerdlog_core_test_output/11_timezone_change/lstreams/timezone-change/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 head -c 140 /tmp/nerdlog_core_test_output/11_timezone_change/lstreams/timezone-change/logfile'",
+      "debug:Filtered out 0 from 3 lines"
+    ]
+  }
+}

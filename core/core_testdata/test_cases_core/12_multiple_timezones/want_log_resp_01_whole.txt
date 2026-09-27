@@ -1,0 +1,68 @@
+NumMsgsTotal: 13
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 5
+- 2025-02-01-08-00: 1
+- 2025-02-01-09-00: 2
+- 2025-02-01-10-00: 4
+- 2025-02-01-10-30: 5
+- 2025-02-01-13-00: 1
+
+Num Logs: 13
+- 2025-02-01T08:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000001,000001,----,offset minus seven
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T01:00:00-07:00 host app: offset minus seven
+- 2025-02-01T09:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000002,000002,----,offset minus three
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T06:00:00-03:00 host app: offset minus three
+- 2025-02-01T09:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000003,000003,----,offset minus three-b
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T06:00:30-03:00 host app: offset minus three-b
+- 2025-02-01T10:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000004,000004,----,offset plus one
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T11:00:00+01:00 host app: offset plus one
+- 2025-02-01T10:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000005,000005,----,offset plus one-b
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T11:00:10+01:00 host app: offset plus one-b
+- 2025-02-01T10:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000006,000006,----,offset plus one-c
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T11:00:20+01:00 host app: offset plus one-c
+- 2025-02-01T10:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000007,000007,----,offset plus one-d
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T11:00:30+01:00 host app: offset plus one-d
+- 2025-02-01T10:30:00.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000008,000008,----,offset plus five thirty
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T16:00:00+05:30 host app: offset plus five thirty
+- 2025-02-01T10:30:10.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000009,000009,----,offset plus five thirty-b
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T16:00:10+05:30 host app: offset plus five thirty-b
+- 2025-02-01T10:30:20.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000010,000010,----,offset plus five thirty-c
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T16:00:20+05:30 host app: offset plus five thirty-c
+- 2025-02-01T10:30:30.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000011,000011,----,offset plus five thirty-d
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T16:00:30+05:30 host app: offset plus five thirty-d
+- 2025-02-01T10:30:40.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000012,000012,----,offset plus five thirty-e
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T16:00:40+05:30 host app: offset plus five thirty-e
+- 2025-02-01T13:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile,000013,000013,----,offset plus nine
+  context: {"hostname":"host","lstream":"multiple-timezones","pid":"","program":"app"}
+  orig: 2025-02-01T22:00:00+09:00 host app: offset plus nine
+
+DebugInfo:
+{
+  "multiple-timezones": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2025-01-31-04:00 isn't found, will use the beginning",
+      "debug:the to 2025-02-02-04:00 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile'",
+      "debug:Filtered out 0 from 13 lines"
+    ]
+  }
+}

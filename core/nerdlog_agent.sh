@@ -45,6 +45,7 @@ awktime_year='yearByMonth[month]'
 awktime_day='(substr($0, 5, 1) == " ") ? "0" substr($0, 6, 1) : substr($0, 5, 2)'
 awktime_hhmm='substr($0, 8, 5)'
 awktime_minute_key='substr($0, 1, 12)'
+awktime_timezone='""'
 # TODO: double check that if any of these is provided manually in a flag,
 # then all of them are provided manually.
 
@@ -312,6 +313,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --awktime-timezone)
+      awktime_timezone="$2"
+      shift # past argument
+      shift # past value
+      ;;
 
     -*|--*)
       echo "Unknown option $1" 1>&2
@@ -386,6 +392,8 @@ esac
 # TODO: also check that gawk is recent enough; the -b option that we need
 # was introduced in 4.0.0, released in 2011:
 # https://lists.gnu.org/archive/html/info-gnu/2011-06/msg00013.html
+# And the mktime(..., 1) argument was introduced in 4.2.0, released in 2017:
+# https://lists.gnu.org/archive/html/info-gnu/2017-10/msg00004.html
 # Since it's so old, not bothering to check the version for now.
 
 if [[ "$logfile_last" == "${SPECIAL_FILENAME_AUTO}" ]]; then
@@ -566,7 +574,7 @@ function run_awk_script_logfiles {
   '$awk_pattern'
   {
     '"$awktime_prep_minute_key"'
-    curMinKey = '"$awktime_minute_key"';
+    curMinKey = '"$awktime_minute_key"' '"$awktime_timezone"';
 
     # NOTE: this was a naive attempt to better handle the case when timestamps
     # have decreased: instead of incrementing the bucket of the decreased
@@ -706,6 +714,19 @@ function run_awk_script_journalctl {
     return mktime(year " " month " " day " " hh " " mm " 00");
   }
 
+  # Returns the numeric UTC offset represented by a timezone suffix, e.g.
+  # "Z" -> 0, "+03:00" -> 10800, "-05:30" -> -19800, and "-0700" ->
+  # -25200. The result is subtracted from a wall-clock timestamp to get UTC.
+  function timezoneOffsetSeconds(timezone) {
+    if (timezone == "" || timezone == "Z")
+      return 0
+
+    sign = substr(timezone, 1, 1) == "-" ? -1 : 1;
+    hours = substr(timezone, 2, 2) + 0;
+    minutes = (substr(timezone, 4, 1) == ":") ? substr(timezone, 5, 2) + 0 : substr(timezone, 4, 2) + 0;
+    return sign * (hours * 60 * 60 + minutes * 60);
+  }
+
   BEGIN {
     curline=0;
     lastline="";
@@ -779,9 +800,14 @@ function run_awk_script_journalctl {
     year = '"$awktime_year"';
     day = '"$awktime_day"';
     hhmm = '"$awktime_hhmm"';
+    timezone = '"$awktime_timezone"';
     hh = substr(hhmm, 1, 2);
     mm = substr(hhmm, 4, 2);
-    curUnixTS = mktime(year " " month " " day " " hh " " mm " 00");
+    if (timezone == "") {
+      curUnixTS = mktime(year " " month " " day " " hh " " mm " 00");
+    } else {
+      curUnixTS = mktime(year " " month " " day " " hh " " mm " 00", 1) - timezoneOffsetSeconds(timezone);
+    }
 
     if (timespanSeconds > 0) {
       printPercentage(latestUnixTS-curUnixTS, timespanSeconds)
@@ -794,7 +820,7 @@ function run_awk_script_journalctl {
   '$awk_skip_n_latest_check'
   {
     '"$awktime_prep_minute_key"'
-    stats['"$awktime_minute_key"']++;
+    stats['"$awktime_minute_key"' '"$awktime_timezone"']++;
 
     if (curline < maxlines) {
       lines[curline] = $0;
@@ -991,6 +1017,9 @@ function refresh_index { # {{{
   # But this function (and its usages) need to be updated to support it, and a
   # bunch of other time-filtering logic here. Although it's cool since it
   # includes the year, microseconds, and timezone.
+  # Index rows also retain the raw wall-clock minute and timezone so append
+  # indexing can detect a timezone transition without converting every line
+  # to epoch seconds.
   awk_functions='
 function inferYear(logMonth, curYear, curMonth) {
   delta = logMonth - curMonth
@@ -1003,14 +1032,28 @@ function inferYear(logMonth, curYear, curMonth) {
     return curYear
 }
 
+# Returns the numeric UTC offset represented by a timezone suffix, e.g.
+# "Z" -> 0, "+03:00" -> 10800, "-05:30" -> -19800, and "-0700" ->
+# -25200. The result is subtracted from a wall-clock timestamp to get UTC.
+function timezoneOffsetSeconds(timezone) {
+  sub(/^[[:space:]]+/, "", timezone)
+  if (timezone == "" || timezone == "Z")
+    return 0
+
+  sign = substr(timezone, 1, 1) == "-" ? -1 : 1
+  hours = substr(timezone, 2, 2) + 0
+  minutes = (substr(timezone, 4, 1) == ":") ? substr(timezone, 5, 2) + 0 : substr(timezone, 4, 2) + 0
+  return sign * (hours * 60 * 60 + minutes * 60)
+}
+
 function printIndexLine(outfile, timestr, linenr, bytenr) {
-  print "idx\t" timestr "\t" linenr "\t" bytenr >> outfile;
+  print "idx\t" timestr "\t" linenr "\t" bytenr "\t" curMinuteIdentity >> outfile;
 }
 
 # This is only called while building or updating the sparse index. For valid
-# logs it runs only when the extracted HH:MM changes (normally once per new
-# minute). After an invalid candidate, the last valid HH:MM is retained, so
-# consecutive malformed lines are each validated and counted.
+# logs it runs only when the extracted minute identity (HH:MM plus timezone,
+# when present) changes. After an invalid candidate, the last valid identity
+# is retained, so consecutive malformed lines are each validated and counted.
 function isValidIndexTimestr(timestr) {
   return timestr ~ /^[0-9][0-9][0-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-([01][0-9]|2[0-3]):[0-5][0-9]$/;
 }
@@ -1021,17 +1064,6 @@ function isValidIndexTimestr(timestr) {
 # awk will work in terms of bytes, not characters. We use length($0) there and
 # we rely on it being number of bytes.
 
-  # The index stores the previous timestamp as epoch seconds, while the
-  # per-line fast path only tracks the wall-clock HH:MM to decide when a
-  # new sparse-index entry is needed. Keep lastHHMM empty for a new index;
-  # strftime("%H:%M", "") would otherwise coerce the empty value to zero
-  # and could incorrectly suppress the first entry.
-  scriptInitFromLastUnixTS='
-    if (lastUnixTS != "") {
-      lastHHMM = strftime("%H:%M", lastUnixTS);
-    }
-    '
-
   scriptSetCurTimestr='
     bytenr_cur = bytenr_next - length($0) - 1;
 
@@ -1040,6 +1072,8 @@ function isValidIndexTimestr(timestr) {
     year = '"$awktime_year"';
     day = '"$awktime_day"';
     hhmm = '"$awktime_hhmm"';
+    curTimezone = '"$awktime_timezone"';
+    curMinuteIdentity = hhmm curTimezone;
     # Keep HH:MM as one extraction in the per-line fast path. Splitting it
     # into HH and MM is only needed here, when a new sparse-index entry is
     # being considered; separate HH/MM expressions would do two extractions
@@ -1057,7 +1091,11 @@ function isValidIndexTimestr(timestr) {
       next;
     }
 
-    curUnixTS = mktime(year " " month " " day " " hh " " mm " 00");
+    if (curTimezone == "") {
+      curUnixTS = mktime(year " " month " " day " " hh " " mm " 00");
+    } else {
+      curUnixTS = mktime(year " " month " " day " " hh " " mm " 00", 1) - timezoneOffsetSeconds(curTimezone);
+    }
 
     # Ignore decreased timestamps: treat them as if the timestamp did not change.
     if (curUnixTS < lastUnixTS) {
@@ -1068,7 +1106,7 @@ function isValidIndexTimestr(timestr) {
   '
   scriptSetLastTimestrEtc='
     lastUnixTS = curUnixTS;
-    lastHHMM = curHHMM;
+    lastMinuteIdentity = curMinuteIdentity;
   '
 
   scriptWarnMalformedIndexTimestrs='
@@ -1086,15 +1124,19 @@ function isValidIndexTimestr(timestr) {
   bytenr_next += length($0)+1
   '"$awktime_prep_hhmm"'
   curHHMM = '"$awktime_hhmm"';
+  curTimezone = '"$awktime_timezone"';
+  curMinuteIdentity = curHHMM curTimezone;
 }'
 
   if [ -s $indexfile ]
   then
     echo "p:stage:$STAGE_INDEX_APPEND:indexing up" 1>&2
 
-    local lastUnixTS="$(tail -n 1 $indexfile | cut -f2)"
-    local last_linenr="$(tail -n 1 $indexfile | cut -f3)"
-    local last_bytenr="$(tail -n 1 $indexfile | cut -f4)"
+    local lastIndexLine="$("$awk_binary" -F '\t' '$1 == "idx" { line = $0 } END { if (line != "") print line }' "$indexfile")"
+    local lastUnixTS="$(echo "$lastIndexLine" | cut -f2)"
+    local lastMinuteIdentity="$(echo "$lastIndexLine" | cut -f5)"
+    local last_linenr="$(echo "$lastIndexLine" | cut -f3)"
+    local last_bytenr="$(echo "$lastIndexLine" | cut -f4)"
     local size_to_index=$((total_size-last_bytenr))
     local prevlog_lines="$(get_prevlog_lines_from_index)"
     local warning_line_offset=$((last_linenr-prevlog_lines-1))
@@ -1103,12 +1145,14 @@ function isValidIndexTimestr(timestr) {
       -v warningFilename="$logfile_last" -v warningLineOffset="$warning_line_offset" "$awk_functions
   BEGIN {
     $awk_vars
-    lastUnixTS = \"$lastUnixTS\"; $scriptInitFromLastUnixTS
+    lastUnixTS = \"$lastUnixTS\"; lastMinuteIdentity = \"$lastMinuteIdentity\"
   }"'
   '"$script1"'
-  ( lastHHMM != curHHMM ) {
+  ( lastMinuteIdentity != curMinuteIdentity ) {
     '"$scriptSetCurTimestr"';
-    printIndexLine("'$indexfile'", curUnixTS, NR+'$(( last_linenr-1 ))', bytenr_cur+'$(( last_bytenr-1 ))');
+    if (curUnixTS != lastUnixTS) {
+      printIndexLine("'$indexfile'", curUnixTS, NR+'$(( last_linenr-1 ))', bytenr_cur+'$(( last_bytenr-1 ))');
+    }
     printPercentage(bytenr_cur, '$size_to_index');
     '"$scriptSetLastTimestrEtc"'
   }
@@ -1122,14 +1166,16 @@ function isValidIndexTimestr(timestr) {
   else
     echo "p:stage:$STAGE_INDEX_FULL:indexing from scratch" 1>&2
 
-	echo "index_format_version	2" > $indexfile
+	echo "index_format_version	3" > $indexfile
 	echo "prevlog_modtime	$(get_file_modtime $logfile_prev)" >> $indexfile
 
-    "$awk_binary" -b -v warningFilename="$logfile_prev" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastHHMM=\"\"; }"'
+    "$awk_binary" -b -v warningFilename="$logfile_prev" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastMinuteIdentity=\"\"; }"'
   '"$script1"'
-  ( lastHHMM != curHHMM ) {
+  ( lastMinuteIdentity != curMinuteIdentity ) {
     '"$scriptSetCurTimestr"';
-    printIndexLine("'$indexfile'", curUnixTS, NR, bytenr_cur);
+    if (curUnixTS != lastUnixTS) {
+      printIndexLine("'$indexfile'", curUnixTS, NR, bytenr_cur);
+    }
     printPercentage(bytenr_cur, '$total_size');
     '"$scriptSetLastTimestrEtc"'
   }
@@ -1147,16 +1193,20 @@ function isValidIndexTimestr(timestr) {
   # in index before the first line in the $logfile_last.
   # TODO: make sure that if there are no logs in the $lotfile1, we don't screw up.
     local lastUnixTS=""
-    local lastUnixTSLine="$(tail -n 2 $indexfile | head -n 1)"
+    local lastMinuteIdentity=""
+    local lastUnixTSLine="$("$awk_binary" -F '\t' '$1 == "idx" { line = $0 } END { if (line != "") print line }' "$indexfile")"
     if [[ "$lastUnixTSLine" =~ ^idx$'\t' ]]; then
       lastUnixTS="$(echo "$lastUnixTSLine" | cut -f2)"
+      lastMinuteIdentity="$(echo "$lastUnixTSLine" | cut -f5)"
     fi
-    "$awk_binary" -b -v warningFilename="$logfile_last" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastUnixTS = \"$lastUnixTS\"; $scriptInitFromLastUnixTS }"'
+    "$awk_binary" -b -v warningFilename="$logfile_last" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastUnixTS = \"$lastUnixTS\"; lastMinuteIdentity = \"$lastMinuteIdentity\" }"'
   '"$script1"'
-  ( lastHHMM != curHHMM ) {
+  ( lastMinuteIdentity != curMinuteIdentity ) {
     '"$scriptSetCurTimestr"';
     bytenr = bytenr_cur+'$prevlog_bytes';
-    printIndexLine("'$indexfile'", curUnixTS, NR+'$(get_prevlog_lines_from_index)', bytenr);
+    if (curUnixTS != lastUnixTS) {
+      printIndexLine("'$indexfile'", curUnixTS, NR+'$(get_prevlog_lines_from_index)', bytenr);
+    }
     printPercentage(bytenr, '$total_size');
     '"$scriptSetLastTimestrEtc"'
   }
@@ -1251,7 +1301,7 @@ if [[ "$from" != "" || "$to" != "" ]]; then
   # If indexfile exists, check if it's valid and relevant; if not, delete it.
   if [ -e "$indexfile" ]; then
     index_format_version="$(get_index_format_version || true)"
-    if [[ "$index_format_version" != "2" ]]; then
+    if [[ "$index_format_version" != "3" ]]; then
       echo "debug:index format is old or invalid, deleting it" 1>&2
       rm -f $indexfile || exit 1
     fi

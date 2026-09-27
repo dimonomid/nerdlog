@@ -1,0 +1,32 @@
+descr: "Five explicit timezones, none matching the server timezone"
+current_time: "2025-02-02T00:00:00Z"
+manager_params:
+  config_log_streams:
+    multiple-timezones:
+      log_files:
+        kind: all_from_dir
+        dir: ../../input_logfiles/multiple_timezones
+      options:
+        shell_init:
+          - 'export TZ=Etc/GMT-4'
+  initial_lstreams: "multiple-timezones"
+  client_id: "core-test-runner"
+test_steps:
+  - descr: "whole file"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-01-31T00:00:00Z"
+        to: "2025-02-02T00:00:00Z"
+        pattern: ""
+        refresh_index: true
+      want: want_log_resp_01_whole.txt
+  - descr: "middle offsets"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-02-01T04:00:00Z"
+        to: "2025-02-01T08:00:00Z"
+        pattern: ""
+        refresh_index: false
+      want: want_log_resp_02_middle.txt
