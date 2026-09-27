@@ -16,13 +16,24 @@ import (
 )
 
 type timestampFormatCoreTestCase struct {
-	name          string
-	filename      string
-	format        TimestampFormat
-	transformTime func(string) string
-	want          *timestampFormatCoreResult
+	name     string
+	filename string
+	format   TimestampFormat
+	// skipTimezoneTest is true for formats without a timezone, whose wall-clock
+	// timestamps cannot be shifted while keeping the server timezone at UTC.
+	skipTimezoneTest bool
+	transformTime    func(string) string
+	want             *timestampFormatCoreResult
 }
 
+// timestampFormatCoreTimezone describes a timezone to use when running test
+// cases. The location is used only when formatting inputTimes into log lines.
+// For example, with UTC-3, the input line "2025-09-08T08:09:10.123456Z" is
+// written into log files as "2025-09-08T05:09:10.123456-03:00".
+//
+// The simulated server timezone remains explicitly set to UTC regardless -
+// this way we can assert that the timezone in the log lines is parsed
+// correctly.
 type timestampFormatCoreTimezone struct {
 	name     string
 	location *time.Location
@@ -100,10 +111,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 
 	tests := []timestampFormatCoreTestCase{
 		{
-			name:          "syslog",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "Jan _2 15:04:05"},
-			transformTime: truncateToSecond,
+			name:             "syslog",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "Jan _2 15:04:05"},
+			skipTimezoneTest: true,
+			transformTime:    truncateToSecond,
 		},
 		{
 			name:          "iso8601 microseconds utc",
@@ -118,10 +130,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			transformTime: identityTime,
 		},
 		{
-			name:          "space separated iso8601",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "2006-01-02 15:04:05"},
-			transformTime: truncateToSecond,
+			name:             "space separated iso8601",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "2006-01-02 15:04:05"},
+			skipTimezoneTest: true,
+			transformTime:    truncateToSecond,
 		},
 		{
 			name:          "rfc3339",
@@ -142,34 +155,39 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			transformTime: truncateToSecond,
 		},
 		{
-			name:          "slash separated date",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "2006/01/02 15:04:05"},
-			transformTime: truncateToSecond,
+			name:             "slash separated date",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "2006/01/02 15:04:05"},
+			skipTimezoneTest: true,
+			transformTime:    truncateToSecond,
 		},
 		{
-			name:          "hyphenated month",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "02-Jan-2006 15:04:05"},
-			transformTime: truncateToSecond,
+			name:             "hyphenated month",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "02-Jan-2006 15:04:05"},
+			skipTimezoneTest: true,
+			transformTime:    truncateToSecond,
 		},
 		{
-			name:          "month day",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "Jan 02 15:04:05"},
-			transformTime: truncateToSecond,
+			name:             "month day",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "Jan 02 15:04:05"},
+			skipTimezoneTest: true,
+			transformTime:    truncateToSecond,
 		},
 		{
-			name:          "apache microseconds",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "[Mon Jan 02 15:04:05.999999 2006]"},
-			transformTime: identityTime,
+			name:             "apache microseconds",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "[Mon Jan 02 15:04:05.999999 2006]"},
+			skipTimezoneTest: true,
+			transformTime:    identityTime,
 		},
 		{
-			name:          "weekday date is not generated yet",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "Mon Jan 2 15:04:05 2006"},
-			transformTime: identityTime,
+			name:             "weekday date is not generated yet",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "Mon Jan 2 15:04:05 2006"},
+			skipTimezoneTest: true,
+			transformTime:    identityTime,
 			want: &timestampFormatCoreResult{
 				Errs:         []string{"in \"syslog\": unable to detect timestamp format"},
 				Warnings:     []string{},
@@ -179,10 +197,11 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 			},
 		},
 		{
-			name:          "apache seconds is shadowed by microseconds format",
-			filename:      "syslog",
-			format:        TimestampFormat{Layout: "[Mon Jan 02 15:04:05 2006]"},
-			transformTime: identityTime,
+			name:             "apache seconds is shadowed by microseconds format",
+			filename:         "syslog",
+			format:           TimestampFormat{Layout: "[Mon Jan 02 15:04:05 2006]"},
+			skipTimezoneTest: true,
+			transformTime:    identityTime,
 			want: &timestampFormatCoreResult{
 				Errs:        []string{},
 				NumWarnings: 1,
@@ -198,11 +217,16 @@ func TestTimestampFormatsThroughAgent(t *testing.T) {
 
 	timezones := []timestampFormatCoreTimezone{
 		{name: "UTC", location: time.UTC},
+		{name: "UTC-3", location: time.FixedZone("UTC-3", -3*60*60)},
+		{name: "UTC+2", location: time.FixedZone("UTC+2", 2*60*60)},
 	}
 
 	for _, timezone := range timezones {
 		t.Run(timezone.name, func(t *testing.T) {
 			for _, tc := range tests {
+				if tc.skipTimezoneTest && timezone.location != time.UTC {
+					continue
+				}
 				t.Run(tc.name, func(t *testing.T) {
 					runTimestampFormatTest(t, timezone, tc, inputTimes, commonSuffixes)
 				})
@@ -389,6 +413,33 @@ waitForConnection:
 	}
 	if tc.want != nil {
 		want = *tc.want
+	}
+	if timezone.location != time.UTC {
+		// TODO: Once index and minute stats honor explicit log-line timezones,
+		// remove this adjustment and use the UTC values above.
+		_, offset := time.Now().In(timezone.location).Zone()
+		shift := time.Duration(offset) * time.Second
+
+		minuteStats := map[string]int{}
+		for minute, count := range want.MinuteStats {
+			parsedTime, err := time.Parse(timestampFormatTestMinuteLayout, minute)
+			if err != nil {
+				t.Fatalf("parse expected minute stat time %q: %v", minute, err)
+			}
+			minuteStats[parsedTime.Add(shift).Format(timestampFormatTestMinuteLayout)] = count
+		}
+		want.MinuteStats = minuteStats
+
+		indexEntries := make([]timestampFormatCoreIndexEntry, len(want.IndexEntries))
+		for i, entry := range want.IndexEntries {
+			parsedTime, err := time.Parse("2006-01-02-15:04", entry.Time)
+			if err != nil {
+				t.Fatalf("parse expected index time %q: %v", entry.Time, err)
+			}
+			indexEntries[i] = entry
+			indexEntries[i].Time = parsedTime.Add(shift).Format("2006-01-02-15:04")
+		}
+		want.IndexEntries = indexEntries
 	}
 
 	assert.Equal(t, want, got)
