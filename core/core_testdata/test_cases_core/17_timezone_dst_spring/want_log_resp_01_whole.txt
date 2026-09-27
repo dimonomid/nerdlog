@@ -1,0 +1,39 @@
+NumMsgsTotal: 4
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 3
+- 2025-03-29-23-59: 1
+- 2025-03-30-01-00: 2
+- 2025-03-30-01-01: 1
+
+Num Logs: 4
+- 2025-03-29T23:59:00.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000001,000001,----,before spring DST transition
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 01:59:00 host app: before spring DST transition
+- 2025-03-30T01:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000002,000002,----,after spring DST transition
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 04:00:00 host app: after spring DST transition
+- 2025-03-30T01:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000003,000003,----,after spring DST transition second line
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 04:00:30 host app: after spring DST transition second line
+- 2025-03-30T01:01:00.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000004,000004,----,after spring DST transition next minute
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 04:01:00 host app: after spring DST transition next minute
+
+DebugInfo:
+{
+  "timezone-dst-spring": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2025-03-30-01:00 isn't found, will use the beginning",
+      "debug:the to 2025-03-30-05:00 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile'",
+      "debug:Filtered out 0 from 4 lines"
+    ]
+  }
+}

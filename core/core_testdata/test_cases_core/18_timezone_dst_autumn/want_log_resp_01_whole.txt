@@ -1,0 +1,88 @@
+NumMsgsTotal: 20
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 4
+- 2025-10-26-05-00: 5
+- 2025-10-26-06-00: 5
+- 2025-10-26-07-00: 5
+- 2025-10-26-08-00: 5
+
+Num Logs: 20
+- 2025-10-26T05:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000001,000001,----,summer hour eight one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T08:00:00+03:00 host app: summer hour eight one
+- 2025-10-26T05:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000002,000002,----,summer hour eight two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T08:00:10+03:00 host app: summer hour eight two
+- 2025-10-26T05:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000003,000003,----,summer hour eight three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T08:00:20+03:00 host app: summer hour eight three
+- 2025-10-26T05:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000004,000004,----,summer hour eight four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T08:00:30+03:00 host app: summer hour eight four
+- 2025-10-26T05:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000005,000005,----,summer hour eight five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T08:00:40+03:00 host app: summer hour eight five
+- 2025-10-26T06:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000006,000006,----,summer hour nine one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:00+03:00 host app: summer hour nine one
+- 2025-10-26T06:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000007,000007,----,summer hour nine two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:10+03:00 host app: summer hour nine two
+- 2025-10-26T06:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000008,000008,----,summer hour nine three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:20+03:00 host app: summer hour nine three
+- 2025-10-26T06:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000009,000009,----,summer hour nine four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:30+03:00 host app: summer hour nine four
+- 2025-10-26T06:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000010,000010,----,summer hour nine five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:40+03:00 host app: summer hour nine five
+- 2025-10-26T07:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000011,000011,----,winter hour nine one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:00+02:00 host app: winter hour nine one
+- 2025-10-26T07:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000012,000012,----,winter hour nine two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:10+02:00 host app: winter hour nine two
+- 2025-10-26T07:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000013,000013,----,winter hour nine three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:20+02:00 host app: winter hour nine three
+- 2025-10-26T07:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000014,000014,----,winter hour nine four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:30+02:00 host app: winter hour nine four
+- 2025-10-26T07:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000015,000015,----,winter hour nine five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:40+02:00 host app: winter hour nine five
+- 2025-10-26T08:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000016,000016,----,winter hour ten one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T10:00:00+02:00 host app: winter hour ten one
+- 2025-10-26T08:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000017,000017,----,winter hour ten two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T10:00:10+02:00 host app: winter hour ten two
+- 2025-10-26T08:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000018,000018,----,winter hour ten three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T10:00:20+02:00 host app: winter hour ten three
+- 2025-10-26T08:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000019,000019,----,winter hour ten four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T10:00:30+02:00 host app: winter hour ten four
+- 2025-10-26T08:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000020,000020,----,winter hour ten five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T10:00:40+02:00 host app: winter hour ten five
+
+DebugInfo:
+{
+  "timezone-dst-autumn": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2025-10-26-07:00 is found: 1 (1)",
+      "debug:the to 2025-10-26-10:01 isn't found, will use the end",
+      "debug:Getting logs from offset 1 until the end of latest /tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile.",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +1 /tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile'",
+      "debug:Filtered out 0 from 20 lines"
+    ]
+  }
+}

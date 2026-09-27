@@ -1,0 +1,9 @@
+2025-01-01T23:59:50Z host app: utc before midnight
+2025-01-02T00:00:10Z host app: utc after midnight
+2025-01-01T23:50:00-04:00 host app: negative offset four
+2025-01-01T23:20:00-05:00 host app: local clock moved backward
+2025-01-01T23:45:00-05:30 host app: negative half-hour
+2025-01-02T00:00:00-05:45 host app: negative quarter-hour
+2025-01-01T23:00:00-07:30 host app: negative compact offset
+2025-01-02T10:00:00+01:00 host app: collision plus one
+2025-01-02T13:00:00+04:00 host app: collision plus four

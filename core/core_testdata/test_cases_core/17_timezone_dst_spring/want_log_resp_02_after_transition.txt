@@ -1,0 +1,35 @@
+NumMsgsTotal: 3
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 2
+- 2025-03-30-01-00: 2
+- 2025-03-30-01-01: 1
+
+Num Logs: 3
+- 2025-03-30T01:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000002,000002,----,after spring DST transition
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 04:00:00 host app: after spring DST transition
+- 2025-03-30T01:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000003,000003,----,after spring DST transition second line
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 04:00:30 host app: after spring DST transition second line
+- 2025-03-30T01:01:00.000000000Z,F,/tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile,000004,000004,----,after spring DST transition next minute
+  context: {"hostname":"host","lstream":"timezone-dst-spring","pid":"","program":"app"}
+  orig: Mar 30 04:01:00 host app: after spring DST transition next minute
+
+DebugInfo:
+{
+  "timezone-dst-spring": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:the to 2025-03-30-04:02 isn't found, gonna refresh the index",
+      "debug:the from 2025-03-30-04:00 is found: 2 (56)",
+      "debug:the to 2025-03-30-04:02 isn't found, will use the end",
+      "debug:Getting logs from offset 56 until the end of latest /tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile.",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +56 /tmp/nerdlog_core_test_output/17_timezone_dst_spring/lstreams/timezone-dst-spring/logfile'",
+      "debug:Filtered out 0 from 3 lines"
+    ]
+  }
+}

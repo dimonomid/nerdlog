@@ -1,0 +1,4 @@
+Mar 30 01:59:00 host app: before spring DST transition
+Mar 30 04:00:00 host app: after spring DST transition
+Mar 30 04:00:30 host app: after spring DST transition second line
+Mar 30 04:01:00 host app: after spring DST transition next minute

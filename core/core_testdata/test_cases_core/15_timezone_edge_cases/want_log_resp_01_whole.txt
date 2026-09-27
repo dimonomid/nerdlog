@@ -1,0 +1,59 @@
+NumMsgsTotal: 9
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 8
+- 2025-01-01-23-59: 1
+- 2025-01-02-00-00: 1
+- 2025-01-02-03-50: 1
+- 2025-01-02-04-20: 1
+- 2025-01-02-05-15: 1
+- 2025-01-02-05-45: 1
+- 2025-01-02-06-30: 1
+- 2025-01-02-09-00: 2
+
+Num Logs: 9
+- 2025-01-01T23:59:50.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000001,000001,----,app: utc before midnight
+  context: {"lstream":"timezone-edge-cases"}
+  orig: 2025-01-01T23:59:50Z host app: utc before midnight
+- 2025-01-02T00:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000002,000002,----,app: utc after midnight
+  context: {"lstream":"timezone-edge-cases"}
+  orig: 2025-01-02T00:00:10Z host app: utc after midnight
+- 2025-01-02T03:50:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000003,000003,----,negative offset four
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-01T23:50:00-04:00 host app: negative offset four
+- 2025-01-02T04:20:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000004,000004,----,local clock moved backward
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-01T23:20:00-05:00 host app: local clock moved backward
+- 2025-01-02T05:15:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000005,000005,----,negative half-hour
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-01T23:45:00-05:30 host app: negative half-hour
+- 2025-01-02T05:45:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000006,000006,----,negative quarter-hour
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-02T00:00:00-05:45 host app: negative quarter-hour
+- 2025-01-02T06:30:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000007,000007,----,negative compact offset
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-01T23:00:00-07:30 host app: negative compact offset
+- 2025-01-02T09:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000008,000008,----,collision plus one
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-02T10:00:00+01:00 host app: collision plus one
+- 2025-01-02T09:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile,000009,000009,----,collision plus four
+  context: {"hostname":"host","lstream":"timezone-edge-cases","pid":"","program":"app"}
+  orig: 2025-01-02T13:00:00+04:00 host app: collision plus four
+
+DebugInfo:
+{
+  "timezone-edge-cases": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2025-01-01-14:00 isn't found, will use the beginning",
+      "debug:the to 2025-01-02-01:00 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/15_timezone_edge_cases/lstreams/timezone-edge-cases/logfile'",
+      "debug:Filtered out 0 from 9 lines"
+    ]
+  }
+}

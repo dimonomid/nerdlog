@@ -1,0 +1,63 @@
+NumMsgsTotal: 13
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 4
+- 2025-03-12-06-10: 9
+- 2025-03-12-06-14: 1
+- 2025-03-12-06-16: 2
+- 2025-03-12-06-19: 1
+
+Num Logs: 13
+- 2025-03-12T06:10:05.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000748,001035,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:05 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:05.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000749,001036,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:05 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:05.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000750,001037,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:05 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:05.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000751,001038,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:05 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:10.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000752,001039,----,<notice> Database query failed
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:10 myhost authpriv[3500]: <notice> Database query failed
+- 2025-03-12T06:10:12.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000753,001040,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:12 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:15.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000754,001041,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:15 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:15.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000755,001042,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:15 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:10:15.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000756,001043,----,<notice> System clock synchronized
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3500","program":"authpriv"}
+  orig: Mar 12 10:10:15 myhost authpriv[3500]: <notice> System clock synchronized
+- 2025-03-12T06:14:06.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000757,001044,warn,<warning> User session ended
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"173","program":"mail"}
+  orig: Mar 12 10:14:06 myhost mail[173]: <warning> User session ended
+- 2025-03-12T06:16:00.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000758,001045,----,<emerg> User session started
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"8866","program":"ftp"}
+  orig: Mar 12 10:16:00 myhost ftp[8866]: <emerg> User session started
+- 2025-03-12T06:16:59.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000759,001046,----,<notice> Timeout occurred
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3281","program":"cron"}
+  orig: Mar 12 10:16:59 myhost cron[3281]: <notice> Timeout occurred
+- 2025-03-12T06:19:44.000000000Z,F,/tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile,000760,001047,----,<alert> User session timed out
+  context: {"hostname":"myhost","lstream":"timezone-server-local","pid":"3462","program":"user"}
+  orig: Mar 12 10:19:44 myhost user[3462]: <alert> User session timed out
+
+DebugInfo:
+{
+  "timezone-server-local": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:Getting logs from offset 49529, only 915 bytes, all in the latest /tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +49529 /tmp/nerdlog_core_test_output/14_timezone_server_local/lstreams/timezone-server-local/logfile | head -c 915'",
+      "debug:Filtered out 0 from 13 lines"
+    ]
+  }
+}
