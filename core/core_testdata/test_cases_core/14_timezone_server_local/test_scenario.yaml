@@ -1,0 +1,32 @@
+descr: "Timezone-less log timestamps interpreted in a non-UTC server timezone"
+current_time: "2025-03-12T15:00:00Z"
+manager_params:
+  config_log_streams:
+    timezone-server-local:
+      log_files:
+        kind: all_from_dir
+        dir: ../../input_logfiles/small_mar
+      options:
+        shell_init:
+          - 'export TZ=Etc/GMT-4'
+  initial_lstreams: "timezone-server-local"
+  client_id: "core-test-runner"
+test_steps:
+  - descr: "UTC range mapped to server-local timestamps"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-03-12T06:00:00Z"
+        to: "2025-03-12T07:00:00Z"
+        pattern: ""
+        refresh_index: true
+      want: want_log_resp_01.txt
+  - descr: "middle subset resolved through the index"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-03-12T06:10:00Z"
+        to: "2025-03-12T06:20:00Z"
+        pattern: ""
+        refresh_index: false
+      want: want_log_resp_02_middle.txt

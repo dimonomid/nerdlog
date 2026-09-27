@@ -1,0 +1,32 @@
+descr: "Timezone-less timestamps during an autumn DST repeated hour"
+current_time: "2025-10-27T00:00:00Z"
+manager_params:
+  config_log_streams:
+    timezone-dst-autumn-no-timezone:
+      log_files:
+        kind: all_from_dir
+        dir: ../../input_logfiles/timezone_dst_autumn_no_timezone
+      options:
+        shell_init:
+          - 'export TZ=Europe/Sofia'
+  initial_lstreams: "timezone-dst-autumn-no-timezone"
+  client_id: "core-test-runner"
+test_steps:
+  - descr: "Interpret five messages before, during, and after the repeated local hour"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-10-25T22:00:00Z"
+        to: "2025-10-26T03:00:00Z"
+        pattern: ""
+        refresh_index: true
+      want: want_log_resp_01_whole.txt
+  - descr: "Use the index to query the UTC range containing the repeated local hour"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-10-26T00:00:00Z"
+        to: "2025-10-26T02:00:00Z"
+        pattern: ""
+        refresh_index: false
+      want: want_log_resp_02_repeated_hour.txt

@@ -1,0 +1,25 @@
+NumMsgsTotal: 1
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 1
+- 2025-01-02-04-20: 1
+
+Num Logs: 1
+- 2025-01-02T04:20:00.000000000Z,F,/tmp/nerdlog_core_test_output/16_timezone_index_boundaries/lstreams/timezone-index-boundaries/logfile,000004,000004,----,local clock moved backward
+  context: {"hostname":"host","lstream":"timezone-index-boundaries","pid":"","program":"app"}
+  orig: 2025-01-01T23:20:00-05:00 host app: local clock moved backward
+
+DebugInfo:
+{
+  "timezone-index-boundaries": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/16_timezone_index_boundaries/lstreams/timezone-index-boundaries/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:Getting logs from offset 159, only 63 bytes, all in the latest /tmp/nerdlog_core_test_output/16_timezone_index_boundaries/lstreams/timezone-index-boundaries/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +159 /tmp/nerdlog_core_test_output/16_timezone_index_boundaries/lstreams/timezone-index-boundaries/logfile | head -c 63'",
+      "debug:Filtered out 0 from 1 lines"
+    ]
+  }
+}

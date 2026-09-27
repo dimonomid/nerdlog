@@ -1,0 +1,23 @@
+descr: "Timezone conversion across date boundaries and local-clock reversals"
+current_time: "2025-01-03T00:00:00Z"
+manager_params:
+  config_log_streams:
+    timezone-edge-cases:
+      log_files:
+        kind: all_from_dir
+        dir: ../../input_logfiles/timezone_edge_cases
+      options:
+        shell_init:
+          - 'export TZ=Etc/GMT+9'
+  initial_lstreams: "timezone-edge-cases"
+  client_id: "core-test-runner"
+test_steps:
+  - descr: "Convert Z, negative, and fractional offsets into UTC across midnight"
+    query:
+      params:
+        max_num_lines: 20
+        from: "2025-01-01T23:00:00Z"
+        to: "2025-01-02T10:00:00Z"
+        pattern: ""
+        refresh_index: true
+      want: want_log_resp_01_whole.txt

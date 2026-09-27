@@ -1,0 +1,37 @@
+NumMsgsTotal: 5
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 1
+- 2025-10-26-06-00: 5
+
+Num Logs: 5
+- 2025-10-26T06:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000006,000006,----,summer hour nine one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:00+03:00 host app: summer hour nine one
+- 2025-10-26T06:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000007,000007,----,summer hour nine two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:10+03:00 host app: summer hour nine two
+- 2025-10-26T06:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000008,000008,----,summer hour nine three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:20+03:00 host app: summer hour nine three
+- 2025-10-26T06:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000009,000009,----,summer hour nine four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:30+03:00 host app: summer hour nine four
+- 2025-10-26T06:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile,000010,000010,----,summer hour nine five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn","pid":"","program":"app"}
+  orig: 2025-10-26T09:00:40+03:00 host app: summer hour nine five
+
+DebugInfo:
+{
+  "timezone-dst-autumn": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:Getting logs from offset 295, only 289 bytes, all in the latest /tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'tail -c +295 /tmp/nerdlog_core_test_output/18_timezone_dst_autumn/lstreams/timezone-dst-autumn/logfile | head -c 289'",
+      "debug:Filtered out 0 from 5 lines"
+    ]
+  }
+}

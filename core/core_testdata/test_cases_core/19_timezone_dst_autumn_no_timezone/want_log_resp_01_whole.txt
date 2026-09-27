@@ -1,0 +1,87 @@
+NumMsgsTotal: 20
+LoadedEarlier: false
+Num errors: 0
+
+Num MinuteStats: 3
+- 2025-10-25-23-00: 5
+- 2025-10-26-01-00: 10
+- 2025-10-26-02-00: 5
+
+Num Logs: 20
+- 2025-10-25T23:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000001,000001,----,before repeated hour one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 02:00:00 host app: before repeated hour one
+- 2025-10-25T23:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000002,000002,----,before repeated hour two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 02:00:10 host app: before repeated hour two
+- 2025-10-25T23:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000003,000003,----,before repeated hour three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 02:00:20 host app: before repeated hour three
+- 2025-10-25T23:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000004,000004,----,before repeated hour four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 02:00:30 host app: before repeated hour four
+- 2025-10-25T23:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000005,000005,----,before repeated hour five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 02:00:40 host app: before repeated hour five
+- 2025-10-26T01:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000006,000006,----,repeated hour first one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:00 host app: repeated hour first one
+- 2025-10-26T01:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000007,000007,----,repeated hour first two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:10 host app: repeated hour first two
+- 2025-10-26T01:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000008,000008,----,repeated hour first three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:20 host app: repeated hour first three
+- 2025-10-26T01:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000009,000009,----,repeated hour first four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:30 host app: repeated hour first four
+- 2025-10-26T01:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000010,000010,----,repeated hour first five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:40 host app: repeated hour first five
+- 2025-10-26T01:00:40.000000000Z,orig-decreased-time=2025-10-26T01:00:00.000000000Z,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000011,000011,----,repeated hour second one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:00 host app: repeated hour second one
+- 2025-10-26T01:00:40.000000000Z,orig-decreased-time=2025-10-26T01:00:10.000000000Z,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000012,000012,----,repeated hour second two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:10 host app: repeated hour second two
+- 2025-10-26T01:00:40.000000000Z,orig-decreased-time=2025-10-26T01:00:20.000000000Z,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000013,000013,----,repeated hour second three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:20 host app: repeated hour second three
+- 2025-10-26T01:00:40.000000000Z,orig-decreased-time=2025-10-26T01:00:30.000000000Z,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000014,000014,----,repeated hour second four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:30 host app: repeated hour second four
+- 2025-10-26T01:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000015,000015,----,repeated hour second five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 03:00:40 host app: repeated hour second five
+- 2025-10-26T02:00:00.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000016,000016,----,after repeated hour one
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 04:00:00 host app: after repeated hour one
+- 2025-10-26T02:00:10.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000017,000017,----,after repeated hour two
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 04:00:10 host app: after repeated hour two
+- 2025-10-26T02:00:20.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000018,000018,----,after repeated hour three
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 04:00:20 host app: after repeated hour three
+- 2025-10-26T02:00:30.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000019,000019,----,after repeated hour four
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 04:00:30 host app: after repeated hour four
+- 2025-10-26T02:00:40.000000000Z,F,/tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile,000020,000020,----,after repeated hour five
+  context: {"hostname":"host","lstream":"timezone-dst-autumn-no-timezone","pid":"","program":"app"}
+  orig: Oct 26 04:00:40 host app: after repeated hour five
+
+DebugInfo:
+{
+  "timezone-dst-autumn-no-timezone": {
+    "AgentStdout": null,
+    "AgentStderr": [
+      "debug:prev logfile /tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile.1 doesn't exist, using a dummy empty file /tmp/nerdlog-empty-file",
+      "debug:index file doesn't exist or is empty, gonna refresh it",
+      "debug:the from 2025-10-26-01:00 isn't found, will use the beginning",
+      "debug:the to 2025-10-26-05:00 isn't found, will use the end",
+      "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file until the end of latest /tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile",
+      "debug:Command to filter logs by time range:",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 cat /tmp/nerdlog_core_test_output/19_timezone_dst_autumn_no_timezone/lstreams/timezone-dst-autumn-no-timezone/logfile'",
+      "debug:Filtered out 0 from 20 lines"
+    ]
+  }
+}
