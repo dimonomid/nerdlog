@@ -359,13 +359,14 @@ waitForConnection:
 			for _, line := range strings.Split(strings.TrimSpace(string(indexData)), "\n") {
 				fields := strings.Split(line, "\t")
 				if len(fields) >= 4 && fields[0] == "idx" {
+					timestamp, timestampErr := strconv.ParseInt(fields[1], 10, 64)
 					line, lineErr := strconv.Atoi(fields[2])
-					if lineErr != nil {
+					if timestampErr != nil || lineErr != nil {
 						got.Errs = append(got.Errs, fmt.Sprintf("malformed index entry: %s", strings.Join(fields, "\t")))
 						continue
 					}
 					got.IndexEntries = append(got.IndexEntries, timestampFormatCoreIndexEntry{
-						Time: fields[1],
+						Time: time.Unix(timestamp, 0).UTC().Format("2006-01-02-15:04"),
 						Line: line,
 					})
 				}

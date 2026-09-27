@@ -694,9 +694,9 @@ function run_awk_script_journalctl {
   '$awk_func_print_percentage'
 
   # Takes timestamp in the same format as we use for --from and --to and
-  # store in the index ("2006-01-02-15:04"), and returns the corresponding unix
-  # timestamp.
-  function indexTimestrToTimestamp(timestr) {
+  # returns the corresponding unix timestamp. Index entries use this numeric
+  # value so that their ordering is based on time rather than string order.
+  function indexTimestrToUnixTS(timestr) {
     year = substr(timestr, 1, 4);
     month = substr(timestr, 6, 2);
     day = substr(timestr, 9, 2);
@@ -718,11 +718,11 @@ function run_awk_script_journalctl {
     needToSkip = timestampUntilPreciseLen > 0 ? 1 : 0;
 
     # Find out earliest and latest timestamp for percentage calculations.
-    earliestTimestamp=0;
-    latestTimestamp=0;
+      earliestUnixTS=0;
+    latestUnixTS=0;
 
     if ("'$from'" != "") {
-      earliestTimestamp = indexTimestrToTimestamp("'$from'");
+      earliestUnixTS = indexTimestrToUnixTS("'$from'");
     } else {
       # No "from" timestamp; technically it is possible to get it using
       # "journalctl --no-pager | head -n 1", but not bothering for now
@@ -733,15 +733,15 @@ function run_awk_script_journalctl {
     }
 
     if ("'$to'" != "") {
-      latestTimestamp = indexTimestrToTimestamp("'$to'");
+      latestUnixTS = indexTimestrToUnixTS("'$to'");
     } else {
       # No "to" timestamp; just use the current time.
-      latestTimestamp = systime();
+      latestUnixTS = systime();
     }
 
     timespanSeconds = 0;
-    if (earliestTimestamp != 0 && latestTimestamp != 0) {
-      timespanSeconds = latestTimestamp - earliestTimestamp;
+    if (earliestUnixTS != 0 && latestUnixTS != 0) {
+      timespanSeconds = latestUnixTS - earliestUnixTS;
     }
   }
 
@@ -781,10 +781,10 @@ function run_awk_script_journalctl {
     hhmm = '"$awktime_hhmm"';
     hh = substr(hhmm, 1, 2);
     mm = substr(hhmm, 4, 2);
-    curTimestamp = mktime(year " " month " " day " " hh " " mm " 00");
+    curUnixTS = mktime(year " " month " " day " " hh " " mm " 00");
 
     if (timespanSeconds > 0) {
-      printPercentage(latestTimestamp-curTimestamp, timespanSeconds)
+      printPercentage(latestUnixTS-curUnixTS, timespanSeconds)
     } else {
       # We do not know the timespan, so just do not print any percentages.
     }
@@ -1021,8 +1021,15 @@ function isValidIndexTimestr(timestr) {
 # awk will work in terms of bytes, not characters. We use length($0) there and
 # we rely on it being number of bytes.
 
-  scriptInitFromLastTimestr='
-    lastHHMM = substr(lastTimestr, 8, 5);
+  # The index stores the previous timestamp as epoch seconds, while the
+  # per-line fast path only tracks the wall-clock HH:MM to decide when a
+  # new sparse-index entry is needed. Keep lastHHMM empty for a new index;
+  # strftime("%H:%M", "") would otherwise coerce the empty value to zero
+  # and could incorrectly suppress the first entry.
+  scriptInitFromLastUnixTS='
+    if (lastUnixTS != "") {
+      lastHHMM = strftime("%H:%M", lastUnixTS);
+    }
     '
 
   scriptSetCurTimestr='
@@ -1033,6 +1040,12 @@ function isValidIndexTimestr(timestr) {
     year = '"$awktime_year"';
     day = '"$awktime_day"';
     hhmm = '"$awktime_hhmm"';
+    # Keep HH:MM as one extraction in the per-line fast path. Splitting it
+    # into HH and MM is only needed here, when a new sparse-index entry is
+    # being considered; separate HH/MM expressions would do two extractions
+    # for every log line.
+    hh = substr(hhmm, 1, 2);
+    mm = substr(hhmm, 4, 2);
 
     curTimestr = year "-" month "-" day "-" hhmm;
 
@@ -1044,15 +1057,17 @@ function isValidIndexTimestr(timestr) {
       next;
     }
 
+    curUnixTS = mktime(year " " month " " day " " hh " " mm " 00");
+
     # Ignore decreased timestamps: treat them as if the timestamp did not change.
-    if (curTimestr < lastTimestr) {
+    if (curUnixTS < lastUnixTS) {
       # TODO: make sure to print that once per occurrence, and uncomment.
-      # print "warn_timestamp_decreased:from " lastTimestr " to " curTimestr > "/dev/stderr"
+      # print "warn_timestamp_decreased:from " lastUnixTS " to " curUnixTS > "/dev/stderr"
       next;
     }
   '
   scriptSetLastTimestrEtc='
-    lastTimestr = curTimestr;
+    lastUnixTS = curUnixTS;
     lastHHMM = curHHMM;
   '
 
@@ -1077,7 +1092,7 @@ function isValidIndexTimestr(timestr) {
   then
     echo "p:stage:$STAGE_INDEX_APPEND:indexing up" 1>&2
 
-    local lastTimestr="$(tail -n 1 $indexfile | cut -f2)"
+    local lastUnixTS="$(tail -n 1 $indexfile | cut -f2)"
     local last_linenr="$(tail -n 1 $indexfile | cut -f3)"
     local last_bytenr="$(tail -n 1 $indexfile | cut -f4)"
     local size_to_index=$((total_size-last_bytenr))
@@ -1088,12 +1103,12 @@ function isValidIndexTimestr(timestr) {
       -v warningFilename="$logfile_last" -v warningLineOffset="$warning_line_offset" "$awk_functions
   BEGIN {
     $awk_vars
-    lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr
+    lastUnixTS = \"$lastUnixTS\"; $scriptInitFromLastUnixTS
   }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';
-    printIndexLine("'$indexfile'", curTimestr, NR+'$(( last_linenr-1 ))', bytenr_cur+'$(( last_bytenr-1 ))');
+    printIndexLine("'$indexfile'", curUnixTS, NR+'$(( last_linenr-1 ))', bytenr_cur+'$(( last_bytenr-1 ))');
     printPercentage(bytenr_cur, '$size_to_index');
     '"$scriptSetLastTimestrEtc"'
   }
@@ -1107,13 +1122,14 @@ function isValidIndexTimestr(timestr) {
   else
     echo "p:stage:$STAGE_INDEX_FULL:indexing from scratch" 1>&2
 
-    echo "prevlog_modtime	$(get_file_modtime $logfile_prev)" > $indexfile
+	echo "index_format_version	2" > $indexfile
+	echo "prevlog_modtime	$(get_file_modtime $logfile_prev)" >> $indexfile
 
     "$awk_binary" -b -v warningFilename="$logfile_prev" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastHHMM=\"\"; }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';
-    printIndexLine("'$indexfile'", curTimestr, NR, bytenr_cur);
+    printIndexLine("'$indexfile'", curUnixTS, NR, bytenr_cur);
     printPercentage(bytenr_cur, '$total_size');
     '"$scriptSetLastTimestrEtc"'
   }
@@ -1130,17 +1146,17 @@ function isValidIndexTimestr(timestr) {
   # last-but-one line) and set it for the next script, otherwise there is a gap
   # in index before the first line in the $logfile_last.
   # TODO: make sure that if there are no logs in the $lotfile1, we don't screw up.
-    local lastTimestr=""
-    local lastTimestrLine="$(tail -n 2 $indexfile | head -n 1)"
-    if [[ "$lastTimestrLine" =~ ^idx$'\t' ]]; then
-      lastTimestr="$(echo "$lastTimestrLine" | cut -f2)"
+    local lastUnixTS=""
+    local lastUnixTSLine="$(tail -n 2 $indexfile | head -n 1)"
+    if [[ "$lastUnixTSLine" =~ ^idx$'\t' ]]; then
+      lastUnixTS="$(echo "$lastUnixTSLine" | cut -f2)"
     fi
-    "$awk_binary" -b -v warningFilename="$logfile_last" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastTimestr = \"$lastTimestr\"; $scriptInitFromLastTimestr }"'
+    "$awk_binary" -b -v warningFilename="$logfile_last" -v warningLineOffset=0 "$awk_functions BEGIN { $awk_vars lastUnixTS = \"$lastUnixTS\"; $scriptInitFromLastUnixTS }"'
   '"$script1"'
   ( lastHHMM != curHHMM ) {
     '"$scriptSetCurTimestr"';
     bytenr = bytenr_cur+'$prevlog_bytes';
-    printIndexLine("'$indexfile'", curTimestr, NR+'$(get_prevlog_lines_from_index)', bytenr);
+    printIndexLine("'$indexfile'", curUnixTS, NR+'$(get_prevlog_lines_from_index)', bytenr);
     printPercentage(bytenr, '$total_size');
     '"$scriptSetLastTimestrEtc"'
   }
@@ -1155,7 +1171,7 @@ function isValidIndexTimestr(timestr) {
 } # }}}
 
 # Performs index lookup by a timestr like "2006-01-02-15:04" (typically given
-# as --from or --to, and it's also stored in the index in the same form).
+# as --from or --to). Index entries store the corresponding unix timestamp.
 #
 # Prints result: one of "found", "before" or "after"; and if the result
 # is "found", then also prints linenumber and bytenumber, space-separated.
@@ -1168,13 +1184,27 @@ function isValidIndexTimestr(timestr) {
 # Now we can use those vars $my_result, $my_linenr and $my_bytenr
 function get_linenr_and_bytenr_from_index() { # {{{
   "$awk_binary" -F"\t" '
-    BEGIN { isFirstIdx = 1; printed = 0; }
+    function indexTimestrToUnixTS(timestr) {
+      year = substr(timestr, 1, 4);
+      month = substr(timestr, 6, 2);
+      day = substr(timestr, 9, 2);
+      hh = substr(timestr, 12, 2);
+      mm = substr(timestr, 15, 2);
+
+      return mktime(year " " month " " day " " hh " " mm " 00");
+    }
+
+    BEGIN {
+      isFirstIdx = 1;
+      printed = 0;
+      requestedUnixTS = indexTimestrToUnixTS("'$1'");
+    }
     $1 == "idx" {
-      if ("'$1'" == $2) {
+      if (requestedUnixTS == $2) {
         print "found " $3 " " $4;
         printed = 1;
         exit
-      } else if ("'$1'" < $2) {
+      } else if (requestedUnixTS < $2) {
         if (isFirstIdx) {
           print "before";
         } else {
@@ -1200,6 +1230,12 @@ function get_prevlog_lines_from_index() { # {{{
   fi
 } # }}}
 
+function get_index_format_version() { # {{{
+  if ! "$awk_binary" -F"\t" 'BEGIN { found=0 } $1 == "index_format_version" { print $2; found = 1; exit } END { if (found == 0) { exit 1 } }' $indexfile ; then
+    return 1
+  fi
+} # }}}
+
 function get_prevlog_modtime_from_index() { # {{{
   if ! "$awk_binary" -F"\t" 'BEGIN { found=0 } $1 == "prevlog_modtime" { print $2; found = 1; exit } END { if (found == 0) { exit 1 } }' $indexfile ; then
     return 1
@@ -1213,6 +1249,15 @@ function get_prevlog_bytenr() { # {{{
 is_outside_of_range=0
 if [[ "$from" != "" || "$to" != "" ]]; then
   # If indexfile exists, check if it's valid and relevant; if not, delete it.
+  if [ -e "$indexfile" ]; then
+    index_format_version="$(get_index_format_version || true)"
+    if [[ "$index_format_version" != "2" ]]; then
+      echo "debug:index format is old or invalid, deleting it" 1>&2
+      rm -f $indexfile || exit 1
+    fi
+
+  fi
+
   if [ -e "$indexfile" ]; then
     # Check timestamp in the first line of /tmp/nerdlog_agent_index, and if
     # $logfile_prev's modification time is newer, then delete whole index
