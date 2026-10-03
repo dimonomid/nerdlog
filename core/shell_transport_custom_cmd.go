@@ -12,7 +12,7 @@ import (
 
 	"github.com/dimonomid/nerdlog/log"
 	"github.com/juju/errors"
-	"github.com/mvdan/sh/shell"
+	"mvdan.cc/sh/v3/shell"
 )
 
 const echoMarkerConnected = "__CONNECTED__"
