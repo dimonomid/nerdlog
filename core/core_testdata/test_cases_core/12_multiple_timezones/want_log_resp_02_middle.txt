@@ -17,7 +17,7 @@ DebugInfo:
       "debug:the to 2025-02-01-12:00 is found: 1 (1)",
       "debug:Getting logs from the very beginning in prev /tmp/nerdlog-empty-file to offset 0 in latest /tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile",
       "debug:Command to filter logs by time range:",
-      "debug: bash -c 'cat /tmp/nerdlog-empty-file \u0026\u0026 head -c 0 /tmp/nerdlog_core_test_output/12_multiple_timezones/lstreams/multiple-timezones/logfile'",
+      "debug: bash -c 'cat /tmp/nerdlog-empty-file'",
       "debug:Filtered out 0 from 0 lines"
     ]
   }
