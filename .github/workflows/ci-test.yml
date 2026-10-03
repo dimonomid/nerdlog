@@ -5,8 +5,14 @@ on:
 
 jobs:
   test-ubuntu:
-    name: Tests (Ubuntu)
+    name: Tests ${{ matrix.variant == 'fast' && 'Fast' || 'Full' }} (Ubuntu)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [full, fast]
+    env:
+      NERDLOG_AGENT_TEST_SKIP_INDEX_UP: ${{ matrix.variant == 'fast' && '1' || '' }}
+      NERDLOG_TIMESTAMP_FORMAT_TEST_SKIP_THROUGH_AGENT: ${{ matrix.variant == 'fast' && '1' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,11 +35,14 @@ jobs:
             make test ARGS='-run TestCoreScenarios'
 
   test-freebsd:
-    name: Tests (FreeBSD)
+    name: Tests ${{ matrix.variant == 'fast' && 'Fast' || 'Full' }} (FreeBSD)
     # Sadly GitHub doesn't support FreeBSD runners natively, so we
     # run Ubuntu and then start FreeBSD VM.
     # See https://github.com/vmactions/freebsd-vm
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [full, fast]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,6 +60,11 @@ jobs:
             # So here we work it around by marking the directory as safe.
             git config --global --add safe.directory "${PWD}"
 
+            if [ "${{ matrix.variant }}" = fast ]; then
+              export NERDLOG_AGENT_TEST_SKIP_INDEX_UP=1
+              export NERDLOG_TIMESTAMP_FORMAT_TEST_SKIP_THROUGH_AGENT=1
+            fi
+
             echo "Run main tests"
             make test
 
@@ -60,8 +74,14 @@ jobs:
               make test ARGS='-run TestCoreScenarios'
 
   test-macos:
-    name: Tests (MacOS)
+    name: Tests ${{ matrix.variant == 'fast' && 'Fast' || 'Full' }} (MacOS)
     runs-on: macos-latest
+    strategy:
+      matrix:
+        variant: [full, fast]
+    env:
+      NERDLOG_AGENT_TEST_SKIP_INDEX_UP: ${{ matrix.variant == 'fast' && '1' || '' }}
+      NERDLOG_TIMESTAMP_FORMAT_TEST_SKIP_THROUGH_AGENT: ${{ matrix.variant == 'fast' && '1' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
