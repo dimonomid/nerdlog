@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [1.13.0](https://github.com/dimonomid/nerdlog/compare/v1.12.0...v1.13.0) (2026-10-03)
+
+
+### Features
+
+* Implement more flexible timestamp parsing ([c9843aa](https://github.com/dimonomid/nerdlog/commit/c9843aa480c85e9139534f4d73238285ce95727a))
+
+
+### Bug Fixes
+
+* handle empty byte ranges on BSD and macOS ([3ae5e6d](https://github.com/dimonomid/nerdlog/commit/3ae5e6d93390a823ac624ab62afbf8d0ff48c6ae))
+* handle mixed timezones in log files ([25f0469](https://github.com/dimonomid/nerdlog/commit/25f04697070e1e20781406d940d33e545368f9fc))
+
 ## [1.12.0](https://github.com/dimonomid/nerdlog/compare/v1.11.0...v1.12.0) (2026-09-26)
 
 
