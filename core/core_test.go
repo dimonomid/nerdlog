@@ -29,6 +29,9 @@ const coreTestScenarioYamlFname = "test_scenario.yaml"
 
 type CoreTestScenarioYaml struct {
 	Descr string `yaml:"descr"`
+	// RunOnOS limits this scenario to platforms whose command-line tools and
+	// time-zone behavior match the expected results.
+	RunOnOS []string `yaml:"run_on_os"`
 
 	CurrentTime testutils.MyTime `yaml:"current_time"`
 
@@ -168,6 +171,18 @@ func runCoreTestScenario(t *testing.T, tsCtx *coreTestScenarioContext) error {
 	var tc CoreTestScenarioYaml
 	if err := yaml.Unmarshal(data, &tc); err != nil {
 		return errors.Annotatef(err, "unmarshaling yaml from %s", testScenarioDescrFname)
+	}
+	if len(tc.RunOnOS) > 0 {
+		runsHere := false
+		for _, osName := range tc.RunOnOS {
+			if osName == runtime.GOOS {
+				runsHere = true
+				break
+			}
+		}
+		if !runsHere {
+			t.Skipf("scenario is only supported on: %s", strings.Join(tc.RunOnOS, ", "))
+		}
 	}
 
 	if tc.CurrentTime.Time.IsZero() {

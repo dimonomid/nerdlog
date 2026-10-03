@@ -1,4 +1,11 @@
 descr: "Timezone-less timestamps during an autumn DST repeated hour"
+# This query covers the repeated Europe/Sofia 03:00 hour. Linux awk resolves
+# the ambiguous local time so the index returns no records (offset 773, zero
+# bytes), while FreeBSD awk resolves it to the other occurrence and returns
+# the first ten repeated-hour records (offset 260, 513 bytes). The result is
+# therefore platform-dependent.
+run_on_os:
+  - linux
 current_time: "2025-10-27T00:00:00Z"
 manager_params:
   config_log_streams:
