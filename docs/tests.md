@@ -8,10 +8,10 @@ To run all tests:
 make test
 ```
 
-To skip indexing-up agent tests (which are the slowest):
+To skip the two especially slow parts of the suite:
 
 ```
-NERDLOG_AGENT_TEST_SKIP_INDEX_UP=1 make test
+NERDLOG_AGENT_TEST_SKIP_INDEX_UP=1 NERDLOG_TIMESTAMP_FORMAT_TEST_SKIP_THROUGH_AGENT=1 make test
 ```
 
 ## Details

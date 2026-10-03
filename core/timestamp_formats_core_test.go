@@ -65,8 +65,13 @@ type timestampFormatCoreLog struct {
 
 const timestampFormatTestTimeLayout = "2006-01-02T15:04:05.000000000Z07:00"
 const timestampFormatTestMinuteLayout = "2006-01-02T15:04Z07:00"
+const timestampFormatTestSkipThroughAgentEnv = "NERDLOG_TIMESTAMP_FORMAT_TEST_SKIP_THROUGH_AGENT"
 
 func TestTimestampFormatsThroughAgent(t *testing.T) {
+	if os.Getenv(timestampFormatTestSkipThroughAgentEnv) != "" {
+		t.Skipf("%s is set", timestampFormatTestSkipThroughAgentEnv)
+	}
+
 	commonSuffixes := []string{
 		"myhost app[123]: message one",
 		"myhost app[123]: message two",

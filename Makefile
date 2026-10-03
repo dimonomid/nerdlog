@@ -35,7 +35,9 @@ install:
 #
 # To skip the repetitions of the agent tests with shorter index file (expecting
 # it to "index up"), because it's the slowest part of the tests, set env var
-# NERDLOG_AGENT_TEST_SKIP_INDEX_UP
+# NERDLOG_AGENT_TEST_SKIP_INDEX_UP. To skip the exhaustive through-agent
+# timestamp-format matrix independently, set env var
+# NERDLOG_TIMESTAMP_FORMAT_TEST_SKIP_THROUGH_AGENT.
 test:
 	@# This step is needed to make sure that we don't get extra output like
 	@# "go: downloading github.com/spf13/pflag v1.0.6" when running journalctl_mock,
